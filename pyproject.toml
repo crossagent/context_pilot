@@ -22,8 +22,6 @@ authors = [
   {name = "crossagent", email = "150273112@qq.com"},
 ]
 
-[project.scripts]
-bug-sleuth-server = "agents.command_line:main"
 
 [build-system]
 requires = ["hatchling"]
