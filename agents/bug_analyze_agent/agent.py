@@ -41,7 +41,7 @@ from .tools import (
     deploy_fix_tool
 )
 from .tools.search_code import check_search_tools
-from agents.shared_libraries.plugin_loader import load_plugin_tools
+# from agents.shared_libraries.plugin_loader import load_plugin_tools
 
 from google.adk.tools import load_artifacts
 from google.adk.planners import BuiltInPlanner
@@ -205,9 +205,6 @@ def inject_default_values(callback_context: CallbackContext):
             callback_context.state[key] = value
 
 
-from google.adk.agents.llm_agent import LlmAgent
-from agents.shared_libraries.visual_llm_agent import VisualLlmAgent
-
 # Load Core Tools
 core_tools = [
     AgentTool(agent=log_analysis_agent),
@@ -227,9 +224,6 @@ core_tools = [
     )
 ]
 
-# Load Plugin Tools (Config-Driven)
-plugin_tools = load_plugin_tools("bug_analyze_agent")
-
 bug_analyze_agent = VisualLlmAgent(
     name="bug_analyze_agent",
     model=MODEL,
@@ -246,7 +240,7 @@ bug_analyze_agent = VisualLlmAgent(
     before_agent_callback=initialize_and_validate,
     before_model_callback=check_step_limit,
 
-    tools=core_tools + plugin_tools,
+    tools=core_tools,
     output_key=AgentKeys.BUG_REASON,
 )
 

@@ -23,11 +23,6 @@ def main():
     print(f"🚀 Starting BugSleuth Server...")
     print(f"   Project Root: {project_root}")
     print(f"   Product:      {product or 'Unknown'}")
-    
-    # 2. Check for External Tools
-    agent_tools = os.getenv("ADK_TOOLS_BUG_ANALYZE_AGENT")
-    if agent_tools:
-        print(f"   Plugins:      {agent_tools}")
         
     # 3. Launch Uvicorn
     # We use string reference to allow reloading if needed, though usually False for prod
@@ -36,7 +31,6 @@ def main():
             "agents.bug_analyze_agent.agent:app",
             host="0.0.0.0",
             port=8000,
-            reload=False,
             log_level="info"
         )
     except KeyboardInterrupt:

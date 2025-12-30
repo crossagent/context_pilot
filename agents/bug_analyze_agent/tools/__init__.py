@@ -17,5 +17,10 @@ __all__ = [
     'get_git_log_tool',
     'get_git_diff_tool',
     'get_blame_tool',
-    'deploy_fix_tool'
+    'deploy_fix_tool',
+    'deploy_fix_tool_fn'
 ]
+
+from google.adk.tools import FunctionTool
+# Wrap for auto-confirmation usage in YAML loading
+deploy_fix_tool_fn = FunctionTool(deploy_fix_tool, require_confirmation=True)
