@@ -74,4 +74,7 @@ if _env_skill_path:
     # Avoid double loading if imported multiple times (handled by python module caching anyway)
     # But logging it is useful
     if not _SKILL_LOADER:
+        logger.info(f"[Services] Auto-initializing Extension System with SKILL_PATH={_env_skill_path}")
         load_extensions(_env_skill_path)
+else:
+    logger.info("[Services] SKILL_PATH not set. Extension System is DISABLED. Only core agents will be available.")
