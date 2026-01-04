@@ -10,7 +10,7 @@ from google.genai import types
 
 from .prompt import ROOT_AGENT_PROMPT
 from .bug_analyze_agent.agent import create_bug_analyze_agent
-from .bug_reproduce_steps_agent.agent import bug_reproduce_steps_agent
+
 from .bug_report_agent.agent import bug_report_agent
 from .bug_base_info_collect_agent.agent import bug_base_info_collect_agent
 import bug_sleuth.services
@@ -58,7 +58,7 @@ agent = LlmAgent(
         bug_base_info_collect_agent,
         analyze_agent_instance,
         bug_report_agent,
-        bug_reproduce_steps_agent,
+        bug_report_agent,
     ],
     before_agent_callback=before_agent_callback
 )
