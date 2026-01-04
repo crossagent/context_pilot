@@ -137,3 +137,55 @@ python debug_server.py
 ```
 
 
+
+## Skill Development Guide
+
+BugSleuth supports extending agent capabilities through custom **Skills**. A Skill consists of a metadata file and a python tool implementation.
+
+### Directory Structure
+```
+skills/
+└── my_custom_skill/          # The Skill Directory
+    ├── SKILL.md              # Metadata & Configuration
+    └── tool.py               # Tool Implementation
+```
+
+### 1. SKILL.md
+This file defines the skill's name and target agent using YAML frontmatter. It is strictly for configuration.
+
+**Format:**
+```markdown
+---
+name: my_custom_skill
+target_agent: bug_analyze_agent  # The agent that can use this skill
+---
+```
+
+### 2. tool.py
+This file implements the actual tools available to the agent. 
+
+**IMPORTANT**: 
+*   **Standard Python functions are NOT automatically recognized.**
+*   You **MUST** wrap your functions in a `FunctionTool` instance from `google.adk.tools`.
+*   The `FunctionTool` instances must be available in the module's global scope.
+
+**Example:**
+```python
+from google.adk.tools import FunctionTool
+
+def calculate_metric(value: int) -> str:
+    """
+    Calculates a specific metric.
+    
+    Args:
+        value: The input integer.
+        
+    Returns:
+        A string report of the metric.
+    """
+    return f"Metric: {value * 2}"
+
+# REQUIRED: Export as a FunctionTool instance
+# The variable name doesn't matter, but it must be a FunctionTool object.
+calculate_metric_tool = FunctionTool(fn=calculate_metric)
+```

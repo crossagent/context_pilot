@@ -26,15 +26,13 @@ pass
 
 # Retrieve injected assets for bug_analyze_agent
 analyze_agent_tools = bug_sleuth.services.get_loaded_tools("bug_analyze_agent")
-analyze_agent_instructions = bug_sleuth.services.get_instruction_suffix("bug_analyze_agent")
 
 if analyze_agent_tools:
     logger.info(f"Injected {len(analyze_agent_tools)} tools into bug_analyze_agent.")
 
 # --- 2. Create Sub-Agents ---
 analyze_agent_instance = create_bug_analyze_agent(
-    extra_tools=analyze_agent_tools,
-    instruction_suffix=analyze_agent_instructions
+    extra_tools=analyze_agent_tools
 )
 
 # --- 3. Callback Definition ---

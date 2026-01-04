@@ -14,7 +14,6 @@ class LoadedSkill:
     name: str
     target_agent: str
     tools: List[FunctionTool]
-    instruction_fragment: str
 
 class SkillLoader:
     def __init__(self, skill_path: str):
@@ -42,20 +41,18 @@ class SkillLoader:
         return self.skills
 
     def _load_single_skill(self, skill_dir: str, md_path: str) -> Optional[LoadedSkill]:
-        # 1. Parse Metadata and Instructions from SKILL.md
+        # 1. Parse Metadata from SKILL.md
         with open(md_path, 'r', encoding='utf-8') as f:
             content = f.read()
             
         metadata = {}
-        instruction_body = content
         
         # Simple YAML Frontmatter parser
         if content.startswith("---"):
             try:
                 parts = content.split("---", 2)
-                if len(parts) >= 3:
+                if len(parts) >= 2:
                      yaml_text = parts[1]
-                     instruction_body = parts[2].strip()
                      metadata = yaml.safe_load(yaml_text) or {}
             except Exception as e:
                 logger.warning(f"Error parsing YAML in {md_path}: {e}")
@@ -74,8 +71,7 @@ class SkillLoader:
         return LoadedSkill(
             name=skill_name,
             target_agent=target_agent,
-            tools=tools,
-            instruction_fragment=instruction_body
+            tools=tools
         )
 
     def _load_tools_from_module(self, module_path: str, skill_name: str) -> List[FunctionTool]:
@@ -119,10 +115,4 @@ class SkillLoader:
                 all_tools.extend(skill.tools)
         return all_tools
 
-    def get_instruction_suffix_for_agent(self, agent_name: str) -> str:
-        """Returns aggregated prompt instructions."""
-        fragments = []
-        for skill in self.skills:
-            if skill.target_agent == agent_name and skill.instruction_fragment:
-                fragments.append(f"\n\n--- Skill: {skill.name} ---\n{skill.instruction_fragment}")
-        return "".join(fragments)
+

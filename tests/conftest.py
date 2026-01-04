@@ -1,6 +1,6 @@
 import pytest
 from google.adk.models import LLMRegistry
-from tests.utils.mock_llm_provider import MockLlm
+from bug_sleuth.test_utils.mock_llm_provider import MockLlm
 
 @pytest.fixture(scope="session", autouse=True)
 def register_mock_llm():

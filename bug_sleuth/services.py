@@ -60,11 +60,7 @@ def get_loaded_tools(agent_name: str) -> List[FunctionTool]:
         return _SKILL_LOADER.get_tools_for_agent(agent_name)
     return []
 
-def get_instruction_suffix(agent_name: str) -> str:
-    """Retrieve instructions for a specific agent from the global loader."""
-    if _SKILL_LOADER:
-        return _SKILL_LOADER.get_instruction_suffix_for_agent(agent_name)
-    return ""
+
 
 # --- Auto-Initialization ---
 # If SKILL_PATH is set in the environment, automatically attempt to load extensions.

@@ -1,7 +1,7 @@
 import pytest
 import logging
-from tests.utils.test_client import TestClient
-from tests.utils.mock_llm_provider import MockLlm
+from bug_sleuth.test_utils.test_client import TestClient
+from bug_sleuth.test_utils.mock_llm_provider import MockLlm
 from bug_sleuth.agent import agent as root_agent
 from bug_sleuth.shared_libraries.state_keys import StateKeys
 

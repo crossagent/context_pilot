@@ -1,9 +1,9 @@
 import pytest
 import asyncio
 from typing import List
-from tests.utils.test_client import TestClient
+from bug_sleuth.test_utils.test_client import TestClient
 from bug_sleuth.bug_analyze_agent.agent import create_bug_analyze_agent
-from tests.utils.mock_llm_provider import MockLlm
+from bug_sleuth.test_utils.mock_llm_provider import MockLlm
 
 @pytest.mark.anyio
 async def test_analyze_agent_searches_logs():
