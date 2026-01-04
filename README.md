@@ -140,52 +140,43 @@ python debug_server.py
 
 ## Skill Development Guide
 
-BugSleuth supports extending agent capabilities through custom **Skills**. A Skill consists of a metadata file and a python tool implementation.
+BugSleuth supports extending agent capabilities through custom **Skills**. A Skill is a Python class that implements a specific extension interface.
 
 ### Directory Structure
 ```
 skills/
 └── my_custom_skill/          # The Skill Directory
-    ├── SKILL.md              # Metadata & Configuration
     └── tool.py               # Tool Implementation
 ```
 
-### 1. SKILL.md
-This file defines the skill's name and target agent using YAML frontmatter. It is strictly for configuration.
+### 1. tool.py
+Instead of configuration files, you now write Python classes that inherit from BugSleuth's extension interfaces.
 
-**Format:**
-```markdown
----
-name: my_custom_skill
-target_agent: bug_analyze_agent  # The agent that can use this skill
----
-```
-
-### 2. tool.py
-This file implements the actual tools available to the agent. 
-
-**IMPORTANT**: 
-*   **Standard Python functions are NOT automatically recognized.**
-*   You **MUST** wrap your functions in a `FunctionTool` instance from `google.adk.tools`.
-*   The `FunctionTool` instances must be available in the module's global scope.
+**Supported Interfaces:**
+*   `RootAgentExtension`: Extends the Root Orchestrator (Top-level tools).
+*   `BugReportExtension`: Extends the Bug Report Agent.
 
 **Example:**
 ```python
-from google.adk.tools import FunctionTool
+from bug_sleuth.extensions import RootAgentExtension
+from google.adk.tools import FunctionTool, BaseTool
+from typing import List
 
-def calculate_metric(value: int) -> str:
-    """
-    Calculates a specific metric.
+def my_cool_feature():
+    """A cool feature added by plugin."""
+    return "Done"
+
+class MyCustomPlugin(RootAgentExtension): 
+    # Explicitly declare this extension is for the Root Agent
     
-    Args:
-        value: The input integer.
-        
-    Returns:
-        A string report of the metric.
-    """
-    return f"Metric: {value * 2}"
+    def get_tools(self) -> List[BaseTool]:
+        # Return a list of ADK Tools
+        return [
+            FunctionTool(fn=my_cool_feature)
+        ]
 
-# REQUIRED: Export as a FunctionTool instance
-# The variable name doesn't matter, but it must be a FunctionTool object.
-calculate_metric_tool = FunctionTool(fn=calculate_metric)
+# REQUIRED: Instantiate the class so the loader can find it
+plugin_instance = MyCustomPlugin()
 ```
+
+The `SkillLoader` will automatically discover instances of `RootAgentExtension` or `BugReportExtension` in your `SKILL_PATH` and inject them into the appropriate agents.
