@@ -15,18 +15,25 @@ from .bug_report_agent.agent import bug_report_agent
 from .tools import update_bug_info_tool
 from datetime import datetime
 import bug_sleuth.services
+from bug_sleuth.skill_loader import SkillLoader
 from bug_sleuth.shared_libraries import constants
 from bug_sleuth.shared_libraries.state_keys import StateKeys
 
 logger = logging.getLogger(__name__)
 
 # --- 1. Load Extensions (Services & Skills) ---
-# Extensions must be loaded/configured by the entry point (e.g. bridge_agent.py) *before* this module is imported.
-pass
+# Explicitly initialize the Skill System here in the Agent Entry Point
 
-# Retrieve injected assets for bug_analyze_agent
-analyze_agent_tools = bug_sleuth.services.get_loaded_tools("bug_analyze_agent")
+skill_loader = None
+skill_path = os.getenv("SKILL_PATH")
+analyze_agent_tools = []
 
+if skill_path and os.path.exists(skill_path):
+    logger.info(f"Initializing Skill System from: {skill_path}")
+    skill_loader = SkillLoader(skill_path)
+    skill_loader.load_skills()
+    analyze_agent_tools = skill_loader.get_tools_for_agent("bug_analyze_agent")
+    
 if analyze_agent_tools:
     logger.info(f"Injected {len(analyze_agent_tools)} tools into bug_analyze_agent.")
 
