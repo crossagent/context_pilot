@@ -14,10 +14,10 @@ from .bug_analyze_agent.agent import bug_analyze_agent
 from .bug_report_agent.agent import bug_report_agent
 from .tools import update_bug_info_tool
 from datetime import datetime
-from bug_sleuth.skill_loader import SkillLoader
-from bug_sleuth.extensions import RootAgentExtension, BugReportExtension
-from bug_sleuth.shared_libraries import constants
-from bug_sleuth.shared_libraries.state_keys import StateKeys
+from .skill_loader import SkillLoader
+from .extensions import RootAgentExtension, BugReportExtension
+from .shared_libraries import constants
+from .shared_libraries.state_keys import StateKeys
 
 logger = logging.getLogger(__name__)
 

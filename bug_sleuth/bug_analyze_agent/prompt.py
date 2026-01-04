@@ -1,4 +1,4 @@
-from bug_sleuth.shared_libraries.state_keys import StateKeys
+from ..shared_libraries.state_keys import StateKeys
 
 instruction_prompt = """
     你是一个专家级的游戏Bug分析师和调试助手。你的任务是通过交互式的方式，像一个经验丰富的侦探一样，找出Bug的根本原因。

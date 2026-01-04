@@ -1,7 +1,7 @@
 from google.adk import Agent
 from google.genai import types
 
-from bug_sleuth.shared_libraries.constants import MODEL
+from ...shared_libraries.constants import MODEL
 from .tools import search_logs_tool
 
 instruction = """

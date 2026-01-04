@@ -39,11 +39,11 @@ if not REPO_REGISTRY:
 # 3. Imports
 from datetime import datetime
 
-from bug_sleuth.shared_libraries.constants import MODEL, USER_TIMEZONE
+from ..shared_libraries.constants import MODEL, USER_TIMEZONE
 from google.adk import Agent
 from google.adk.agents.callback_context import CallbackContext
 from google.adk.agents.run_config import RunConfig
-from bug_sleuth.shared_libraries import constants
+from ..shared_libraries import constants
 from google.adk.apps.app import App
 from google.adk.agents.context_cache_config import ContextCacheConfig
 from google.adk.models.llm_response import LlmResponse
@@ -74,7 +74,7 @@ from .tools.search_code import check_search_tools
 from google.adk.tools import load_artifacts
 from google.adk.planners import BuiltInPlanner
 from google.genai import types
-from bug_sleuth.shared_libraries.state_keys import StateKeys, AgentKeys
+from ..shared_libraries.state_keys import StateKeys, AgentKeys
 
 
 logger = logging.getLogger(__name__)
@@ -247,7 +247,7 @@ def inject_default_values(callback_context: CallbackContext):
 
 
 from google.adk.agents.llm_agent import LlmAgent
-from bug_sleuth.shared_libraries.visual_llm_agent import VisualLlmAgent
+from ..shared_libraries.visual_llm_agent import VisualLlmAgent
 
 bug_analyze_agent = VisualLlmAgent(
     name="bug_analyze_agent",

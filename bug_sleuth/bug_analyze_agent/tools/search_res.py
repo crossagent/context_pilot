@@ -6,7 +6,7 @@ from typing import Optional
 from .decorators import validate_path
 from .bash import run_bash_command
 from google.adk.tools.tool_context import ToolContext
-from bug_sleuth.shared_libraries.state_keys import StateKeys
+from ...shared_libraries.state_keys import StateKeys
 import logging
 
 logger = logging.getLogger(__name__)

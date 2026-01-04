@@ -1,9 +1,9 @@
 from google.adk import Agent
 from google.adk.agents.callback_context import CallbackContext
-from bug_sleuth.shared_libraries import constants
+from ..shared_libraries import constants
 from . import prompt
 from . import tools
-from bug_sleuth.shared_libraries.constants import MODEL
+from ..shared_libraries.constants import MODEL
 
 import logging
 

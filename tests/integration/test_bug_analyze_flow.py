@@ -2,7 +2,7 @@ import pytest
 import asyncio
 from typing import List
 from bug_sleuth.test_utils.test_client import TestClient
-from bug_sleuth.bug_analyze_agent.agent import create_bug_analyze_agent
+from bug_sleuth.bug_analyze_agent.agent import bug_analyze_agent
 from bug_sleuth.test_utils.mock_llm_provider import MockLlm
 
 @pytest.mark.anyio
@@ -24,7 +24,7 @@ async def test_analyze_agent_searches_logs():
     agent_module.REPO_REGISTRY = [{"name": "test_repo", "path": "/tmp/test"}]
     
     # 3. Initialize Agent with Mock Model
-    agent = create_bug_analyze_agent()
+    agent = bug_analyze_agent
     agent.model = "mock/integration_test" # This triggers MockLlm
     
     client = TestClient(agent=agent, app_name="test_app")

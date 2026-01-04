@@ -5,8 +5,8 @@ from datetime import datetime
 from google.genai import types
 from google.adk.tools import LongRunningFunctionTool
 from google.adk.tools import ToolContext
-from bug_sleuth.bug_analyze_agent import bug_analyze_agent
-from bug_sleuth.shared_libraries.state_keys import AgentKeys
+from ..bug_analyze_agent import bug_analyze_agent
+from ..shared_libraries.state_keys import AgentKeys
 import os
 import tempfile
 import mimetypes

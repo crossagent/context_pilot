@@ -37,7 +37,7 @@ async def update_investigation_plan_tool(
         )
         
         # Sync to State for Context Injection
-        from bug_sleuth.shared_libraries.state_keys import StateKeys
+        from ...shared_libraries.state_keys import StateKeys
         tool_context.state[StateKeys.CURRENT_INVESTIGATION_PLAN] = content
         
         # Cleanup: Visualization is now handled by prompt instructions (Prompt-Driven).
