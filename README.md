@@ -98,14 +98,39 @@ pip install -e .
 
 ### 2. 启动服务 (Running the Server)
 
-你可以直接使用命令行启动服务，无需编写任何 Python 脚本：
+BugSleuth CLI 设计为 **"零配置" (Zero Config)** 启动。它会自动侦测当前目录下的配置文件和资源。
+
+#### 推荐的子工程结构 (Recommended Structure)
+
+假设你有一个具体的游戏项目（子工程），推荐的目录结构如下：
+
+```text
+my_game_project/
+  ├── .env              # [可选] 环境变量
+  ├── config.yaml       # [可选] Agent 配置 (Repositories, Limits)
+  ├── skills/           # [可选] 自定义 Skills 目录
+  │     └── my_skill/
+  └── ...
+```
+
+#### 启动命令
+
+在子工程根目录下直接运行：
 
 ```bash
-# 基本启动 (默认端口 8000)
+# 自动加载当前目录下的 .env, config.yaml 和 skills/
 bug-sleuth serve
+```
 
-# 指定端口和 Skills 目录
-bug-sleuth serve --port 9000 --skills-dir ./skills --env-file .env.local
+如果你的文件在其他位置，也可以显式指定参数：
+
+```bash
+bug-sleuth serve \
+  --port 9000 \
+  --skills-dir ./custom_skills \
+  --config ./configs/special_config.yaml \
+  --env-file .env.dev \
+  --data-dir ./my_agent_data
 ```
 
 访问 `http://localhost:8000/reporter` 即可使用内置的 Bug Reporter UI。
