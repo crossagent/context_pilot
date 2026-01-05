@@ -5,7 +5,7 @@ from typing import List, Dict, Union, Optional, TypedDict
 import re
 import requests
 from datetime import datetime
-from ...shared_libraries.constants import USER_TIMEZONE
+from bug_sleuth.agents.shared_libraries.constants import USER_TIMEZONE
 
 # --- Log Tools Definitions ---
 
