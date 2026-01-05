@@ -8,9 +8,9 @@ $ProjectRoot = $PSScriptRoot
 $DataDir = Join-Path $ProjectRoot "adk_data"
 
 Write-Host "=============================================="
-Write-Host "🚀 Starting Bug Sleuth Server (CLI Mode)"
-Write-Host "📂 Project Root: $ProjectRoot"
-Write-Host "💾 Data Dir:     $DataDir"
+Write-Host "Starting Bug Sleuth Server (CLI Mode)"
+Write-Host "Project Root: $ProjectRoot"
+Write-Host "Data Dir:     $DataDir"
 Write-Host "=============================================="
 
 # Call the custom CLI
