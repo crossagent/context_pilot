@@ -117,7 +117,7 @@ async def get_git_diff_tool(
     return {"status": "success", "diff": output}
 
 @validate_path
-async def get_blame_tool(
+async def get_git_blame_tool(
     path: str,
     start_line: int,
     end_line: int,

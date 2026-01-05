@@ -66,7 +66,7 @@ from .tools import (
     search_code_tool,
     get_git_log_tool,
     get_git_diff_tool,
-    get_blame_tool,
+    get_git_blame_tool,
     deploy_fix_tool
 )
 from .tools.search_code import check_search_tools
@@ -276,7 +276,7 @@ bug_analyze_agent = VisualLlmAgent(
         search_code_tool,
         get_git_log_tool,
         get_git_diff_tool,
-        get_blame_tool,
+        get_git_blame_tool,
         load_artifacts,
         FunctionTool(
             deploy_fix_tool,

@@ -3,7 +3,7 @@ from .plan import update_investigation_plan_tool
 from .file_reader import read_file_tool, read_code_tool
 from .search_code import search_code_tool
 from .bash import run_bash_command
-from .git import get_git_log_tool, get_git_diff_tool, get_blame_tool
+from .git import get_git_log_tool, get_git_diff_tool, get_git_blame_tool
 from .deployment import deploy_fix_tool
 
 
@@ -16,6 +16,6 @@ __all__ = [
     'run_bash_command',
     'get_git_log_tool',
     'get_git_diff_tool',
-    'get_blame_tool',
+    'get_git_blame_tool',
     'deploy_fix_tool'
 ]
