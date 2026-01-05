@@ -17,4 +17,6 @@ Write-Host "=============================================="
 # - Uses 'uv run' to ensure installed package context
 # - Explicitly passes data-dir
 # - Relies on CLI's auto-discovery for .env, config.yaml, and skills/
-uv run bug-sleuth serve --data-dir "$DataDir"
+# Use cmd /c to wrap execution. This prevents PowerShell terminal from freezing 
+# (losing input echo) after Ctrl+C.
+cmd /c "uv run bug-sleuth serve --data-dir ""$DataDir"""

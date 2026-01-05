@@ -4,10 +4,12 @@ import sys
 import logging
 import click
 import uvicorn
-from pathlib import Path
+import os
+import sys
+import logging
+import click
+import uvicorn
 from dotenv import load_dotenv
-from google.adk.cli.fast_api import get_fast_api_app
-from fastapi.responses import HTMLResponse
 
 # Configure Logging
 logging.basicConfig(level=logging.INFO)
@@ -55,61 +57,19 @@ def serve(port, host, skills_dir, config, env_file, data_dir):
         os.environ["CONFIG_FILE"] = os.path.abspath(config)
         logger.info(f"Set CONFIG_FILE to {os.environ['CONFIG_FILE']}")
         
-    # 3. Path Configuration
-    # APP_ROOT is the directory containing this cli.py (package root 'bug_sleuth')
-    APP_ROOT = os.path.dirname(os.path.abspath(__file__))
-    AGENTS_DIR = os.path.join(APP_ROOT, "agents")
-    
-    # Resolve Data Directory
-    # If valid absolute path, use it. If relative, anchor to CWD (users expect data in their project dir)
-    if not os.path.isabs(data_dir):
-        DATA_DIR = os.path.abspath(data_dir)
-    else:
-        DATA_DIR = data_dir
-        
-    ARTIFACTS_DIR = os.path.join(DATA_DIR, "artifacts")
-    
-    # Ensure directories exist
-    os.makedirs(DATA_DIR, exist_ok=True)
-    os.makedirs(ARTIFACTS_DIR, exist_ok=True)
-    
-    # Services Configuration
-    # Local Artifacts: file:// URI
-    artifact_service_uri = Path(ARTIFACTS_DIR).resolve().as_uri()
-    
-    # Local Sessions: SQLite URI
-    session_db_path = os.path.join(DATA_DIR, "sessions.db")
-    session_service_uri = f"sqlite+aiosqlite:///{session_db_path}"
-    
-    logger.info(f"Server Configuration:")
-    logger.info(f"  App Root:     {APP_ROOT}")
-    logger.info(f"  Agents Dir:   {AGENTS_DIR}")
-    logger.info(f"  Artifacts:    {artifact_service_uri}")
-    logger.info(f"  Sessions:     {session_service_uri}")
-    
+    # 4. Create App via Factory
+    # This separates the 'CLI Runner' from the 'App Logic'.
     try:
-        # 4. Create FastAPI App using ADK Wrapper
-        app = get_fast_api_app(
-            agents_dir=AGENTS_DIR,
-            session_service_uri=session_service_uri,
-            artifact_service_uri=artifact_service_uri,
-            web=True,
-            a2a=False, # Can be enabled via flag if needed
-            host=host,
-            port=port
+        from bug_sleuth.application import create_app
+        
+        # Pass configuration to factory
+        app = create_app(
+            host=host, 
+            port=port, 
+            data_dir=data_dir
         )
         
-        # 5. Register UI Endpoint
-        @app.get("/reporter", response_class=HTMLResponse)
-        async def get_reporter_ui():
-            """Serve the embedded bug reporter UI."""
-            ui_path = os.path.join(APP_ROOT, "ui", "index.html")
-            if os.path.exists(ui_path):
-                with open(ui_path, "r", encoding="utf-8") as f:
-                    return f.read()
-            return "<h1>Bug Sleuth UI Not Found</h1>"
-
-        # 6. Start Server
+        # 5. Start Server
         logger.info(f"Starting Server on {host}:{port}")
         uvicorn.run(app, host=host, port=port)
         
