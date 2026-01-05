@@ -64,11 +64,13 @@ from .tools import (
     read_file_tool,
     read_code_tool,
     search_code_tool,
+    search_symbol_tool,  # Added
     get_git_log_tool,
     get_git_diff_tool,
     get_git_blame_tool,
     deploy_fix_tool
 )
+from .tools.search_symbol import search_symbol_tool
 from .tools.search_code import check_search_tools
 
 from google.adk.tools import load_artifacts
@@ -274,6 +276,7 @@ bug_analyze_agent = VisualLlmAgent(
         read_file_tool,
         read_code_tool,
         search_code_tool,
+        search_symbol_tool,
         get_git_log_tool,
         get_git_diff_tool,
         get_git_blame_tool,

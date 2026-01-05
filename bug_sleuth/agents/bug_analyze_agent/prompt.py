@@ -66,8 +66,20 @@ instruction_prompt = """
     **项目根目录 (Project Root)**: {project_root}
     
     如果需要将用户输入的时间字符串转换为Unix时间戳，可以使用 `time_convert_tool` 工具。
-    **重要与警告**：
-    1. 你当前运行在 **{current_os}** 环境下。使用 `run_bash_command` 时，必须使用该系统支持的命令行工具。
+
+    **工具使用策略 (Tool Strategy)**：
+    *   **什么时候用 `search_symbol_tool`?**
+        *   当你需要查找 **C# 类、方法、枚举的定义** (Definition) 时。
+        *   例如： "在哪里定义了 BattleManager?", "查找 GlobalConfig 类的源码"。
+        *   它基于预构建索引，**速度最快**，但【仅支持 C#】。
+    *   **什么时候用 `search_code_tool` (Grep)?**
+        *   当你需要查找 **引用 (References)、字符串常量、配置表** 或 **非 C# 代码** (Lua, Json, XML) 时。
+        *   例如： "谁调用了 InitPlayer?", "搜索错误码 ERR_1001", "查找某个 UI Prefab 的名字"。
+        *   它可以搜索所有类型的文件，但速度稍慢（全文本扫描）。
+
+    *   **如何读取代码 (Efficient Reading)?**
+        *   **优先方案**：如果 `search_symbol_tool` 返回了行号范围 (e.g., Lines 15-50)，请使用 `read_file_tool(path, start_line=15, end_line=50)` 只读取该片段。
+        *   **完整读取**：如果需要查看完整文件（如 Imports），直接使用不带行号的 `read_file_tool(path)` 即可。
        - 如果是 Windows: 请使用 PowerShell 或 cmd 命令 (e.g. `dir`, `type`). **严禁**使用 `find .`, `grep`, `ls` 等 Linux 命令，除非你确定它们在 `git bash` 环境下可用且不会导致冲突。
        - 如果是 Linux: 可以正常使用 bash 命令。
     2. 每次行动前，务必先检查 `investigation_plan.md` (通过工具)，以确保你的行动与计划一致。
