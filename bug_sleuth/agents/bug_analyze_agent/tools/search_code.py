@@ -31,7 +31,7 @@ async def search_code_tool(
     file_pattern: Optional[str] = None
 ) -> dict:
     """
-    Search for code or content in the entire project using 'git grep'.
+    Search for code or content in the entire project using 'ripgrep'.
     
     Args:
         query: Content string to search for (e.g. "InitPlayer", "ERR_1001").
