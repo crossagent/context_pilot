@@ -1,0 +1,16 @@
+# Configuration for Bug Sleuth
+
+# Autonomous Budget
+# Limits the cost of a single autonomous run to avoid excessive spending.
+max_autonomous_budget_usd: 0.50
+
+# Token Pricing (per 1Million tokens)
+price_per_million_input_tokens: 0.50
+price_per_million_cached_tokens: 0.10
+price_per_million_output_tokens: 1.50
+
+# Repositories (Example)
+# repositories:
+#   - name: "MyRepo"
+#     path: "/path/to/repo"
+#     vcs: "git"

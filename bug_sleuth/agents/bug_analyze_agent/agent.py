@@ -137,48 +137,69 @@ async def initialize_and_validate(callback_context: CallbackContext) -> Optional
         else:
              callback_context.state[StateKeys.CURRENT_INVESTIGATION_PLAN] = "当前尚无调查计划 (No plan created yet). Use update_investigation_plan_tool to create one."
     
-    # 5. Initialize Token Counters (if not present)
+    # 5. Initialize Token & Cost Counters
     if StateKeys.TOTAL_SESSION_TOKENS not in callback_context.state:
         callback_context.state[StateKeys.TOTAL_SESSION_TOKENS] = 0
-    if StateKeys.CURRENT_AUTONOMOUS_TOKENS not in callback_context.state:
-        callback_context.state[StateKeys.CURRENT_AUTONOMOUS_TOKENS] = 0
+    if StateKeys.TOTAL_INPUT_TOKENS not in callback_context.state:
+        callback_context.state[StateKeys.TOTAL_INPUT_TOKENS] = 0
+    if StateKeys.TOTAL_CACHED_TOKENS not in callback_context.state:
+        callback_context.state[StateKeys.TOTAL_CACHED_TOKENS] = 0
+    if StateKeys.TOTAL_OUTPUT_TOKENS not in callback_context.state:
+        callback_context.state[StateKeys.TOTAL_OUTPUT_TOKENS] = 0
+    
+    if StateKeys.TOTAL_ESTIMATED_COST not in callback_context.state:
+        callback_context.state[StateKeys.TOTAL_ESTIMATED_COST] = 0.0
+    if StateKeys.CURRENT_AUTONOMOUS_COST not in callback_context.state:
+        callback_context.state[StateKeys.CURRENT_AUTONOMOUS_COST] = 0.0
 
     return None
 
 class TokenLimitHandler:
     @staticmethod
     def before_model_callback(callback_context: CallbackContext, llm_request: LlmRequest) -> Optional[LlmResponse]:
-        """Checks if token budget is exceeded for the current autonomous loop."""
+        """Checks if COST budget is exceeded (Cost Logic restored, but Silent Output)."""
         
-        current_tokens = callback_context.state.get(StateKeys.CURRENT_AUTONOMOUS_TOKENS, 0)
+        current_autonomous_cost = callback_context.state.get(StateKeys.CURRENT_AUTONOMOUS_COST, 0.0)
         
-        # Soft Limit Configuration
-        max_tokens = CONFIG.get("max_autonomous_tokens")
-        if not max_tokens:
-             max_tokens = int(os.environ.get("MAX_AUTONOMOUS_TOKENS", 8000))
+        # Budget Configuration
+        # Direct access to global CONFIG (loaded from config.yaml)
+        max_budget = CONFIG.get("max_autonomous_budget_usd", 0.5)
 
-        if current_tokens > max_tokens:
-            logger.warning(f"Token budget ({max_tokens}) reached. Forcing yield to user.")
-            
-            # Reset Loop Counters for the NEXT run (Auto-Recharge)
-            callback_context.state[StateKeys.CURRENT_AUTONOMOUS_TOKENS] = 0
-            
-            current_plan = callback_context.state.get(StateKeys.CURRENT_INVESTIGATION_PLAN, "暂无计划内容")
-            total_tokens = callback_context.state.get(StateKeys.TOTAL_SESSION_TOKENS, 0)
+        # Log internal status (Debug only)
+        # logger.info(f"Budget Check: ${current_autonomous_cost:.4f} / ${max_budget:.4f}")
 
+        if current_autonomous_cost >= max_budget:
+            # Increment Pause Count
+            pause_count = callback_context.state.get(StateKeys.PAUSE_COUNT, 0) + 1
+            callback_context.state[StateKeys.PAUSE_COUNT] = pause_count
+            
+            logger.warning(f"Cost budget reached (${current_autonomous_cost:.4f}). Pausing (Count: {pause_count}).")
+            
+            # Reset for next turn
+            callback_context.state[StateKeys.CURRENT_AUTONOMOUS_COST] = 0.0
+            
+            # Get token stats
+            total_input = callback_context.state.get(StateKeys.TOTAL_INPUT_TOKENS, 0)
+            total_cached = callback_context.state.get(StateKeys.TOTAL_CACHED_TOKENS, 0)
+            total_output = callback_context.state.get(StateKeys.TOTAL_OUTPUT_TOKENS, 0)
+            
+            # Friendly Message with Pause Count
             return LlmResponse(
                 content=types.Content(
                     role="model",
                     parts=[types.Part.from_text(
-                        text=f"🛑 **自主探索暂停 ({current_tokens} Tokens)**\n\n"
-                        f"当前的自主探索已消耗约 **{current_tokens}** Tokens (本次会话总消耗: {total_tokens})。\n"
-                        f"为了确保调查方向符合您的预期，我先暂停一下。\n\n"
-                        f"--- **当前调查计划 (Current Plan)** ---\n\n"
-                        f"{current_plan}\n\n"
+                        text=f"🛑 **自主探索暂停 (Autonomous Paused)** - 第 {pause_count} 次 (Sequence #{pause_count})\n\n"
+                        f"已达到本次自动运行的资源上限 (Resource Limit Reached)。\n"
+                        f"**本次会话统计 (Session Stats):**\n"
+                        f"- 输入 (Input): {total_input} Tokens\n"
+                        f"- 缓存 (Cached): {total_cached} Tokens\n"
+                        f"- 输出 (Output): {total_output} Tokens\n\n"
+                        f"--- **当前调查计划 (Current Plan)** ---\n"
+                        f"{callback_context.state.get(StateKeys.CURRENT_INVESTIGATION_PLAN, '暂无计划内容')}\n"
                         f"---------------------------------------\n"
-                        f"请检视上述计划。\n"
-                        f"- 如果方向正确，请指示我 **继续** (预算已自动重置)。\n"
-                        f"- 如果发现偏离，请 **指出问题**，我会立即调整。"
+                        f"请确认下一步行动 (Please confirm next step)：\n"
+                        f"- **继续 (Continue)**: 重置计数器并继续任务。\n"
+                        f"- **调整 (Adjust)**: 修改计划或停止。"
                     )]
                 )
             )
@@ -186,18 +207,36 @@ class TokenLimitHandler:
 
     @staticmethod
     async def after_model_callback(callback_context: CallbackContext, llm_response: LlmResponse) -> Optional[LlmResponse]:
-        """Tracks token usage from the model response."""
+        """Tracks token usage, calculates cost, and updates autonomous loop count."""
+        # 3. Update Token Counts
         if llm_response.usage_metadata:
-             new_tokens = llm_response.usage_metadata.total_token_count
-             
-             # Accumulate
-             callback_context.state[StateKeys.TOTAL_SESSION_TOKENS] = \
-                 callback_context.state.get(StateKeys.TOTAL_SESSION_TOKENS, 0) + new_tokens
-             
-             callback_context.state[StateKeys.CURRENT_AUTONOMOUS_TOKENS] = \
-                 callback_context.state.get(StateKeys.CURRENT_AUTONOMOUS_TOKENS, 0) + new_tokens
-             
-             logger.debug(f"Token Usage Updated: +{new_tokens} -> Limit: {callback_context.state[StateKeys.CURRENT_AUTONOMOUS_TOKENS]}")
+            u = llm_response.usage_metadata
+            input_tokens = u.prompt_token_count or 0
+            cached_tokens = u.cached_content_token_count or 0
+            output_tokens = u.candidates_token_count or 0
+            
+            # Update Totals
+            callback_context.state[StateKeys.TOTAL_INPUT_TOKENS] = callback_context.state.get(StateKeys.TOTAL_INPUT_TOKENS, 0) + input_tokens
+            callback_context.state[StateKeys.TOTAL_CACHED_TOKENS] = callback_context.state.get(StateKeys.TOTAL_CACHED_TOKENS, 0) + cached_tokens
+            callback_context.state[StateKeys.TOTAL_OUTPUT_TOKENS] = callback_context.state.get(StateKeys.TOTAL_OUTPUT_TOKENS, 0) + output_tokens
+
+            # Update Cost (Internal Tracking Only)
+            # Direct access to global CONFIG
+            price_in = CONFIG.get("price_per_million_input_tokens", 0.50)
+            price_cached = CONFIG.get("price_per_million_cached_tokens", 0.10)
+            price_out = CONFIG.get("price_per_million_output_tokens", 1.50)
+
+            step_cost = (
+                (input_tokens / 1_000_000 * price_in) +
+                (cached_tokens / 1_000_000 * price_cached) +
+                (output_tokens / 1_000_000 * price_out)
+            )
+            
+            callback_context.state[StateKeys.TOTAL_ESTIMATED_COST] = callback_context.state.get(StateKeys.TOTAL_ESTIMATED_COST, 0.0) + step_cost
+            callback_context.state[StateKeys.CURRENT_AUTONOMOUS_COST] = callback_context.state.get(StateKeys.CURRENT_AUTONOMOUS_COST, 0.0) + step_cost
+            
+            # Log usage (no cost in INFO log if prefered, but keeping it for debug is usually fine. User request was about Prompt Output)
+            logger.info(f"Step Stats: {input_tokens} In, {cached_tokens} Cache, {output_tokens} Out.")
         
         return None
 

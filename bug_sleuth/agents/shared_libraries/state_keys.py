@@ -3,7 +3,7 @@ class StateKeys:
     DEVICE_INFO = "deviceInfo"
     DEVICE_NAME = "deviceName"
 
-    BUG_INFO_COMPLETED = "bug_info_completed"
+
     BUG_DESCRIPTION = "bug_description"
     BUG_USER_DESCRIPTION = "bug_user_description"
     PRODUCT_BRANCH = "productBranch"
@@ -28,16 +28,20 @@ class StateKeys:
     USER_INTENT = "user_intent"
 
     BUG_DESCRIPTION = "bug_description"
-    BUG_REPRODUCTION_STEPS = "bug_reproduction_steps"
-    BUG_REPRODUCTION_CONFIDENCE = "bug_reproduction_confidence"
-    BUG_REPRODUCTION_GUESS_CAUSE = "bug_reproduction_guess_cause"
+
 
     CURRENT_INVESTIGATION_PLAN = "current_investigation_plan"
     STEP_COUNT = "step_count"
     
     # [NEW] Token Tracking Keys
+    CURRENT_AUTONOMOUS_COST = "current_autonomous_cost"        # Float (USD)
+
+    PAUSE_COUNT = "pause_count" # Integer
     TOTAL_SESSION_TOKENS = "total_session_tokens"
-    CURRENT_AUTONOMOUS_TOKENS = "current_autonomous_tokens"
+    TOTAL_INPUT_TOKENS = "total_input_tokens"
+    TOTAL_CACHED_TOKENS = "total_cached_tokens"
+    TOTAL_OUTPUT_TOKENS = "total_output_tokens"
+    TOTAL_ESTIMATED_COST = "total_estimated_cost"  # Float (USD)
 
 
 class AgentKeys:
