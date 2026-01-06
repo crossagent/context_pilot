@@ -10,14 +10,14 @@ price_per_million_output_tokens: 3.00
 # Repository Configuration
 repositories:
   - name: "Game Main Repository"
-    path: "${PROJECT_ROOT}/Client"
+    path: "/absolute/path/to/Client"
     vcs: "git"
     description: "Main Unity Project. Includes Client, Server, and Common logic."
   - name: "Server Framework"
-    path: "${PROJECT_ROOT}/ServerFramework"
+    path: "/absolute/path/to/ServerFramework"
     vcs: "git"
     description: "C# Server Framework. Contains core infrastructure: Network, Entity System, and Service framework."
   - name: "Art Resources"
-    path: "${PROJECT_ROOT}/ArtRes"
+    path: "/absolute/path/to/ArtRes"
     vcs: "svn"
     description: "Game Art Assets. Key directories: Anim, Audio, Char, Env, FX, UI."

@@ -6,6 +6,8 @@ from .bash import run_bash_command
 from .git import get_git_log_tool, get_git_diff_tool, get_git_blame_tool
 from .deployment import deploy_fix_tool
 from .search_symbol import search_symbol_tool
+from .search_res import search_res_tool
+from .svn import get_svn_log_tool, get_svn_diff_tool
 
 
 __all__ = [
@@ -19,5 +21,8 @@ __all__ = [
     'get_git_diff_tool',
     'get_git_blame_tool',
     'deploy_fix_tool',
-    'search_symbol_tool'
+    'search_symbol_tool',
+    'search_res_tool',
+    'get_svn_log_tool',
+    'get_svn_diff_tool'
 ]
