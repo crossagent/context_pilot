@@ -130,7 +130,8 @@ bug-sleuth serve \
   --skills-dir ./custom_skills \
   --config ./configs/special_config.yaml \
   --env-file .env.dev \
-  --data-dir ./my_agent_data
+  --data-dir ./my_agent_data \
+  --app-dir ./custom_agents_dir
 ```
 
 访问 `http://localhost:8000/reporter` 即可使用内置的 Bug Reporter UI。
