@@ -33,7 +33,7 @@ def create_app(
     # 1. Path Configuration
     # APP_ROOT is the directory containing this file (package root 'bug_sleuth')
     APP_ROOT = os.path.dirname(os.path.abspath(__file__))
-    AGENTS_DIR = os.path.join(APP_ROOT, "agents")
+    AGENTS_DIR = APP_ROOT  # ADK scans subdirs (e.g., bug_scene_app)
     
     # Resolve Data Directory
     if not data_dir:
