@@ -58,20 +58,18 @@ def serve(port, host, skills_dir, config, env_file, data_dir, app_dir):
         os.environ["CONFIG_FILE"] = os.path.abspath(config)
         logger.info(f"Set CONFIG_FILE to {os.environ['CONFIG_FILE']}")
         
-    # 4. Create App via Factory
-    # This separates the 'CLI Runner' from the 'App Logic'.
+    # 4. Configure Environment for Server
+    if data_dir:
+        os.environ["ADK_DATA_DIR"] = data_dir
+        
+    if app_dir:
+        os.environ["ADK_APP_DIR"] = app_dir
+        
+    # 5. Import Global App
     try:
-        from bug_sleuth.application import create_app
+        from bug_sleuth.server import app
         
-        # Pass configuration to factory
-        app = create_app(
-            host=host, 
-            port=port, 
-            data_dir=data_dir,
-            app_dir=app_dir
-        )
-        
-        # 5. Start Server
+        # 6. Start Server
         logger.info(f"Starting Server on {host}:{port}")
         uvicorn.run(app, host=host, port=port)
         

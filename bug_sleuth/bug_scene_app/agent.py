@@ -3,8 +3,6 @@ import logging
 from typing import Optional
 from google.adk.agents.llm_agent import LlmAgent
 # Note: Use LlmAgent for instantiation, but 'from google.adk import Agent' for sub-agents is fine if they prefer it.
-from google.adk.apps.app import App, EventsCompactionConfig
-from google.adk.agents.context_cache_config import ContextCacheConfig
 from google.adk.agents.callback_context import CallbackContext
 from google.genai import types
 
@@ -59,7 +57,7 @@ async def before_agent_callback(callback_context: CallbackContext) -> Optional[t
     return None
 
 # --- 4. Instantiate Root Agent (Global) ---
-agent = LlmAgent(
+bug_scene_agent = LlmAgent(
     name="bug_scene_agent",
     model=constants.MODEL,
     instruction=ROOT_AGENT_PROMPT,
@@ -71,17 +69,3 @@ agent = LlmAgent(
     before_agent_callback=before_agent_callback
 )
 
-# --- 5. Instantiate App (Global) ---
-app = App(
-    name="bug_scene_app",
-    root_agent=agent,
-    context_cache_config=ContextCacheConfig(
-        min_tokens=2048,
-        ttl_seconds=600,
-        cache_intervals=1,
-    ),
-    events_compaction_config=EventsCompactionConfig(
-        compaction_interval=3,
-        overlap_size=1
-    )
-)

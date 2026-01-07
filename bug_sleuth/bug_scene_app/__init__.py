@@ -1,3 +1,3 @@
-from .agent import agent, app
+from .app import app
 
-__all__ = ["agent", "app"]
+__all__ = ["app"]
