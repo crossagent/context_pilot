@@ -35,7 +35,7 @@ logger = logging.getLogger("bug_sleuth.server")
 # 1. Path Configuration
 PACKAGE_ROOT = os.path.dirname(os.path.abspath(__file__))
 
-AGENTS_DIR = PACKAGE_ROOT
+
 
 data_dir_env = os.getenv("ADK_DATA_DIR")
 if not data_dir_env:
@@ -58,7 +58,7 @@ session_service_uri = f"sqlite+aiosqlite:///{session_db_path}"
 
 logger.info(f"Server Configuration:")
 logger.info(f"  Package Root: {PACKAGE_ROOT}")
-logger.info(f"  Agents Dir:   {AGENTS_DIR}")
+
 logger.info(f"  Artifacts:    {artifact_service_uri}")
 logger.info(f"  Sessions:     {session_service_uri}")
 
@@ -84,16 +84,16 @@ else:
 try:
     # 2. Manual Bootstrapping of ADK Services
     # This logic replicates google.adk.cli.fast_api.get_fast_api_app
-
+    
     # Initialize Eval Managers
-    eval_sets_manager = LocalEvalSetsManager(agents_dir=AGENTS_DIR)
-    eval_set_results_manager = LocalEvalSetResultsManager(agents_dir=AGENTS_DIR)
+    eval_sets_manager = LocalEvalSetsManager(agents_dir=PACKAGE_ROOT)
+    eval_set_results_manager = LocalEvalSetResultsManager(agents_dir=PACKAGE_ROOT)
 
     # Initialize Agent Loader
-    agent_loader = AgentLoader(AGENTS_DIR)
+    agent_loader = AgentLoader(PACKAGE_ROOT)
 
-    # Load Custom Services
-    load_services_module(AGENTS_DIR)
+    # Load Custom Services (services.py is at PACKAGE_ROOT level)
+    load_services_module(PACKAGE_ROOT)
     service_registry = get_service_registry()
 
     # Build Memory Service
@@ -102,7 +102,7 @@ try:
     # Build Session Service
     if session_service_uri:
         session_service = service_registry.create_session_service(
-             session_service_uri, agents_dir=AGENTS_DIR
+             session_service_uri, agents_dir=PACKAGE_ROOT
         )
         if not session_service:
             session_service = DatabaseSessionService(db_url=session_service_uri)
@@ -112,7 +112,7 @@ try:
     # Build Artifact Service
     if artifact_service_uri:
         artifact_service = service_registry.create_artifact_service(
-            artifact_service_uri, agents_dir=AGENTS_DIR
+            artifact_service_uri, agents_dir=PACKAGE_ROOT
         )
         if not artifact_service:
              # Fallback manual creation if registry fails (though registry should handle file://)
@@ -133,7 +133,7 @@ try:
         credential_service=credential_service,
         eval_sets_manager=eval_sets_manager,
         eval_set_results_manager=eval_set_results_manager,
-        agents_dir=AGENTS_DIR,
+        agents_dir=PACKAGE_ROOT,
     )
 
     # Create FastAPI App
