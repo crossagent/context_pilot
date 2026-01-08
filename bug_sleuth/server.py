@@ -210,12 +210,50 @@ try:
 
         # 4. Create Second Event: Visible User Message
         # This event is what the Agent and User "see" in the chat transcript.
+        # Format all context fields for display
+        context_lines = ["**Bug Report 初始化完毕**", ""]
+        
+        # Define display order and labels for better readability
+        display_fields = [
+            (StateKeys.BUG_DESCRIPTION, "问题描述"),
+            (StateKeys.DEVICE_INFO, "设备信息"),
+            (StateKeys.DEVICE_NAME, "设备名称"),
+            (StateKeys.PRODUCT_BRANCH, "产品分支"),
+            (StateKeys.CLIENT_VERSION, "客户端版本"),
+            (StateKeys.SERVER_ID, "服务器ID"),
+            (StateKeys.ROLE_ID, "角色ID"),
+            (StateKeys.NICK_NAME, "昵称"),
+            (StateKeys.BUG_OCCURRENCE_TIME, "发生时间"),
+            (StateKeys.CLIENT_LOG_URL, "客户端日志"),
+            (StateKeys.CLIENT_LOG_URLS, "客户端日志列表"),
+            (StateKeys.CLIENT_SCREENSHOT_URLS, "截图列表"),
+        ]
+        
+        for key, label in display_fields:
+            value = normalized_context.get(key)
+            if value:
+                if isinstance(value, list):
+                    context_lines.append(f"- **{label}**: {', '.join(str(v) for v in value)}")
+                else:
+                    context_lines.append(f"- **{label}**: {value}")
+        
+        # Include any extra fields not in the predefined list
+        known_keys = {k for k, _ in display_fields}
+        for key, value in normalized_context.items():
+            if key not in known_keys and value:
+                if isinstance(value, list):
+                    context_lines.append(f"- **{key}**: {', '.join(str(v) for v in value)}")
+                else:
+                    context_lines.append(f"- **{key}**: {value}")
+        
+        visible_message = "\n".join(context_lines)
+        
         message_event = Event(
             id=str(uuid.uuid4()),
             author="system",
             content=types.Content(
                 role="user",
-                parts=[types.Part(text=f"Bug Report: {bug_description}")]
+                parts=[types.Part(text=visible_message)]
             ),
             timestamp=time.time(),
             turn_complete=True 
