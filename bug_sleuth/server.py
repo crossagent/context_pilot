@@ -246,6 +246,19 @@ try:
                 else:
                     context_lines.append(f"- **{key}**: {value}")
         
+        # Add user guidance
+        context_lines.extend([
+            "",
+            "---",
+            "",
+            "**接下来您希望如何处理？**",
+            "",
+            "1. **深入分析复现步骤** - 如果这个 Bug 原因不明、偶现、或涉及复杂逻辑，我可以帮您分析日志、代码，找出根因并明确复现步骤",
+            "2. **直接上报记录** - 如果问题已经很清楚（如 UI 错位、文案错误等），或者您已经知道复现步骤，我可以直接帮您整理并提交 Bug 报告",
+            "",
+            "请告诉我您的选择，或提供更多信息。"
+        ])
+        
         visible_message = "\n".join(context_lines)
         
         message_event = Event(
