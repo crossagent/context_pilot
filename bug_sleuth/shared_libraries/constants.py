@@ -20,7 +20,7 @@ def get_model() -> Union[str, Any]:
     
     Set via environment variable: GOOGLE_GENAI_MODEL
     """
-    model_str = os.getenv("GOOGLE_GENAI_MODEL", "gemini-2.0-flash")
+    model_str = os.getenv("GOOGLE_GENAI_MODEL", "gemini-3-flash-preview")
     
     # Mock mode for testing
     if model_str.startswith("mock/"):
