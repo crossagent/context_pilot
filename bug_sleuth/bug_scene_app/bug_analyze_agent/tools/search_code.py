@@ -36,16 +36,12 @@ async def search_code_tool(
     **适用场景 (When to Use)**:
     - 查找**引用** (References): 谁调用了某个函数？哪里使用了某个常量？
     - 查找**字符串常量**: 错误码 (e.g., "ERR_1001")、日志关键词
-    - 搜索**非 C# 代码**: Lua, Json, XML, 配置表等
-    - 搜索**任意文本**: 当 search_symbol_tool 无法满足时
+    - 搜索**配置和脚本**: Lua, Json, XML, 配置表等
+    - 查找**类或方法定义**: 在代码中搜索 "class BattleManager" 等
     
     **限制 (Limitations)**:
-    - 全文本扫描，速度比 search_symbol_tool 慢
+    - 全文本扫描，大仓库可能较慢
     - 结果可能包含注释、字符串等非定义位置
-    
-    **与 search_symbol_tool 的区别**:
-    - search_symbol_tool: 查**定义** (Definition)，仅 C#，速度最快
-    - search_code_tool: 查**引用**和**任意文本**，支持所有文件类型
     
     Args:
         query: 要搜索的内容字符串 (e.g., "InitPlayer", "ERR_1001")

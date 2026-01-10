@@ -15,7 +15,7 @@ async def read_file_tool(
     读取文件内容或列出目录。
     
     **最佳实践 (Best Practice)**:
-    - 如果 search_symbol_tool 返回了行号范围 (e.g., Lines 15-50)，
+    - 如果搜索结果返回了行号范围 (e.g., Lines 15-50)，
       请使用 `read_file_tool(path, start_line=15, end_line=50)` 只读取该片段
     - 这样可以 **节省 Token**，保留更多上下文窗口用于分析
     - 仅在需要查看 Imports 或完整文件结构时才完整读取

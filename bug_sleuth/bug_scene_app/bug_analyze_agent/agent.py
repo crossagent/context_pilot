@@ -64,17 +64,15 @@ from .tools import (
     read_file_tool,
     read_code_tool,
     search_code_tool,
-    search_res_tool, # Added
-    search_symbol_tool,  # Added
+    search_res_tool,
     get_git_log_tool,
     get_git_diff_tool,
     get_git_blame_tool,
-    get_svn_log_tool, # Added
-    get_svn_diff_tool, # Added
+    get_svn_log_tool,
+    get_svn_diff_tool,
     deploy_fix_tool
 )
 
-from .tools.search_symbol import search_symbol_tool
 from .tools.search_code import check_search_tools
 from .tools.search_res import search_res_tool
 from .tools.svn import get_svn_log_tool, get_svn_diff_tool
@@ -321,7 +319,6 @@ bug_analyze_agent = VisualLlmAgent(
         read_code_tool,
         search_code_tool,
         search_res_tool,
-        search_symbol_tool,
         get_git_log_tool,
         get_git_diff_tool,
         get_git_blame_tool,
