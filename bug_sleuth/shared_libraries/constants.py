@@ -25,12 +25,12 @@ def get_model() -> Union[str, Any]:
     # Mock mode for testing
     if model_str.startswith("mock/"):
         try:
-            from bug_sleuth.test.mock_llm_provider import MockLlm
+            from bug_sleuth.testing import MockLlm
             return MockLlm(model=model_str)
         except ImportError:
             raise ImportError(
-                f"MockLlm requested ({model_str}) but test module not available. "
-                "Ensure bug_sleuth.test package is installed."
+                f"MockLlm requested ({model_str}) but bug_sleuth.testing usage failed. "
+                "Ensure bug_sleuth package is installed correctly."
             )
     
     # LiteLLM mode for OpenAI/Anthropic/other providers

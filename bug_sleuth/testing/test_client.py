@@ -13,6 +13,7 @@ class TestClient:
     A test-specific client that captures all agent events.
     adapted from AdkSimulationClient.
     """
+    __test__ = False
 
     def __init__(self, agent: LlmAgent, app_name: str = "test_app"):
         if not agent:
