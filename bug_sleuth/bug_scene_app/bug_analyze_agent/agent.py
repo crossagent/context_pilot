@@ -62,15 +62,13 @@ from .tools import (
     update_investigation_plan_tool,
     run_bash_command,
     read_file_tool,
-    read_code_tool,
     search_code_tool,
     search_res_tool,
     get_git_log_tool,
     get_git_diff_tool,
     get_git_blame_tool,
     get_svn_log_tool,
-    get_svn_diff_tool,
-    deploy_fix_tool
+    get_svn_diff_tool
 )
 
 from .tools.search_code import check_search_tools
@@ -316,7 +314,6 @@ bug_analyze_agent = VisualLlmAgent(
         update_investigation_plan_tool, 
         run_bash_command,
         read_file_tool,
-        read_code_tool,
         search_code_tool,
         search_res_tool,
         get_git_log_tool,
@@ -325,11 +322,7 @@ bug_analyze_agent = VisualLlmAgent(
         get_svn_log_tool,
         get_svn_diff_tool,
         load_artifacts,
-        analyze_skill_registry,
-        FunctionTool(
-            deploy_fix_tool,
-            require_confirmation=True
-        )
+        analyze_skill_registry
     ],
     output_key=AgentKeys.BUG_REASON,
 )
