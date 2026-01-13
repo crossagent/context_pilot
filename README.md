@@ -134,6 +134,20 @@ bug-sleuth serve \
   --agent-dir ./custom_agents_dir
 ```
 
+#### 启动模式 (Modes)
+
+BugSleuth 支持两种启动模式，通过 `--mode` 参数控制：
+
+1.  **AG-UI 中间件模式 (默认)** (`--mode ag-ui`)：
+    *   启动 `main.py`，加载 `ag-ui-adk` 中间件。
+    *   支持前端交互 (CopilotKit) 和流式响应。
+    *   命令：`bug-sleuth serve` 或 `bug-sleuth serve --mode ag-ui`
+
+2.  **ADK 原生 API 模式** (`--mode adk`)：
+    *   启动 `server.py`，加载原生 ADK 服务。
+    *   仅提供标准 REST API，适用于纯后端集成。
+    *   命令：`bug-sleuth serve --mode adk`
+
 访问 `http://localhost:8000/reporter` 即可使用内置的 Bug Reporter UI。
 
 ## Skill Component Guide

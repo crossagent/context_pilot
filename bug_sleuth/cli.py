@@ -23,8 +23,9 @@ def main():
 @click.option("--env-file", default=".env", help="Path to .env file.")
 @click.option("--data-dir", default="adk_data", help="Directory for local data storage.")
 @click.option("--agent-dir", default=None, help="Agent startup directory (containing agent definition).")
+@click.option("--mode", type=click.Choice(["ag-ui", "adk"], case_sensitive=False), default="ag-ui", help="Server mode: ag-ui (frontend middleware) or adk (legacy/api).")
 @click.option("--ui-path", envvar="BUG_SLEUTH_UI_PATH", help="Path to the reporter UI HTML file.")
-def serve(port, host, skills_dir, config, env_file, data_dir, agent_dir, ui_path):
+def serve(port, host, skills_dir, config, env_file, data_dir, agent_dir, mode, ui_path):
     """
     Start the Bug Sleuth Agent Server.
     """
@@ -66,9 +67,14 @@ def serve(port, host, skills_dir, config, env_file, data_dir, agent_dir, ui_path
         os.environ["BUG_SLEUTH_UI_PATH"] = os.path.abspath(ui_path)
         logger.info(f"Set BUG_SLEUTH_UI_PATH to {os.environ['BUG_SLEUTH_UI_PATH']}")
         
-    # 5. Import Global App
+    # 5. Import Global App based on Mode
     try:
-        from bug_sleuth.server import app
+        if mode == "ag-ui":
+            logger.info("Starting in AG-UI Middleware Mode (Frontend enabled)")
+            from bug_sleuth.main import app
+        else:
+            logger.info("Starting in ADK Web Server Mode (API server)")
+            from bug_sleuth.server import app
         
         # 6. Start Server
         logger.info(f"Starting Server on {host}:{port}")
