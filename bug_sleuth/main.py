@@ -10,7 +10,12 @@ from dotenv import load_dotenv
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("bug_sleuth.main")
 
-@click.command()
+@click.group()
+def main():
+    """Bug Sleuth CLI Tool"""
+    pass
+
+@main.command()
 @click.option("--port", default=8000, help="Port to run the server on.")
 @click.option("--host", default="127.0.0.1", help="Host to run the server on.")
 @click.option("--skills-dir", envvar="SKILL_PATH", help="Path to the skills directory.")
@@ -20,7 +25,7 @@ logger = logging.getLogger("bug_sleuth.main")
 @click.option("--agent-dir", default=None, help="Agent startup directory (containing agent definition).")
 @click.option("--mode", type=click.Choice(["ag-ui", "adk-web"], case_sensitive=False), default="ag-ui", help="Server mode: ag-ui (frontend middleware) or adk-web (legacy/api).")
 @click.option("--ui-path", envvar="BUG_SLEUTH_UI_PATH", help="Path to the reporter UI HTML file.")
-def main(port, host, skills_dir, config, env_file, data_dir, agent_dir, mode, ui_path):
+def serve(port, host, skills_dir, config, env_file, data_dir, agent_dir, mode, ui_path):
     """
     Start the Bug Sleuth Agent Server.
     
@@ -133,6 +138,7 @@ def main(port, host, skills_dir, config, env_file, data_dir, agent_dir, mode, ui
         
         # 5. Start Server
         logger.info(f"Starting Server on {host}:{port}")
+        # Note: When using click, sys.exit might be handled differently, but run() blocks.
         uvicorn.run(app, host=host, port=port)
         
     except Exception as e:

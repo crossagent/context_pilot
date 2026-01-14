@@ -139,16 +139,16 @@ bug-sleuth serve \
 BugSleuth 支持两种启动模式，通过 `--mode` 参数控制：
 
 1.  **AG-UI 中间件模式 (默认)** (`--mode ag-ui`)：
-    *   启动 `main.py`，加载 `ag-ui-adk` 中间件。
+    *   通过 `main.py` 启动，加载 `ag-ui-adk` 中间件。
     *   支持前端交互 (CopilotKit) 和流式响应。
     *   命令：`bug-sleuth serve` 或 `bug-sleuth serve --mode ag-ui`
 
-2.  **ADK 原生 API 模式** (`--mode adk`)：
-    *   启动 `server.py`，加载原生 ADK 服务。
+2.  **ADK Web Server 模式** (`--mode adk-web`)：
+    *   使用标准 ADK Web Server 启动。
     *   仅提供标准 REST API，适用于纯后端集成。
-    *   命令：`bug-sleuth serve --mode adk`
+    *   命令：`bug-sleuth serve --mode adk-web`
 
-访问 `http://localhost:8000/reporter` 即可使用内置的 Bug Reporter UI。
+访问 `http://localhost:8000` 即可查看文档。
 
 ## Skill Component Guide
 
@@ -233,33 +233,7 @@ GOOGLE_GENAI_MODEL=openai/gpt-4o bug-sleuth serve
 
 ---
 
-## App Factory (应用工厂)
 
-`app_factory.py` 提供了统一的应用初始化入口，用于服务器和测试：
-
-```python
-from bug_sleuth.app_factory import create_app, AppConfig
-
-# 创建应用 (使用 root agent)
-app = create_app(AppConfig(
-    agent_name="bug_scene_agent",  # 或 "bug_analyze_agent"
-    skill_path="skills",
-    config_file="config.yaml"
-))
-
-# 获取 agent
-agent = app.agent
-```
-
-### 支持的 Agent
-
-| agent_name | 说明 |
-|------------|------|
-| `bug_scene_agent` | Root Agent (包含子 agent) |
-| `bug_analyze_agent` | 分析 Agent |
-| `bug_report_agent` | 报告 Agent |
-
----
 
 ## 测试 (Testing)
 
@@ -296,10 +270,12 @@ os.environ["GOOGLE_GENAI_MODEL"] = "mock/pytest"
 
 ### 编写测试
 
+### 编写测试
+
 ```python
-from bug_sleuth.app_factory import create_app, AppConfig
-from bug_sleuth.testing import AgentTestClient
-from bug_sleuth.testing import MockLlm
+# Direct import of agent instance (No app_factory)
+from bug_sleuth.testing import AgentTestClient, MockLlm
+from bug_sleuth.bug_scene_app.bug_analyze_agent.agent import bug_analyze_agent
 
 @pytest.mark.anyio
 async def test_agent_calls_tool(mock_external_deps):
@@ -311,17 +287,14 @@ async def test_agent_calls_tool(mock_external_deps):
         }
     })
     
-    # 2. 创建应用
-    app = create_app(AppConfig(agent_name="bug_analyze_agent"))
-    
-    # 3. 创建测试客户端
-    client = AgentTestClient(agent=app.agent, app_name="test_app")
+    # 2. 创建测试客户端 (直接使用 agent 实例)
+    client = AgentTestClient(agent=bug_analyze_agent, app_name="test_app")
     await client.create_new_session("user_1", "sess_1")
     
-    # 4. 执行对话
+    # 3. 执行对话
     responses = await client.chat("Please check logs")
     
-    # 5. 验证
+    # 4. 验证
     assert "[MockLlm]" in responses[-1]
 ```
 
