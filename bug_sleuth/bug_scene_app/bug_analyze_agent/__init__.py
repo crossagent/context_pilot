@@ -1,1 +1,1 @@
-from .agent import bug_analyze_agent as root_agent
+from .agent import bug_analyze_agent
