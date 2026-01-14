@@ -6,22 +6,19 @@ Model selection is handled via GOOGLE_GENAI_MODEL environment variable
 (set in conftest.py to "mock/pytest" for all tests).
 """
 import pytest
-from unittest.mock import patch
-
-from bug_sleuth.app_factory import create_app, AppConfig
 from bug_sleuth.testing import AgentTestClient, MockLlm
+from bug_sleuth.bug_scene_app.bug_analyze_agent.agent import bug_analyze_agent
 
 
 @pytest.fixture
-def mock_external_deps():
+async def mock_external_deps():
     """
-    Only mock external tool availability checks, not config.
-    REPO_REGISTRY comes from real config.yaml.
+    Only mock external tool availability checks.
     """
     # Explicitly import to ensure module is attached to parent package for patching
-    import bug_sleuth.bug_scene_app.bug_analyze_agent.agent
-    
-    with patch("bug_sleuth.bug_scene_app.bug_analyze_agent.agent.check_search_tools", 
+    # (Though direct import above might handle it, explicitly mocking check_search_tools is safer)
+    from unittest.mock import patch
+    with patch("bug_sleuth.bug_scene_app.bug_analyze_agent.tools.search_code.check_search_tools", 
                return_value=None):
         yield
 
@@ -29,22 +26,20 @@ def mock_external_deps():
 @pytest.fixture
 async def analyze_client(mock_external_deps):
     """Create a test client for bug_analyze_agent."""
-    app = create_app(AppConfig(agent_name="bug_analyze_agent"))
-    client = AgentTestClient(agent=app.agent, app_name="test_app")
+    # Direct usage of the static agent instance
+    client = AgentTestClient(agent=bug_analyze_agent, app_name="test_app")
     return client
 
 
 # =============================================================================
-# Factory Tests
+# Agent Loading Test
 # =============================================================================
 
 @pytest.mark.anyio
-async def test_app_factory_creates_valid_agent(mock_external_deps):
-    """Basic test to verify app_factory returns a valid agent."""
-    app = create_app(AppConfig(agent_name="bug_analyze_agent"))
-    
-    assert app.agent is not None
-    assert app.agent.name == "bug_analyze_agent"
+async def test_agent_loading(mock_external_deps):
+    """Basic test to verify agent loading."""
+    assert bug_analyze_agent is not None
+    assert bug_analyze_agent.name == "bug_analyze_agent"
 
 
 # =============================================================================
@@ -52,7 +47,7 @@ async def test_app_factory_creates_valid_agent(mock_external_deps):
 # =============================================================================
 
 @pytest.mark.anyio
-async def test_tool_git_log(mock_external_deps):
+async def test_tool_git_log(mock_external_deps, analyze_client):
     """Verifies that the agent calls 'get_git_log_tool' when asked to check logs."""
     MockLlm.set_behaviors({
         "check the git logs": {
@@ -61,17 +56,15 @@ async def test_tool_git_log(mock_external_deps):
         }
     })
     
-    app = create_app(AppConfig(agent_name="bug_analyze_agent"))
-    client = AgentTestClient(agent=app.agent, app_name="test_app")
-    await client.create_new_session("user_1", "sess_git_log", initial_state={})
-    responses = await client.chat("Please check the git logs for me.")
+    await analyze_client.create_new_session("user_1", "sess_git_log", initial_state={})
+    responses = await analyze_client.chat("Please check the git logs for me.")
     
     assert len(responses) > 0
     assert "[MockLlm]" in responses[-1]
 
 
 @pytest.mark.anyio
-async def test_tool_git_diff(mock_external_deps):
+async def test_tool_git_diff(mock_external_deps, analyze_client):
     """Verifies that the agent calls 'get_git_diff_tool' for commit diffs."""
     MockLlm.set_behaviors({
         "show diff": {
@@ -80,17 +73,15 @@ async def test_tool_git_diff(mock_external_deps):
         }
     })
     
-    app = create_app(AppConfig(agent_name="bug_analyze_agent"))
-    client = AgentTestClient(agent=app.agent, app_name="test_app")
-    await client.create_new_session("user_1", "sess_git_diff", initial_state={})
-    responses = await client.chat("Please show diff for HEAD commit.")
+    await analyze_client.create_new_session("user_1", "sess_git_diff", initial_state={})
+    responses = await analyze_client.chat("Please show diff for HEAD commit.")
     
     assert len(responses) > 0
     assert "[MockLlm]" in responses[-1]
 
 
 @pytest.mark.anyio
-async def test_tool_git_blame(mock_external_deps):
+async def test_tool_git_blame(mock_external_deps, analyze_client):
     """Verifies that the agent calls 'get_git_blame_tool' for blame info."""
     MockLlm.set_behaviors({
         "ownership analysis": {
@@ -99,10 +90,8 @@ async def test_tool_git_blame(mock_external_deps):
         }
     })
     
-    app = create_app(AppConfig(agent_name="bug_analyze_agent"))
-    client = AgentTestClient(agent=app.agent, app_name="test_app")
-    await client.create_new_session("user_1", "sess_git_blame", initial_state={})
-    responses = await client.chat("Who wrote this? Please do ownership analysis on lines 1-10.")
+    await analyze_client.create_new_session("user_1", "sess_git_blame", initial_state={})
+    responses = await analyze_client.chat("Who wrote this? Please do ownership analysis on lines 1-10.")
     
     assert len(responses) > 0
     assert "[MockLlm]" in responses[-1]
@@ -112,8 +101,9 @@ async def test_tool_git_blame(mock_external_deps):
 # SVN Tools Tests
 # =============================================================================
 
+
 @pytest.mark.anyio
-async def test_tool_svn_log(mock_external_deps):
+async def test_tool_svn_log(mock_external_deps, analyze_client):
     """Verifies that the agent calls 'get_svn_log_tool' for SVN history."""
     MockLlm.set_behaviors({
         "svn log": {
@@ -122,17 +112,16 @@ async def test_tool_svn_log(mock_external_deps):
         }
     })
     
-    app = create_app(AppConfig(agent_name="bug_analyze_agent"))
-    client = AgentTestClient(agent=app.agent, app_name="test_app")
-    await client.create_new_session("user_1", "sess_svn_log", initial_state={})
-    responses = await client.chat("Check svn log for recent changes.")
+    await analyze_client.create_new_session("user_1", "sess_svn_log", initial_state={})
+    responses = await analyze_client.chat("Check svn log for recent changes.")
     
     assert len(responses) > 0
     assert "[MockLlm]" in responses[-1]
 
 
+
 @pytest.mark.anyio
-async def test_tool_svn_diff(mock_external_deps):
+async def test_tool_svn_diff(mock_external_deps, analyze_client):
     """Verifies that the agent calls 'get_svn_diff_tool' for SVN diffs."""
     MockLlm.set_behaviors({
         "svn diff": {
@@ -141,10 +130,8 @@ async def test_tool_svn_diff(mock_external_deps):
         }
     })
     
-    app = create_app(AppConfig(agent_name="bug_analyze_agent"))
-    client = AgentTestClient(agent=app.agent, app_name="test_app")
-    await client.create_new_session("user_1", "sess_svn_diff", initial_state={})
-    responses = await client.chat("Show svn diff for revision 100.")
+    await analyze_client.create_new_session("user_1", "sess_svn_diff", initial_state={})
+    responses = await analyze_client.chat("Show svn diff for revision 100.")
     
     assert len(responses) > 0
     assert "[MockLlm]" in responses[-1]
@@ -155,7 +142,7 @@ async def test_tool_svn_diff(mock_external_deps):
 # =============================================================================
 
 @pytest.mark.anyio
-async def test_tool_read_file(mock_external_deps):
+async def test_tool_read_file(mock_external_deps, analyze_client):
     """Verifies that the agent calls 'read_file_tool' to read files."""
     MockLlm.set_behaviors({
         "read file": {
@@ -164,10 +151,8 @@ async def test_tool_read_file(mock_external_deps):
         }
     })
     
-    app = create_app(AppConfig(agent_name="bug_analyze_agent"))
-    client = AgentTestClient(agent=app.agent, app_name="test_app")
-    await client.create_new_session("user_1", "sess_read_file", initial_state={})
-    responses = await client.chat("Please read file lines 1-50.")
+    await analyze_client.create_new_session("user_1", "sess_read_file", initial_state={})
+    responses = await analyze_client.chat("Please read file lines 1-50.")
     
     assert len(responses) > 0
     assert "[MockLlm]" in responses[-1]
@@ -178,7 +163,7 @@ async def test_tool_read_file(mock_external_deps):
 # =============================================================================
 
 @pytest.mark.anyio
-async def test_tool_search_code(mock_external_deps):
+async def test_tool_search_code(mock_external_deps, analyze_client):
     """Verifies that the agent calls 'search_code_tool' for code search."""
     MockLlm.set_behaviors({
         "search code": {
@@ -187,17 +172,15 @@ async def test_tool_search_code(mock_external_deps):
         }
     })
     
-    app = create_app(AppConfig(agent_name="bug_analyze_agent"))
-    client = AgentTestClient(agent=app.agent, app_name="test_app")
-    await client.create_new_session("user_1", "sess_search_code", initial_state={})
-    responses = await client.chat("Search code for InitPlayer function.")
+    await analyze_client.create_new_session("user_1", "sess_search_code", initial_state={})
+    responses = await analyze_client.chat("Search code for InitPlayer function.")
     
     assert len(responses) > 0
     assert "[MockLlm]" in responses[-1]
 
 
 @pytest.mark.anyio
-async def test_tool_search_res(mock_external_deps):
+async def test_tool_search_res(mock_external_deps, analyze_client):
     """Verifies that the agent calls 'search_res_tool' for asset search."""
     MockLlm.set_behaviors({
         "search asset": {
@@ -206,10 +189,8 @@ async def test_tool_search_res(mock_external_deps):
         }
     })
     
-    app = create_app(AppConfig(agent_name="bug_analyze_agent"))
-    client = AgentTestClient(agent=app.agent, app_name="test_app")
-    await client.create_new_session("user_1", "sess_search_res", initial_state={})
-    responses = await client.chat("Search asset files for Hero prefab.")
+    await analyze_client.create_new_session("user_1", "sess_search_res", initial_state={})
+    responses = await analyze_client.chat("Search asset files for Hero prefab.")
     
     assert len(responses) > 0
     assert "[MockLlm]" in responses[-1]
@@ -220,7 +201,7 @@ async def test_tool_search_res(mock_external_deps):
 # =============================================================================
 
 @pytest.mark.anyio
-async def test_tool_update_plan(mock_external_deps):
+async def test_tool_update_plan(mock_external_deps, analyze_client):
     """Verifies that the agent calls 'update_investigation_plan_tool' to update plan."""
     MockLlm.set_behaviors({
         "update plan": {
@@ -229,10 +210,8 @@ async def test_tool_update_plan(mock_external_deps):
         }
     })
     
-    app = create_app(AppConfig(agent_name="bug_analyze_agent"))
-    client = AgentTestClient(agent=app.agent, app_name="test_app")
-    await client.create_new_session("user_1", "sess_update_plan", initial_state={})
-    responses = await client.chat("Update plan with new tasks.")
+    await analyze_client.create_new_session("user_1", "sess_update_plan", initial_state={})
+    responses = await analyze_client.chat("Update plan with new tasks.")
     
     assert len(responses) > 0
     assert "[MockLlm]" in responses[-1]
@@ -243,7 +222,7 @@ async def test_tool_update_plan(mock_external_deps):
 # =============================================================================
 
 @pytest.mark.anyio
-async def test_tool_time_convert(mock_external_deps):
+async def test_tool_time_convert(mock_external_deps, analyze_client):
     """Verifies that the agent calls 'time_convert_tool' for time conversion."""
     MockLlm.set_behaviors({
         "convert time": {
@@ -252,17 +231,15 @@ async def test_tool_time_convert(mock_external_deps):
         }
     })
     
-    app = create_app(AppConfig(agent_name="bug_analyze_agent"))
-    client = AgentTestClient(agent=app.agent, app_name="test_app")
-    await client.create_new_session("user_1", "sess_time_convert", initial_state={})
-    responses = await client.chat("Convert time 2026-01-10 14:00:00 to timestamp.")
+    await analyze_client.create_new_session("user_1", "sess_time_convert", initial_state={})
+    responses = await analyze_client.chat("Convert time 2026-01-10 14:00:00 to timestamp.")
     
     assert len(responses) > 0
     assert "[MockLlm]" in responses[-1]
 
 
 @pytest.mark.anyio
-async def test_tool_run_bash(mock_external_deps):
+async def test_tool_run_bash(mock_external_deps, analyze_client):
     """Verifies that the agent calls 'run_bash_command' for shell commands."""
     MockLlm.set_behaviors({
         "run command": {
@@ -271,10 +248,8 @@ async def test_tool_run_bash(mock_external_deps):
         }
     })
     
-    app = create_app(AppConfig(agent_name="bug_analyze_agent"))
-    client = AgentTestClient(agent=app.agent, app_name="test_app")
-    await client.create_new_session("user_1", "sess_run_bash", initial_state={})
-    responses = await client.chat("Run command: dir")
+    await analyze_client.create_new_session("user_1", "sess_run_bash", initial_state={})
+    responses = await analyze_client.chat("Run command: dir")
     
     assert len(responses) > 0
     assert "[MockLlm]" in responses[-1]
