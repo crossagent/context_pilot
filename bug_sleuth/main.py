@@ -78,6 +78,19 @@ def serve(port, host, skills_dir, config, env_file, data_dir, agent_dir, mode, u
     try:
         app = None
         
+        # Configure Data/Artifact Paths for ADK (Common for both modes)
+        data_dir_env = os.getenv("ADK_DATA_DIR", "adk_data")
+        data_dir = os.path.abspath(data_dir_env) if not os.path.isabs(data_dir_env) else data_dir_env
+        artifacts_dir = os.path.join(data_dir, "artifacts")
+        
+        os.makedirs(data_dir, exist_ok=True)
+        os.makedirs(artifacts_dir, exist_ok=True)
+        
+        from pathlib import Path
+        artifact_service_uri = Path(artifacts_dir).resolve().as_uri()
+        session_db_path = os.path.join(data_dir, "sessions.db")
+        session_service_uri = f"sqlite+aiosqlite:///{session_db_path}"
+
         if mode == "ag-ui":
             logger.info("Starting in AG-UI Middleware Mode (Frontend enabled)")
             
@@ -87,6 +100,12 @@ def serve(port, host, skills_dir, config, env_file, data_dir, agent_dir, mode, u
             # Import App (Late import to ensure env vars are set)
             from bug_sleuth.bug_scene_app.app import app as adk_app
             
+            # Use persistent session service
+            from google.adk.sessions import SqlAlchemySessionService
+            
+            logger.info(f"Connecting to Session DB: {session_service_uri}")
+            session_service = SqlAlchemySessionService(session_service_uri)
+
             # Create AG-UI Adapter Agent
             # Wraps the ADK agent with AG-UI protocol support
             ui_agent = ADKAgent.from_app(
@@ -94,6 +113,8 @@ def serve(port, host, skills_dir, config, env_file, data_dir, agent_dir, mode, u
                  user_id="demo_user",
                  session_timeout_seconds=3600,
                  use_in_memory_services=False,
+                 # Inject persistent session service
+                 session_service=session_service,
             )
             
             # Create FastAPI app
@@ -113,19 +134,6 @@ def serve(port, host, skills_dir, config, env_file, data_dir, agent_dir, mode, u
             agents_dir = os.path.dirname(os.path.abspath(__file__))
             
             logger.info(f"ADK Agents Dir (Locked): {agents_dir}")
-
-            # Configure Data/Artifact Paths for ADK
-            data_dir_env = os.getenv("ADK_DATA_DIR", "adk_data")
-            data_dir = os.path.abspath(data_dir_env) if not os.path.isabs(data_dir_env) else data_dir_env
-            artifacts_dir = os.path.join(data_dir, "artifacts")
-            
-            os.makedirs(data_dir, exist_ok=True)
-            os.makedirs(artifacts_dir, exist_ok=True)
-            
-            from pathlib import Path
-            artifact_service_uri = Path(artifacts_dir).resolve().as_uri()
-            session_db_path = os.path.join(data_dir, "sessions.db")
-            session_service_uri = f"sqlite+aiosqlite:///{session_db_path}"
 
             # Use standard ADK Web Server wrapper
             app = get_fast_api_app(
