@@ -26,6 +26,20 @@ class AgentTestClient:
         self.session_id: str = None
         self.session = None
 
+        # Validate tools for duplicates (Catch logical errors locally)
+        if hasattr(self.agent, 'tools') and self.agent.tools:
+            seen_tools = set()
+            for tool in self.agent.tools:
+                # Attempt to get name from object or function
+                t_name = getattr(tool, 'name', None)
+                if not t_name and hasattr(tool, '__name__'):
+                    t_name = tool.__name__
+                
+                if t_name:
+                    if t_name in seen_tools:
+                         raise ValueError(f"Duplicate function declaration found: {t_name}")
+                    seen_tools.add(t_name)
+
     async def create_new_session(self, user_id: str, session_id: str, initial_state: Dict[str, Any] = None) -> str:
         self.user_id = user_id
         self.session_id = session_id

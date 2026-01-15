@@ -62,7 +62,7 @@ from .tools import (
     update_investigation_plan_tool,
     run_bash_command,
     read_file_tool,
-    search_code_tool,
+    search_code_file_tool,
     search_res_tool,
     get_git_log_tool,
     get_git_diff_tool,
@@ -261,7 +261,13 @@ def inject_default_values(callback_context: CallbackContext):
     # Inject Formatted Repository List (For Prompt)
     repo_list_str = []
     for r in REPO_REGISTRY:
-        repo_list_str.append(f"- **{r.get('name')}**: `{r.get('path')}` - {r.get('description', '')}")
+        capabilities = []
+        if r.get("symbol_index_path") or r.get("symbol_index_paths"):
+            capabilities.append("**[Symbol Index Available]**")
+        
+        desc = r.get('description', '')
+        cap_str = " ".join(capabilities)
+        repo_list_str.append(f"- **{r.get('name')}**: `{r.get('path')}` - {desc} {cap_str}")
     callback_context.state["repository_list"] = "\n    ".join(repo_list_str)
 
     if not callback_context.state.get(StateKeys.BUG_OCCURRENCE_TIME):
@@ -292,7 +298,20 @@ def inject_default_values(callback_context: CallbackContext):
 from google.adk.agents.llm_agent import LlmAgent
 from bug_sleuth.shared_libraries.visual_llm_agent import VisualLlmAgent
 
-bug_analyze_agent = VisualLlmAgent(
+# 根据模式选择 Agent 类型
+# AG-UI 模式: 前端负责渲染工具调用，使用原生 LlmAgent
+# ADK-Web 模式: 后端注入可视化文本，使用 VisualLlmAgent
+_app_mode = os.getenv("ADK_APP_MODE", "adk-web").lower()
+_use_visual_agent = _app_mode != "ag-ui"
+
+if _use_visual_agent:
+    logger.info("Using VisualLlmAgent (ADK-Web mode: backend renders tool visualization)")
+    _agent_base_class = VisualLlmAgent
+else:
+    logger.info("Using LlmAgent (AG-UI mode: frontend renders tool visualization)")
+    _agent_base_class = LlmAgent
+
+bug_analyze_agent = _agent_base_class(
     name="bug_analyze_agent",
     model=MODEL,
     description=(
@@ -314,7 +333,8 @@ bug_analyze_agent = VisualLlmAgent(
         update_investigation_plan_tool, 
         run_bash_command,
         read_file_tool,
-        search_code_tool,
+
+        search_code_file_tool,
         search_res_tool,
         get_git_log_tool,
         get_git_diff_tool,
@@ -326,3 +346,4 @@ bug_analyze_agent = VisualLlmAgent(
     ],
     output_key=AgentKeys.BUG_REASON,
 )
+

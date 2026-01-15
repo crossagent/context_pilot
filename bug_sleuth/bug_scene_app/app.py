@@ -47,7 +47,7 @@ else:
     selected_root_agent = bug_scene_agent
 
 app = App(
-    name=selected_root_agent.name,
+    name="bug_scene_app",
     root_agent=selected_root_agent,
     context_cache_config=ContextCacheConfig(
         min_tokens=2048,

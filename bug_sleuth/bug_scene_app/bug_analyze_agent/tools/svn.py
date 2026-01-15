@@ -5,6 +5,7 @@ from typing import Optional, List, Dict
 from .bash import run_bash_command
 from .decorators import validate_path
 from google.adk.tools import ToolContext
+from bug_sleuth.shared_libraries.tool_response import ToolResponse
 
 @validate_path
 async def get_svn_log_tool(
@@ -71,9 +72,15 @@ async def get_svn_log_tool(
                     "message": msg_tag.text if msg_tag is not None else ""
                 })
     except ET.ParseError:
-        return {"status": "error", "error": "Failed to parse SVN XML output", "raw_output": output}
+        return ToolResponse.error(
+            error="Failed to parse SVN XML output",
+            raw_output=output
+        )
                 
-    return {"status": "success", "commits": commits}
+    return ToolResponse.success(
+        summary=f"Found {len(commits)} SVN commits.",
+        data=commits
+    )
 
 @validate_path
 async def get_svn_diff_tool(
@@ -125,7 +132,10 @@ async def get_svn_diff_tool(
     if len(output) > 10000:
         output = output[:10000] + "\n... (Diff truncated, too long) ..."
         
-    return {"status": "success", "diff": output}
+    return ToolResponse.success(
+        summary="SVN diff retrieved.",
+        diff=output
+    )
 
 @validate_path
 async def get_svn_blame_tool(
@@ -175,4 +185,7 @@ async def get_svn_blame_tool(
     selected_lines = lines[start_idx:end_idx]
     
     # SVN Blame format: "  123   user   line content"
-    return {"status": "success", "blame": "\n".join(selected_lines)}
+    return ToolResponse.success(
+        summary=f"Retrieved SVN blame for lines {start_line}-{end_line}.",
+        blame="\n".join(selected_lines)
+    )

@@ -4,6 +4,7 @@ from typing import Optional, List, Dict
 from .bash import run_bash_command
 from google.adk.tools import ToolContext
 from .decorators import validate_path
+from bug_sleuth.shared_libraries.tool_response import ToolResponse
 
 @validate_path
 async def get_git_log_tool(
@@ -61,7 +62,10 @@ async def get_git_log_tool(
                     "message": parts[3]
                 })
                 
-    return {"status": "success", "commits": commits}
+    return ToolResponse.success(
+        summary=f"Found {len(commits)} commits.",
+        data=commits
+    )
 
 @validate_path
 async def get_git_diff_tool(
@@ -130,7 +134,10 @@ async def get_git_diff_tool(
     if len(output) > 10000:
         output = output[:10000] + "\n... (Diff truncated, too long) ..."
         
-    return {"status": "success", "diff": output}
+    return ToolResponse.success(
+        summary="Git diff retrieved.",
+        diff=output
+    )
 
 @validate_path
 async def get_git_blame_tool(
@@ -163,4 +170,5 @@ async def get_git_blame_tool(
         cwd = os.environ.get("PROJECT_ROOT")
 
     result = await run_bash_command(cmd, cwd=cwd)
+    # run_bash_command already returns ToolResponse dict, so we can return it directly
     return result

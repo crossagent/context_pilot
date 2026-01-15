@@ -19,4 +19,4 @@ Write-Host "=============================================="
 # - Relies on CLI's auto-discovery for .env, config.yaml, and skills/
 # Use cmd /c to wrap execution. This prevents PowerShell terminal from freezing 
 # (losing input echo) after Ctrl+C.
-cmd /c "uv run bug-sleuth serve --data-dir ""$DataDir"""
+cmd /c "uv run bug-sleuth serve --data-dir ""$DataDir"" --agent-dir ""$ProjectRoot\bug_sleuth\bug_scene_app\bug_analyze_agent"""

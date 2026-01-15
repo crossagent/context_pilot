@@ -3,6 +3,7 @@ import os
 import subprocess
 import logging
 from typing import Optional
+from bug_sleuth.shared_libraries.tool_response import ToolResponse
 
 async def run_bash_command(command: str, cwd: Optional[str] = None) -> dict:
     """
@@ -16,7 +17,7 @@ async def run_bash_command(command: str, cwd: Optional[str] = None) -> dict:
         dict: Result with keys 'status', 'output', 'error', 'exit_code'.
     """
     if not command:
-        return {"status": "error", "error": "Command is required."}
+        return ToolResponse.error("Command is required.")
 
     # FIX: Default CWD to Primary Repository if not specified
     if not cwd:
@@ -85,13 +86,12 @@ async def run_bash_command(command: str, cwd: Optional[str] = None) -> dict:
         if exit_code == 0:
             logging.info(f"Command success: {command}")
             summary_msg = f"Executed '{command}' successfully (rc=0)."
-            return {
-                "status": "success",
-                "output": output_str,
-                "error": error_str,
-                "exit_code": 0,
-                "summary": summary_msg
-            }
+            return ToolResponse.success(
+                summary=summary_msg,
+                output=output_str,
+                error=error_str,
+                exit_code=0
+            )
         else:
              # Create a concise summary including the first line of error/output for context
              # This avoids the need for valid_llm_agent to append large blocks
@@ -99,19 +99,17 @@ async def run_bash_command(command: str, cwd: Optional[str] = None) -> dict:
              if len(short_err) > 100: short_err = short_err[:100] + "..."
              
              summary_msg = f"Command '{command}' failed (rc={exit_code}). Reason: {short_err}"
-             return {
-                "status": "error",
-                "output": output_str,
-                "error": error_str,
-                "exit_code": exit_code,
-                "summary": summary_msg
-            }
+             return ToolResponse.error(
+                error=error_str or summary_msg,
+                summary=summary_msg,
+                output=output_str,
+                exit_code=exit_code
+             )
 
     except Exception as e:
         error_msg = f"Execution failed: {str(e)}"
         logging.error(error_msg, exc_info=True) # Log full traceback
-        return {
-            "status": "error", 
-            "error": error_msg,
-            "summary": "Command execution failed internally."
-        }
+        return ToolResponse.error(
+            error=error_msg,
+            summary="Command execution failed internally."
+        )

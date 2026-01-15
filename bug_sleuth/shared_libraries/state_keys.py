@@ -35,7 +35,6 @@ class StateKeys:
     
     # Repository
     REPO_REGISTRY = "repo_registry"
-    REPOSITORY_LIST_FORMATTED = "repository_list"
 
     # Agent State
     USER_INTENT = "user_intent"

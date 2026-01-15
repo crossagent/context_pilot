@@ -23,7 +23,7 @@ def main():
 @click.option("--env-file", default=".env", help="Path to .env file.")
 @click.option("--data-dir", default="adk_data", help="Directory for local data storage.")
 @click.option("--agent-dir", default=None, help="Agent startup directory (containing agent definition).")
-@click.option("--mode", type=click.Choice(["ag-ui", "adk-web"], case_sensitive=False), default="ag-ui", help="Server mode: ag-ui (frontend middleware) or adk-web (legacy/api).")
+@click.option("--mode", type=click.Choice(["ag-ui", "adk-web"], case_sensitive=False), default="adk-web", help="Server mode: ag-ui (frontend middleware) or adk-web (legacy/api).")
 @click.option("--ui-path", envvar="BUG_SLEUTH_UI_PATH", help="Path to the reporter UI HTML file.")
 def serve(port, host, skills_dir, config, env_file, data_dir, agent_dir, mode, ui_path):
     """
@@ -89,11 +89,11 @@ def serve(port, host, skills_dir, config, env_file, data_dir, agent_dir, mode, u
             
             # Create AG-UI Adapter Agent
             # Wraps the ADK agent with AG-UI protocol support
-            ui_agent = ADKAgent(
-                 adk_agent=adk_app.root_agent,
+            ui_agent = ADKAgent.from_app(
+                 app=adk_app,
                  user_id="demo_user",
                  session_timeout_seconds=3600,
-                 use_in_memory_services=True
+                 use_in_memory_services=False,
             )
             
             # Create FastAPI app

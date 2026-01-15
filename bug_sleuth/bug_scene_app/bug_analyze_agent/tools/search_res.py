@@ -7,6 +7,7 @@ from .decorators import validate_path
 from .bash import run_bash_command
 from google.adk.tools.tool_context import ToolContext
 from bug_sleuth.shared_libraries.state_keys import StateKeys
+from bug_sleuth.shared_libraries.tool_response import ToolResponse
 import logging
 
 logger = logging.getLogger(__name__)
@@ -32,11 +33,11 @@ async def search_res_tool(
         dict: List of matching file paths.
     """
     if not name_pattern:
-        return {"status": "error", "error": "name_pattern is required."}
+        return ToolResponse.error("name_pattern is required.")
 
     # Verify rg exists (reusing check from search_code is implicit, but let's be safe)
     if not shutil.which("rg"):
-        return {"status": "error", "error": "'ripgrep' (rg) not found."}
+        return ToolResponse.error("'ripgrep' (rg) not found.")
 
     # 1. Build Command
     # rg --files: List files that would be searched
@@ -85,7 +86,7 @@ async def search_res_tool(
                 repo_paths.append(str(Path(p).resolve()))
 
     if not repo_paths:
-         return {"status": "error", "error": "No repositories configured to search."}
+         return ToolResponse.error("No repositories configured to search.")
 
     # Append paths to command
     for p in repo_paths:
@@ -122,14 +123,12 @@ async def search_res_tool(
         display_output = output
 
     if not output.strip():
-        return {
-            "status": "success",
-            "output": "No files found matching that name.",
-            "summary": f"No assets found for '{name_pattern}'."
-        }
+        return ToolResponse.success(
+            summary=f"No assets found for '{name_pattern}'.",
+            output="No files found matching that name."
+        )
 
-    return {
-        "status": "success",
-        "output": f"Found {match_count} asset files:\n{display_output}",
-        "summary": f"Found {match_count} assets matching '{name_pattern}'."
-    }
+    return ToolResponse.success(
+        summary=f"Found {match_count} assets matching '{name_pattern}'.",
+        output=f"Found {match_count} asset files:\n{display_output}"
+    )

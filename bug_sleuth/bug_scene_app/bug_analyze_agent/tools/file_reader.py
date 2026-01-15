@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import List, Optional
 from .decorators import validate_path
 from google.adk.tools.tool_context import ToolContext
+from bug_sleuth.shared_libraries.tool_response import ToolResponse
 
 @validate_path
 async def read_file_tool(
@@ -33,28 +34,28 @@ async def read_file_tool(
         dict: 文件内容或目录列表
     """
     if not path:
-        return {"status": "error", "error": "Path is required."}
+        return ToolResponse.error("Path is required.")
         
     _path = Path(path)
     if not _path.is_absolute():
-        return {"status": "error", "error": f"Path must be absolute: {path}"}
+        return ToolResponse.error(f"Path must be absolute: {path}")
         
     if not _path.exists():
-        return {"status": "error", "error": f"Path does not exist: {path}"}
+        return ToolResponse.error(f"Path does not exist: {path}")
 
     # Directory Listing
     if _path.is_dir():
         if start_line or end_line:
-             return {"status": "error", "error": "Line range not allowed for directories."}
+             return ToolResponse.error("Line range not allowed for directories.")
         return _handle_dir_list(_path)
 
     # File Reading
     try:
         content = _path.read_text(encoding='utf-8')
     except UnicodeDecodeError:
-        return {"status": "error", "error": "File is not valid UTF-8 text."}
+        return ToolResponse.error("File is not valid UTF-8 text.")
     except Exception as e:
-        return {"status": "error", "error": f"Error reading file: {e}"}
+        return ToolResponse.error(f"Error reading file: {e}")
 
     lines = content.splitlines()
     total_lines = len(lines)
@@ -72,7 +73,7 @@ async def read_file_tool(
     if _start < 1: _start = 1
     if _end > total_lines: _end = total_lines
     if _end < _start:
-        return {"status": "error", "error": f"Invalid range: end_line {_end} < start_line {_start}"}
+        return ToolResponse.error(f"Invalid range: end_line {_end} < start_line {_start}")
 
     selected_lines = lines[_start-1 : _end]
     
@@ -83,11 +84,10 @@ async def read_file_tool(
         
     final_output = "\n".join(formatted_output)
     summary_text = f"Read {len(selected_lines)} lines from {path} (lines { _start}-{_end})"
-    return {
-        "status": "success", 
-        "output": f"File: {path}\n{final_output}",
-        "summary": summary_text
-    }
+    return ToolResponse.success(
+        summary=summary_text,
+        output=f"File: {path}\n{final_output}"
+    )
 
 def _handle_dir_list(path: Path) -> dict:
     try:
@@ -116,13 +116,12 @@ def _handle_dir_list(path: Path) -> dict:
                 output.append(f"  {f}")
                 
         summary_text = f"Listed {len(files)} files and {len(dirs)} directories in {path}"
-        return {
-            "status": "success", 
-            "output": "\n".join(output),
-            "summary": summary_text
-        }
+        return ToolResponse.success(
+            summary=summary_text,
+            output="\n".join(output)
+        )
     except Exception as e:
-        return {"status": "error", "error": f"Error listing directory: {e}"}
+        return ToolResponse.error(f"Error listing directory: {e}")
 
 @validate_path
 async def read_code_tool(
@@ -142,17 +141,17 @@ async def read_code_tool(
     MAX_CHARS = 100000  # 100k chars limit (~20k-30k tokens)
     
     if not path:
-        return {"status": "error", "error": "Path is required."}
+        return ToolResponse.error("Path is required.")
         
     _path = Path(path)
     if not _path.is_absolute():
-        return {"status": "error", "error": f"Path must be absolute: {path}"}
+        return ToolResponse.error(f"Path must be absolute: {path}")
         
     if not _path.exists():
-        return {"status": "error", "error": f"Path does not exist: {path}"}
+        return ToolResponse.error(f"Path does not exist: {path}")
         
     if _path.is_dir():
-         return {"status": "error", "error": f"Path is a directory, not a file: {path}. Use list_dir_tool."}
+         return ToolResponse.error(f"Path is a directory, not a file: {path}. Use list_dir_tool.")
 
     try:
         # Read text
@@ -162,15 +161,15 @@ async def read_code_tool(
             # Safety Truncation
             head = content[:2000]
             tail = content[-2000:]
-            return {
-                "status": "error", 
-                "error": (
+            return ToolResponse.error(
+                error=(
                     f"File too large ({len(content)} chars). Limit is {MAX_CHARS}. "
                     "Reading huge files can overflow the context window.\n"
                     "Showing Head (2000) and Tail (2000) only.\n\n"
                     f"{head}\n\n...[Truncated]...\n\n{tail}"
-                )
-            }
+                ),
+                summary="File too large, showing partial content."
+            )
             
         # Add line numbers for reference
         lines = content.splitlines()
@@ -183,13 +182,12 @@ async def read_code_tool(
         # Determine language for markdown
         ext = _path.suffix.lstrip('.') if _path.suffix else 'text'
         
-        return {
-            "status": "success",
-            "output": f"Code File: {path}\n```{ext}\n{final_output}\n```",
-            "summary": f"Read full code file {path} ({len(lines)} lines)"
-        }
+        return ToolResponse.success(
+            summary=f"Read full code file {path} ({len(lines)} lines)",
+            output=f"Code File: {path}\n```{ext}\n{final_output}\n```"
+        )
         
     except UnicodeDecodeError:
-         return {"status": "error", "error": "File is not valid UTF-8 text."}
+         return ToolResponse.error("File is not valid UTF-8 text.")
     except Exception as e:
-         return {"status": "error", "error": f"Error reading code file: {e}"}
+         return ToolResponse.error(f"Error reading code file: {e}")

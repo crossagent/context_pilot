@@ -1,5 +1,6 @@
 import os
 import json
+from datetime import datetime
 from typing import Optional
 from pathlib import Path
 from .decorators import validate_path
@@ -23,9 +24,10 @@ def check_search_tools() -> Optional[str]:
 
 from google.adk.tools.tool_context import ToolContext
 from bug_sleuth.shared_libraries.state_keys import StateKeys
+from bug_sleuth.shared_libraries.tool_response import ToolResponse
 
 @validate_path
-async def search_code_tool(
+async def search_code_file_tool(
     query: str,
     tool_context: ToolContext,
     file_pattern: Optional[str] = None
@@ -52,7 +54,7 @@ async def search_code_tool(
         dict: 包含匹配行的搜索结果
     """
     if not query:
-        return {"status": "error", "error": "Query is required."}
+        return ToolResponse.error("Query is required.")
 
     # 1. Build Command (Strictly use rg)
     cmd_parts = ["rg", "-n", "-C", "2", "--no-heading", "--smart-case"]
@@ -96,14 +98,15 @@ async def search_code_tool(
     cmd = " ".join(cmd_parts)
     logger.info(f"DEBUG: Search CMD: {cmd}") # Fallback to default behavior (search cwd)
 
-    cmd = " ".join(cmd_parts)
+    # cmd = " ".join(cmd_parts)
 
     # 3. Execution
     # Run from Primary Repo as CWD (fallback '.' if fail)
+
     cwd = "."
     try:
-        if repos:
-            cwd = repos[0]["path"]
+        if repo_registry:
+            cwd = repo_registry[0].get("path", ".")
     except:
         pass
     
@@ -118,11 +121,10 @@ async def search_code_tool(
         # rc=1 means "No matches found" (not an error)
         # rc=2 means Error
         if result.get("exit_code") == 1:
-             return {
-                 "status": "success",
-                 "output": "No matches found.",
-                 "summary": f"No matches found for '{query}'."
-             }
+             return ToolResponse.success(
+                 summary=f"No matches found for '{query}'.",
+                 output="No matches found."
+             )
         return result
 
     output = result.get("output", "")
@@ -199,8 +201,6 @@ async def search_code_tool(
                 abs_lines.append(new_line)
             except Exception:
                 abs_lines.append(line)
-            else:
-                 abs_lines.append(line)
         else:
             abs_lines.append(line)
             
@@ -213,8 +213,7 @@ async def search_code_tool(
         
     fallback_note = " (Literal search fallback used)" if result.get("_fallback_used") else ""
         
-    return {
-        "status": "success", 
-        "output": f"Search Results ('{file_pattern or 'All'}'){fallback_note}:\n{final_output}",
-        "summary": f"Found ~{match_count} matches for '{query}' in All.{fallback_note}"
-    }
+    return ToolResponse.success(
+        summary=f"Found ~{match_count} matches for '{query}' in All.{fallback_note}",
+        output=f"Search Results ('{file_pattern or 'All'}'){fallback_note}:\n{final_output}"
+    )

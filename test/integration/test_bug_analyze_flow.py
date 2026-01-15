@@ -97,6 +97,7 @@ async def test_tool_git_blame(mock_external_deps, analyze_client):
     assert "[MockLlm]" in responses[-1]
 
 
+
 # =============================================================================
 # SVN Tools Tests
 # =============================================================================
@@ -105,6 +106,13 @@ async def test_tool_git_blame(mock_external_deps, analyze_client):
 @pytest.mark.anyio
 async def test_tool_svn_log(mock_external_deps, analyze_client):
     """Verifies that the agent calls 'get_svn_log_tool' for SVN history."""
+    from unittest.mock import patch
+    
+    mock_ret = {
+        "status": "success", 
+        "output": "<log><logentry revision='100'><author>dev</author><date>2026-01-01</date><msg>init</msg></logentry></log>"
+    }
+    
     MockLlm.set_behaviors({
         "svn log": {
             "tool": "get_svn_log_tool",
@@ -112,17 +120,24 @@ async def test_tool_svn_log(mock_external_deps, analyze_client):
         }
     })
     
-    await analyze_client.create_new_session("user_1", "sess_svn_log", initial_state={})
-    responses = await analyze_client.chat("Check svn log for recent changes.")
+    with patch("bug_sleuth.bug_scene_app.bug_analyze_agent.tools.svn.run_bash_command", return_value=mock_ret):
+        await analyze_client.create_new_session("user_1", "sess_svn_log", initial_state={})
+        responses = await analyze_client.chat("Check svn log for recent changes.")
     
     assert len(responses) > 0
     assert "[MockLlm]" in responses[-1]
 
 
-
 @pytest.mark.anyio
 async def test_tool_svn_diff(mock_external_deps, analyze_client):
     """Verifies that the agent calls 'get_svn_diff_tool' for SVN diffs."""
+    from unittest.mock import patch
+    
+    mock_ret = {
+        "status": "success",
+        "output": "Index: foo.c\n===================================================================\n--- foo.c\t(revision 100)\n+++ foo.c\t(working copy)\n@@ -1 +1 @@\n-old\n+new"
+    }
+
     MockLlm.set_behaviors({
         "svn diff": {
             "tool": "get_svn_diff_tool",
@@ -130,8 +145,9 @@ async def test_tool_svn_diff(mock_external_deps, analyze_client):
         }
     })
     
-    await analyze_client.create_new_session("user_1", "sess_svn_diff", initial_state={})
-    responses = await analyze_client.chat("Show svn diff for revision 100.")
+    with patch("bug_sleuth.bug_scene_app.bug_analyze_agent.tools.svn.run_bash_command", return_value=mock_ret):
+        await analyze_client.create_new_session("user_1", "sess_svn_diff", initial_state={})
+        responses = await analyze_client.chat("Show svn diff for revision 100.")
     
     assert len(responses) > 0
     assert "[MockLlm]" in responses[-1]
@@ -167,7 +183,7 @@ async def test_tool_search_code(mock_external_deps, analyze_client):
     """Verifies that the agent calls 'search_code_tool' for code search."""
     MockLlm.set_behaviors({
         "search code": {
-            "tool": "search_code_tool",
+            "tool": "search_code_file_tool",
             "args": {"query": "InitPlayer", "file_pattern": "*.cs"}
         }
     })

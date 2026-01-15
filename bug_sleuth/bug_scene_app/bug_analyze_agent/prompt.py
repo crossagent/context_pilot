@@ -76,10 +76,11 @@ instruction_prompt = """
     **分析方法论 (Methodology)**：
 
     1.  **搜索 (Search)**：
-        *   **查定义**：当需要找某个类、方法、枚举在哪里定义时。
-        *   **查引用**：当需要找谁调用了某个函数、哪里使用了某个常量时。
-        *   **查资源**：当需要找 Prefab、纹理、配置文件的位置时。
-        *   *具体工具能力请参考系统提供的工具列表。*
+        *   **关键原则 (Critical)**：检查 **项目仓库列表**。如果仓库说明中包含 `[Symbol Index Available]`，**必须优先** 使用 **Symbol Lookup 类工具**（即具备语法分析能力的查定义/查引用工具）。只有当符号查找失败时，才使用全文搜索。
+        *   **查定义 (Definitions)**：检索 **符号定义 (Symbol Definition)**。使用具备 **语法分析能力** 的工具，以确保精确匹配类、方法。
+        *   **查引用 (References)**：优先检索 **符号引用 (Symbol References)**。查找调用链时，应使用能理解代码结构的专用工具。
+        *   **查资源 (Resources)**：当需要找 Prefab、纹理、配置文件的位置时。
+        *   *请仔细阅读工具列表描述，选择最适合代码分析的工具，避免滥用全局搜索。*
 
     2.  **阅读 (Read)**：
         *   获取搜索结果后，精确读取相关代码片段（优先使用行号范围）。
@@ -138,7 +139,7 @@ def get_prompt()-> str:
         ping=f"{{{StateKeys.PING}}}",
         product=f"{{{StateKeys.PRODUCT_DESCRIPTION}}}",
         current_os=f"{{{StateKeys.CURRENT_OS}}}",
-        repository_list=f"{{{StateKeys.REPOSITORY_LIST_FORMATTED}}}",
+        repository_list="{repository_list}",
         platform_command_guidance=platform_guidance
     ) + """
     **访问原则 (Access Principles)**：
