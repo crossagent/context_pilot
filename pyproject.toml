@@ -37,9 +37,7 @@ packages = ["bug_sleuth"]
 
 [tool.hatch.build.targets.sdist]
 include = [
-    "bug_scene_app",
-    "bug_report_ui",
-    "test/utils",
+    "bug_sleuth",
     "pyproject.toml",
     "README.md"
 ]

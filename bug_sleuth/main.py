@@ -100,11 +100,33 @@ def serve(port, host, skills_dir, config, env_file, data_dir, agent_dir, mode, u
             # Import App (Late import to ensure env vars are set)
             from bug_sleuth.bug_scene_app.app import app as adk_app
             
-            # Use persistent session service
-            from google.adk.sessions.sqlite_session_service import SqliteSessionService
+            # Use Service Registry (same pattern as get_fast_api_app)
+            from google.adk.cli.service_registry import get_service_registry
             
-            logger.info(f"Connecting to Session DB: {session_db_path}")
-            session_service = SqliteSessionService(session_db_path)
+            # agents_dir for service registry context
+            agents_dir = os.path.dirname(os.path.abspath(__file__))
+            service_registry = get_service_registry()
+            
+            # Build Session Service (using registry, with DatabaseSessionService fallback)
+            session_service = service_registry.create_session_service(
+                session_service_uri, agents_dir=agents_dir
+            )
+            if not session_service:
+                # Fallback to DatabaseSessionService if registry doesn't support the URI
+                from google.adk.sessions.database_session_service import DatabaseSessionService
+                session_service = DatabaseSessionService(db_url=session_service_uri)
+            logger.info(f"Session Service Configured: {session_service_uri}")
+            
+            # Build Artifact Service (using registry)
+            artifact_service = service_registry.create_artifact_service(
+                artifact_service_uri, agents_dir=agents_dir
+            )
+            if not artifact_service:
+                logger.warning(f"Could not create artifact service for {artifact_service_uri}, using InMemory fallback.")
+                from google.adk.artifacts.in_memory_artifact_service import InMemoryArtifactService
+                artifact_service = InMemoryArtifactService()
+            else:
+                logger.info(f"Artifact Service Configured: {artifact_service_uri}")
 
             # Create AG-UI Adapter Agent
             # Wraps the ADK agent with AG-UI protocol support
@@ -113,8 +135,9 @@ def serve(port, host, skills_dir, config, env_file, data_dir, agent_dir, mode, u
                  user_id="demo_user",
                  session_timeout_seconds=3600,
                  use_in_memory_services=False,
-                 # Inject persistent session service
+                 # Inject persistent services
                  session_service=session_service,
+                 artifact_service=artifact_service,
             )
             
             # Create FastAPI app
