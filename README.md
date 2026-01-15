@@ -192,48 +192,6 @@ except ImportError:
     pass
 ```
 
-## 模型选择 (Model Configuration)
-
-BugSleuth 通过 **环境变量** 统一控制模型选择，支持多种模型提供商：
-
-### 环境变量
-
-| 变量名 | 默认值 | 说明 |
-|--------|--------|------|
-| `GOOGLE_GENAI_MODEL` | `gemini-3-flash-preview` | 模型标识符 |
-
-### 支持的模型格式
-
-```bash
-# Gemini (原生支持)
-GOOGLE_GENAI_MODEL=gemini-3-flash-preview
-
-# OpenAI via LiteLLM (需要安装 litellm)
-GOOGLE_GENAI_MODEL=openai/gpt-4o
-
-# Anthropic via LiteLLM
-GOOGLE_GENAI_MODEL=anthropic/claude-3-sonnet
-
-# 测试模式 (MockLlm)
-GOOGLE_GENAI_MODEL=mock/test
-```
-
-### 使用 LiteLLM 多模型
-
-```bash
-# 安装 litellm
-pip install litellm
-
-# 设置 API Key
-export OPENAI_API_KEY=sk-xxx
-
-# 启动服务 (使用 GPT-4)
-GOOGLE_GENAI_MODEL=openai/gpt-4o bug-sleuth serve
-```
-
----
-
-
 
 ## 测试 (Testing)
 
