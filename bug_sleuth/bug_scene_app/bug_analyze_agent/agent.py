@@ -62,8 +62,7 @@ from .tools import (
     update_investigation_plan_tool,
     run_bash_command,
     read_file_tool,
-    search_code_file_tool,
-    search_res_tool,
+    search_file_tool, # Unified Search Tool
     get_git_log_tool,
     get_git_diff_tool,
     get_git_blame_tool,
@@ -71,8 +70,7 @@ from .tools import (
     get_svn_diff_tool
 )
 
-from .tools.search_code import check_search_tools
-from .tools.search_res import search_res_tool
+from .tools.search_file import search_file_tool
 from .tools.svn import get_svn_log_tool, get_svn_diff_tool
 
 from google.adk.tools import load_artifacts
@@ -93,11 +91,16 @@ async def initialize_and_validate(callback_context: CallbackContext) -> Optional
          return types.Content(parts=[types.Part(text="Error: No configured repositories available.")])
 
 
-    # 2. Validate Search Tools
-    search_error = check_search_tools()
-    if search_error:
-        logger.error(search_error)
-        return types.Content(parts=[types.Part.from_text(text=search_error)])
+    # 2. Validate Search Tools (Unified Check)
+    # The new tool checks for rg internally during execution or we can check shutil here
+    # Since search_file_tool imports logic, we don't have a check_search_tools function there exposed yet.
+    # But initialize_and_validate doesn't necessarily need to check rg if the tool handles it gracefully.
+    # Or we can check it now.
+    import shutil
+    if not shutil.which("rg"):
+        error_msg = "Critical Error: 'ripgrep' (rg) is missing. Please contact administrator to install it."
+        logger.error(error_msg)
+        return types.Content(parts=[types.Part.from_text(text=error_msg)])
 
     # 3. Validate clientLogUrl (Optional)
 
@@ -334,8 +337,7 @@ bug_analyze_agent = _agent_base_class(
         run_bash_command,
         read_file_tool,
 
-        search_code_file_tool,
-        search_res_tool,
+        search_file_tool,
         get_git_log_tool,
         get_git_diff_tool,
         get_git_blame_tool,

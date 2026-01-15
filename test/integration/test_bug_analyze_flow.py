@@ -15,13 +15,10 @@ async def mock_external_deps():
     """
     Only mock external tool availability checks.
     """
-    # Explicitly import to ensure module is attached to parent package for patching
-    # (Though direct import above might handle it, explicitly mocking check_search_tools is safer)
+    # Patch shutil.which to simulate 'rg' being available
     from unittest.mock import patch
-    with patch("bug_sleuth.bug_scene_app.bug_analyze_agent.tools.search_code.check_search_tools", 
-               return_value=None):
+    with patch("shutil.which", return_value="rg_mock_path"):
         yield
-
 
 @pytest.fixture
 async def analyze_client(mock_external_deps):
@@ -173,18 +170,17 @@ async def test_tool_read_file(mock_external_deps, analyze_client):
     assert len(responses) > 0
     assert "[MockLlm]" in responses[-1]
 
-
 # =============================================================================
 # Search Tools Tests
 # =============================================================================
 
 @pytest.mark.anyio
-async def test_tool_search_code(mock_external_deps, analyze_client):
-    """Verifies that the agent calls 'search_code_tool' for code search."""
+async def test_tool_search_content(mock_external_deps, analyze_client):
+    """Verifies that the agent calls 'search_file_tool' (content) for code search."""
     MockLlm.set_behaviors({
         "search code": {
-            "tool": "search_code_file_tool",
-            "args": {"query": "InitPlayer", "file_pattern": "*.cs"}
+            "tool": "search_file_tool",
+            "args": {"query": "InitPlayer", "search_type": "content", "file_pattern": "*.cs"}
         }
     })
     
@@ -196,12 +192,12 @@ async def test_tool_search_code(mock_external_deps, analyze_client):
 
 
 @pytest.mark.anyio
-async def test_tool_search_res(mock_external_deps, analyze_client):
-    """Verifies that the agent calls 'search_res_tool' for asset search."""
+async def test_tool_search_filename(mock_external_deps, analyze_client):
+    """Verifies that the agent calls 'search_file_tool' (filename) for asset search."""
     MockLlm.set_behaviors({
         "search asset": {
-            "tool": "search_res_tool",
-            "args": {"name_pattern": "*Hero*.prefab"}
+            "tool": "search_file_tool",
+            "args": {"query": "*Hero*.prefab", "search_type": "filename"}
         }
     })
     
