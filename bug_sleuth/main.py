@@ -101,10 +101,10 @@ def serve(port, host, skills_dir, config, env_file, data_dir, agent_dir, mode, u
             from bug_sleuth.bug_scene_app.app import app as adk_app
             
             # Use persistent session service
-            from google.adk.sessions import SqlAlchemySessionService
+            from google.adk.sessions.sqlite_session_service import SqliteSessionService
             
-            logger.info(f"Connecting to Session DB: {session_service_uri}")
-            session_service = SqlAlchemySessionService(session_service_uri)
+            logger.info(f"Connecting to Session DB: {session_db_path}")
+            session_service = SqliteSessionService(session_db_path)
 
             # Create AG-UI Adapter Agent
             # Wraps the ADK agent with AG-UI protocol support
