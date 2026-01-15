@@ -25,9 +25,7 @@ def mock_external_deps():
     """
     Only mock external tool availability checks.
     """
-    # Explicitly import to ensure module is attached to parent package for patching
-    with patch("bug_sleuth.bug_scene_app.bug_analyze_agent.tools.search_code.check_search_tools", 
-               return_value=None):
+    with patch("shutil.which", return_value="rg_mock_path"):
         yield
 
 
