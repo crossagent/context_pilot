@@ -1,17 +1,13 @@
 # 定义所有状态键的常量
 class StateKeys:
     # Device & Environment
-    DEVICE_INFO = "device_info"
     DEVICE_NAME = "device_name"
     CURRENT_OS = "current_os"
 
     # Bug Info
-    BUG_DESCRIPTION = "bug_description"
     BUG_USER_DESCRIPTION = "bug_user_description"
-    BUG_OCCURRENCE_TIME = "bug_occurrence_time"
     
     # Product & Branch
-    PRODUCT_BRANCH = "product_branch"
     PRODUCT_DESCRIPTION = "product_description"
     CLIENT_VERSION = "client_version"
 
@@ -39,6 +35,7 @@ class StateKeys:
     # Agent State
     USER_INTENT = "user_intent"
     CURRENT_INVESTIGATION_PLAN = "current_investigation_plan"
+    STRATEGIC_PLAN = "strategic_plan"
     STEP_COUNT = "step_count"
     
     # Token Tracking Keys

@@ -14,7 +14,7 @@ from unittest.mock import patch
 
 from bug_sleuth.testing import AgentTestClient, MockLlm
 from bug_sleuth.shared_libraries.state_keys import StateKeys
-from bug_sleuth.bug_scene_app.agent import bug_scene_agent
+from bug_sleuth.bug_scene_app.agent import context_pilot_agent as bug_scene_agent
 from bug_sleuth.bug_scene_app.bug_analyze_agent.agent import bug_analyze_agent
 
 logging.basicConfig(level=logging.INFO)
@@ -39,9 +39,7 @@ async def test_root_agent_refine_bug_state_tool(mock_external_deps):
         "logo is overlapping": {
             "tool": "refine_bug_state",
             "args": {
-                "bug_description": "The logo is overlapping text on the login screen",
-                "device_info": "Android",
-                "product_branch": "Branch A"
+                "device_name": "Pixel 6"
             }
         }
     })
@@ -93,8 +91,7 @@ async def test_root_agent_dispatch_to_analyze_agent(mock_external_deps):
         "crashes sometimes": {
             "tool": "refine_bug_state",
             "args": {
-                "bug_description": "Game crashes sometimes when opening bag",
-                "device_info": "PC"
+                "device_name": "PC"
             }
         },
         "success": {
@@ -139,7 +136,7 @@ async def test_loading_valid_root_agent(mock_external_deps):
     Basic test to verify returning valid root agent with sub-agents.
     """
     assert bug_scene_agent is not None
-    assert bug_scene_agent.name == "bug_scene_agent"
+    assert bug_scene_agent.name == "context_pilot_agent"
     
     # Verify sub-agents are accessible
     # With direct imports, we know they are there, but good to check list

@@ -5,7 +5,7 @@ from google.adk.apps.app import App, EventsCompactionConfig
 from google.adk.agents.context_cache_config import ContextCacheConfig
 
 from bug_sleuth.bug_scene_app.bug_analyze_agent.agent import bug_analyze_agent
-from bug_sleuth.bug_scene_app.agent import bug_scene_agent
+from bug_sleuth.bug_scene_app.agent import context_pilot_agent
 
 # --- Instantiate App (Global) ---
 
@@ -44,7 +44,7 @@ if target_agent_dir:
         raise RuntimeError(f"Could not load agent from {target_agent_dir}: {e}")
 else:
     # Default to Supervisor
-    selected_root_agent = bug_scene_agent
+    selected_root_agent = context_pilot_agent
 
 app = App(
     name="bug_scene_app",

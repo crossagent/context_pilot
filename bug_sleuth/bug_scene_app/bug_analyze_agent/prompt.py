@@ -57,10 +57,7 @@ instruction_prompt = """
 
     ----------------------------------------------------------------
     **环境信息 (Environment Info)：**
-    问题发生的平台是：{deviceInfo}
     使用的设备是：{deviceName}
-    代码的分支版本是: {productBranch}
-    BUG发生的时间是: {bug_occurrence_time}
     当前的时间是：{cur_date_time}
     当前的时间戳是：{cur_timestamp}
     用户的角色ID是：{roleId}
@@ -126,10 +123,7 @@ def get_prompt()-> str:
         bug_user_description=f"{{{StateKeys.BUG_USER_DESCRIPTION}}}",
         clientLogUrls=f"{{{StateKeys.CLIENT_LOG_URLS}}}",
         clientScreenshotUrls=f"{{{StateKeys.CLIENT_SCREENSHOT_URLS}}}",
-        deviceInfo=f"{{{StateKeys.DEVICE_INFO}}}",
         deviceName=f"{{{StateKeys.DEVICE_NAME}}}",
-        productBranch=f"{{{StateKeys.PRODUCT_BRANCH}}}",
-        bug_occurrence_time=f"{{{StateKeys.BUG_OCCURRENCE_TIME}}}",
         cur_date_time=f"{{{StateKeys.CUR_DATE_TIME}}}",
         cur_timestamp=f"{{{StateKeys.CUR_TIMESTAMP}}}",
         roleId=f"{{{StateKeys.ROLE_ID}}}",

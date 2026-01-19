@@ -10,12 +10,21 @@ from .prompt import ROOT_AGENT_PROMPT
 from .bug_analyze_agent.agent import bug_analyze_agent
 
 from .bug_report_agent.agent import bug_report_agent
-from .tools import refine_bug_state
+from .bug_report_agent.agent import bug_report_agent
+from .tools import refine_bug_state, update_strategic_plan
 from datetime import datetime
 # from .skill_library.extensions import root_skill_registry, report_skill_registry, analyze_skill_registry
 from bug_sleuth.skill_library.extensions import root_skill_registry, report_skill_registry, analyze_skill_registry
 from bug_sleuth.shared_libraries import constants
 from bug_sleuth.shared_libraries.state_keys import StateKeys
+
+# RAG Imports
+from google.adk.tools.retrieval.vertex_ai_rag_retrieval import VertexAiRagRetrieval
+from vertexai.preview import rag
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 logger = logging.getLogger(__name__)
 
@@ -46,10 +55,7 @@ async def before_agent_callback(callback_context: CallbackContext) -> Optional[t
 
     # Initialize default values for required prompt keys to prevent KeyError
     defaults = {
-        StateKeys.BUG_DESCRIPTION: "未知问题描述",
-        StateKeys.BUG_OCCURRENCE_TIME: "未知时间",
-        StateKeys.PRODUCT_BRANCH: "未知分支",
-        StateKeys.DEVICE_INFO: "未知设备"
+        StateKeys.STRATEGIC_PLAN: "暂无计划"
     }
     for key, value in defaults.items():
         if state.get(key) is None:
@@ -57,16 +63,38 @@ async def before_agent_callback(callback_context: CallbackContext) -> Optional[t
 
     return None
 
+# --- RAG Tool Definition ---
+retrieve_rag_documentation = VertexAiRagRetrieval(
+    name='retrieve_rag_documentation',
+    description=(
+        'Use this tool to retrieve documentation and reference materials for the question from the RAG corpus.'
+    ),
+    rag_resources=[
+        rag.RagResource(
+            rag_corpus=os.environ.get("RAG_CORPUS", "projects/YOUR_PROJECT/locations/YOUR_LOCATION/ragCorpora/YOUR_CORPUS") # Fallback or env
+        )
+    ],
+    similarity_top_k=10,
+    vector_distance_threshold=0.6,
+)
+
+from google.adk.tools import FunctionTool
+
 # --- 4. Instantiate Root Agent (Global) ---
-bug_scene_agent = LlmAgent(
-    name="bug_scene_agent",
+context_pilot_agent = LlmAgent(
+    name="context_pilot_agent",
     model=constants.MODEL,
     instruction=ROOT_AGENT_PROMPT,
     sub_agents=[
         bug_analyze_agent,
         bug_report_agent,
     ],
-    tools=[refine_bug_state, root_skill_registry],
+    tools=[
+        FunctionTool(refine_bug_state), 
+        FunctionTool(update_strategic_plan), 
+        retrieve_rag_documentation, 
+        root_skill_registry
+    ],
     before_agent_callback=before_agent_callback
 )
 

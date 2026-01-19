@@ -7,10 +7,6 @@ logger = logging.getLogger(__name__)
 
 def refine_bug_state(
     tool_context: ToolContext,
-    bug_description: Optional[str] = None,
-    occurrence_time: Optional[str] = None,
-    product_branch: Optional[str] = None,
-    device_info: Optional[str] = None,
     device_name: Optional[str] = None,
     fps: Optional[str] = None,
     ping: Optional[str] = None,
@@ -21,10 +17,6 @@ def refine_bug_state(
     Refine and update the bug state with new or corrected information.
     
     Args:
-        bug_description: Detailed description of the bug.
-        occurrence_time: Time when the bug occurred.
-        product_branch: The code branch where the bug is found.
-        device_info: Platform information (e.g., Android 12, iOS 15).
         device_name: Specific device model (e.g., Pixel 6, iPhone 13).
         fps: Frame per second at the time of the bug.
         ping: Network latency (ms).
@@ -34,22 +26,6 @@ def refine_bug_state(
     state = tool_context.state
     updated_fields = []
 
-    if bug_description:
-        state[StateKeys.BUG_DESCRIPTION] = bug_description
-        updated_fields.append(StateKeys.BUG_DESCRIPTION)
-    
-    if occurrence_time:
-        state[StateKeys.BUG_OCCURRENCE_TIME] = occurrence_time
-        updated_fields.append(StateKeys.BUG_OCCURRENCE_TIME)
-        
-    if product_branch:
-        state[StateKeys.PRODUCT_BRANCH] = product_branch
-        updated_fields.append(StateKeys.PRODUCT_BRANCH)
-        
-    if device_info:
-        state[StateKeys.DEVICE_INFO] = device_info
-        updated_fields.append(StateKeys.DEVICE_INFO)
-        
     if device_name:
         state[StateKeys.DEVICE_NAME] = device_name
         updated_fields.append(StateKeys.DEVICE_NAME)
@@ -74,3 +50,16 @@ def refine_bug_state(
         return "No information provided to update."
 
     return f"Successfully updated fields: {', '.join(updated_fields)}"
+
+
+def update_strategic_plan(tool_context: ToolContext, plan_content: str) -> str:
+    """
+    Update the Strategic Plan (Query Plan) for the current session.
+
+    Args:
+        plan_content: The full content of the plan, describing what information needs to be gathered and from where.
+                      Format suggestions: Markdown list or steps.
+    """
+    state = tool_context.state
+    state[StateKeys.STRATEGIC_PLAN] = plan_content
+    return f"Strategic Plan updated. Current Plan:\n{plan_content}"

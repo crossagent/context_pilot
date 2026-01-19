@@ -168,9 +168,7 @@ try:
         
         # Map camelCase input keys to snake_case StateKeys
         KEY_MAPPING = {
-            "deviceInfo": StateKeys.DEVICE_INFO,
             "deviceName": StateKeys.DEVICE_NAME,
-            "productBranch": StateKeys.PRODUCT_BRANCH,
             "clientLogUrl": StateKeys.CLIENT_LOG_URL,
             "clientLogUrls": StateKeys.CLIENT_LOG_URLS,
             "clientScreenshotUrls": StateKeys.CLIENT_SCREENSHOT_URLS,
@@ -178,9 +176,7 @@ try:
             "serverId": StateKeys.SERVER_ID,
             "roleId": StateKeys.ROLE_ID,
             "nickName": StateKeys.NICK_NAME,
-            "message": StateKeys.BUG_DESCRIPTION,  # Alias
-            "occurrence_time": StateKeys.BUG_OCCURRENCE_TIME,  # Map to full key
-            "bug_description": StateKeys.BUG_DESCRIPTION,  # Ensure consistency
+            "message": StateKeys.BUG_USER_DESCRIPTION,  # Map message to user description
         }
         
         # Transform context keys to snake_case
@@ -196,7 +192,7 @@ try:
         )
 
         # 2. Extract specific fields for the event text
-        bug_description = normalized_context.get(StateKeys.BUG_DESCRIPTION) or "New Bug Report Initialized"
+        bug_description = normalized_context.get(StateKeys.BUG_USER_DESCRIPTION) or "New Bug Report Initialized"
         
         # 3. Create First Event: State Update (System-side, invisible in chat usually)
         # This event carries the payload to update the session state.
@@ -219,15 +215,12 @@ try:
         
         # Define display order and labels for better readability
         display_fields = [
-            (StateKeys.BUG_DESCRIPTION, "问题描述"),
-            (StateKeys.DEVICE_INFO, "设备信息"),
+            (StateKeys.BUG_USER_DESCRIPTION, "问题描述"),
             (StateKeys.DEVICE_NAME, "设备名称"),
-            (StateKeys.PRODUCT_BRANCH, "产品分支"),
             (StateKeys.CLIENT_VERSION, "客户端版本"),
             (StateKeys.SERVER_ID, "服务器ID"),
             (StateKeys.ROLE_ID, "角色ID"),
             (StateKeys.NICK_NAME, "昵称"),
-            (StateKeys.BUG_OCCURRENCE_TIME, "发生时间"),
             (StateKeys.CLIENT_LOG_URL, "客户端日志"),
             (StateKeys.CLIENT_LOG_URLS, "客户端日志列表"),
             (StateKeys.CLIENT_SCREENSHOT_URLS, "截图列表"),

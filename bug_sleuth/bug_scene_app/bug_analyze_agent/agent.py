@@ -59,7 +59,6 @@ import platform
 
 from .tools import (
     time_convert_tool, 
-    update_investigation_plan_tool,
     run_bash_command,
     read_file_tool,
     search_file_tool, # Unified Search Tool
@@ -67,7 +66,8 @@ from .tools import (
     get_git_diff_tool,
     get_git_blame_tool,
     get_svn_log_tool,
-    get_svn_diff_tool
+    get_svn_diff_tool,
+    update_investigation_plan_tool
 )
 
 from .tools.search_file import search_file_tool
@@ -273,18 +273,13 @@ def inject_default_values(callback_context: CallbackContext):
         repo_list_str.append(f"- **{r.get('name')}**: `{r.get('path')}` - {desc} {cap_str}")
     callback_context.state["repository_list"] = "\n    ".join(repo_list_str)
 
-    if not callback_context.state.get(StateKeys.BUG_OCCURRENCE_TIME):
-        callback_context.state[StateKeys.BUG_OCCURRENCE_TIME] = cur_date_time
-
     # Inject Product
     product_description = CONFIG.get("product_description") or os.getenv("PRODUCT_DESCRIPTION") or "Rust-like Survival Game"
     callback_context.state[StateKeys.PRODUCT_DESCRIPTION] = product_description
 
     defaults = {
         StateKeys.BUG_USER_DESCRIPTION: "暂无用户描述 (No user description provided)",
-        StateKeys.DEVICE_INFO: "Unknown",
         StateKeys.DEVICE_NAME: "Unknown",
-        StateKeys.PRODUCT_BRANCH: "Unknown",
         StateKeys.ROLE_ID: "Unknown",
         StateKeys.NICK_NAME: "Unknown",
         StateKeys.SERVER_ID: "Unknown",
@@ -333,7 +328,6 @@ bug_analyze_agent = _agent_base_class(
 
     tools=[
         time_convert_tool, 
-        update_investigation_plan_tool, 
         run_bash_command,
         read_file_tool,
 
@@ -344,7 +338,8 @@ bug_analyze_agent = _agent_base_class(
         get_svn_log_tool,
         get_svn_diff_tool,
         load_artifacts,
-        analyze_skill_registry
+        analyze_skill_registry,
+        update_investigation_plan_tool
     ],
     output_key=AgentKeys.BUG_REASON,
 )
