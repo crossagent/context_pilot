@@ -6,11 +6,12 @@ from typing import List, Optional
 from google.cloud import storage
 from google.cloud import secretmanager
 from google.cloud import aiplatform
-# Vertex AI RAG specific imports might vary based on SDK version; 
-# using generic google-cloud-aiplatform for structure, assuming 'rag' submodule exists or similar.
-# Adjust import based on installed SDK version validation.
+# Vertex AI RAG specific imports
 import vertexai
 from vertexai.preview import rag
+
+# Pinecone for validation
+from pinecone import Pinecone
 
 try:
     from .rag_config import RagConfig
@@ -85,13 +86,16 @@ class RagPipeline:
                         enhanced_content = f"{tags}\n{raw_content}"
                         
                         # Construct JSON object
-                        # JSONL spec: One complete JSON string per line. 
-                        # json.dumps handles string escaping (including newlines) automatically.
+                        # JSONL spec: One complete JSON string per line.
+                        # Matches test_case.jsonl format: title, content, metadata
                         record = {
+                            "title": os.path.basename(file_path),
                             "content": enhanced_content,
                             "metadata": {
                                 "source": os.path.basename(file_path),
-                                "path": file_path
+                                "path": file_path,
+                                "module": module,
+                                "file_type": ext
                             }
                         }
                         
@@ -101,6 +105,7 @@ class RagPipeline:
                         logger.error(f"Error processing file {file}: {e}")
             
             logger.info(f"Data Preparation Complete. Generated {count} records at {self.config.OUTPUT_JSONL_PATH}")
+            return count
 
     def upload_to_gcs(self):
         """Phase 2 (Cont): Upload Source of Truth to GCS."""
@@ -155,17 +160,47 @@ class RagPipeline:
             logger.error(f"Failed to trigger RAG import: {e}")
             raise
 
+    def validate_pinecone_counts(self, expected_count: int):
+        """Phase 4: Validation - Check Pinecone Vector Count."""
+        logger.info("Starting Validation Phase: Checking Pinecone Vector Count...")
+        
+        api_key = self.get_pinecone_api_key()
+        try:
+            pc = Pinecone(api_key=api_key)
+            index = pc.Index(self.config.PINECONE_INDEX_NAME)
+            
+            # Allow some time for eventual consistency if run immediately after sync
+            # But for 'import_files', it's async, so this might just show current state
+            stats = index.describe_index_stats()
+            vector_count = stats.total_vector_count
+            
+            logger.info(f"Pinecone Vector Count: {vector_count}")
+            logger.info(f"Expected (JSONL Lines): {expected_count}")
+            
+            if vector_count == expected_count:
+                logger.info("SUCCESS: Vector count matches exactly.")
+            else:
+                logger.warning("WARNING: Vector count mismatch. (Note: Vertex RAG import is asynchronous, data might still be processing)")
+                
+        except Exception as e:
+            logger.error(f"Validation Failed: {e}")
+
     def run(self, dry_run=False):
         logger.info("=== Starting RAG Pipeline Sync ===")
         
-        self.prepare_data()
+        record_count = self.prepare_data()
         
         if dry_run:
-            logger.info("Dry run complete. Skipping Upload and Sync.")
+            logger.info(f"Dry run complete. Generated {record_count} records. Skipping Upload and Sync.")
             return
             
         gcs_uri = self.upload_to_gcs()
         self.trigger_sync(gcs_uri)
+        
+        # Optional validation
+        # Note: Since import is async, this might run before indexing completes.
+        # Useful for checking 'Physical Isolation' baseline.
+        self.validate_pinecone_counts(expected_count=record_count)
         
         logger.info("=== Pipeline Execution Finished ===")
 
