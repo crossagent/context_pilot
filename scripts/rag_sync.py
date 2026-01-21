@@ -79,33 +79,49 @@ class RagPipeline:
                     
                     file_path = os.path.join(root, file)
                     try:
-                        with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
-                            raw_content = f.read()
+                        ext = os.path.splitext(file_path)[1].lstrip('.').lower()
                         
-                        tags = self.get_context_tags(file_path)
-                        enhanced_content = f"{tags}\n{raw_content}"
-                        
-                        # Construct JSON object
-                        # JSONL spec: One complete JSON string per line.
-                        # Matches test_case.jsonl format: title, content, metadata
-                        record = {
-                            "title": os.path.basename(file_path),
-                            "content": enhanced_content,
-                            "metadata": {
-                                "source": os.path.basename(file_path),
-                                "path": file_path,
-                                "module": module,
-                                "file_type": ext
-                            }
-                        }
-                        
-                        outfile.write(json.dumps(record, ensure_ascii=False) + '\n')
-                        count += 1
+                        # Passthrough for pre-formatted JSONL files
+                        if ext == 'jsonl':
+                            logger.info(f"Detected pre-formatted JSONL: {file}. Merging directly...")
+                            with open(file_path, 'r', encoding='utf-8') as f_in:
+                                for line in f_in:
+                                    if line.strip():
+                                        outfile.write(line.strip() + '\n')
+                                        count += 1
+                            continue
+
+                        # Ignore other file types
+                        logger.warning(f"Skipping non-JSONL file: {file}")
+                        continue
                     except Exception as e:
                         logger.error(f"Error processing file {file}: {e}")
             
             logger.info(f"Data Preparation Complete. Generated {count} records at {self.config.OUTPUT_JSONL_PATH}")
             return count
+
+    def validate_jsonl(self, file_path: str) -> bool:
+        """Validate JSONL format and encoding."""
+        logger.info(f"Validating JSONL format: {file_path}")
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                line_num = 0
+                for line in f:
+                    line_num += 1
+                    if not line.strip(): continue
+                    try:
+                        json.loads(line)
+                    except json.JSONDecodeError as e:
+                        logger.error(f"❌ Invalid JSON at line {line_num}: {e}")
+                        return False
+            logger.info("✅ JSONL validation passed.")
+            return True
+        except UnicodeDecodeError as e:
+            logger.error(f"❌ Encoding error (not UTF-8): {e}")
+            return False
+        except Exception as e:
+            logger.error(f"❌ Validation error: {e}")
+            return False
 
     def upload_to_gcs(self):
         """Phase 2 (Cont): Upload Source of Truth to GCS."""
@@ -138,7 +154,6 @@ class RagPipeline:
                 paths=paths,
                 chunk_size=self.config.CHUNK_SIZE,
                 chunk_overlap=self.config.CHUNK_OVERLAP,
-                use_default_parser=self.config.USE_DEFAULT_PARSER,
                 timeout=900
             )
             
@@ -194,6 +209,14 @@ class RagPipeline:
             logger.info(f"Dry run complete. Generated {record_count} records. Skipping Upload and Sync.")
             return
             
+        if dry_run:
+            logger.info(f"Dry run complete. Generated {record_count} records. Skipping Upload and Sync.")
+            return
+
+        if not self.validate_jsonl(self.config.OUTPUT_JSONL_PATH):
+            logger.error("🛑 Validation Failed. Aborting upload.")
+            return
+
         gcs_uri = self.upload_to_gcs()
         self.trigger_sync(gcs_uri)
         

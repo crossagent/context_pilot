@@ -1,5 +1,8 @@
 import os
 from dataclasses import dataclass
+from dotenv import load_dotenv
+
+load_dotenv()
 
 @dataclass
 class RagConfig:
@@ -29,7 +32,7 @@ class RagConfig:
     USE_DEFAULT_PARSER = True
     
     # Local Data Config
-    LOCAL_DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../adk_data"))
+    LOCAL_DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../data"))
     OUTPUT_JSONL_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "../temp/knowledge_base.jsonl"))
 
     @staticmethod
