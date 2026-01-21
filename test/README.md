@@ -35,8 +35,7 @@
 test/
 ├── conftest.py                 # pytest 配置，自动设置 MockLlm
 ├── integration/
-│   ├── test_bug_analyze_flow.py  # 分析 Agent 测试
-│   └── test_bug_sleuth_flow.py   # 完整流程测试
+│   └── test_bug_analyze_flow.py  # 分析 Agent 测试
 └── unit/
     └── ...
 ```

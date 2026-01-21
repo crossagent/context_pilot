@@ -71,7 +71,7 @@ retrieve_rag_documentation = VertexAiRagRetrieval(
     ),
     rag_resources=[
         rag.RagResource(
-            rag_corpus=os.environ.get("RAG_CORPUS", "projects/YOUR_PROJECT/locations/YOUR_LOCATION/ragCorpora/YOUR_CORPUS") # Fallback or env
+            rag_corpus=os.environ.get("RAG_CORPUS_NAME", "projects/YOUR_PROJECT/locations/YOUR_LOCATION/ragCorpora/YOUR_CORPUS") # Fallback or env
         )
     ],
     similarity_top_k=10,
