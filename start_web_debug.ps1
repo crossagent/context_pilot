@@ -13,10 +13,21 @@ Write-Host "Project Root: $ProjectRoot"
 Write-Host "Data Dir:     $DataDir"
 Write-Host "=============================================="
 
+# Optional: Set this to start with a specific sub-agent (e.g. "bug_analyze_agent")
+# If empty, it defaults to the Supervisor (context_pilot_agent)
+$RootAgentName = ""
+
+# Build the command arguments
+$cmdArgs = "run bug-sleuth serve --data-dir ""$DataDir"""
+
+if ($RootAgentName) {
+    $cmdArgs += " --root-agent-name ""$RootAgentName"""
+}
+
 # Call the custom CLI
 # - Uses 'uv run' to ensure installed package context
 # - Explicitly passes data-dir
 # - Relies on CLI's auto-discovery for .env, config.yaml, and skills/
 # Use cmd /c to wrap execution. This prevents PowerShell terminal from freezing 
 # (losing input echo) after Ctrl+C.
-cmd /c "uv run bug-sleuth serve --data-dir ""$DataDir"" --agent-dir ""$ProjectRoot\bug_sleuth\bug_scene_app\bug_analyze_agent"""
+cmd /c "uv $cmdArgs"

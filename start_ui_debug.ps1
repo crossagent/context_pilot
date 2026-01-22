@@ -14,10 +14,22 @@ Write-Host "Data Dir:     $DataDir"
 Write-Host "Mode:         ag-ui"
 Write-Host "=============================================="
 
-# Call the custom CLI with AG-UI mode
+# Optional: Set this to start with a specific sub-agent (e.g. "bug_analyze_agent")
+# If empty, it defaults to the Supervisor (context_pilot_agent)
+$RootAgentName = ""
+
+# Build the command arguments
+# Explicitly using ag-ui mode for UI debugging
+$cmdArgs = "run bug-sleuth serve --data-dir ""$DataDir"" --mode ag-ui"
+
+if ($RootAgentName) {
+    $cmdArgs += " --root-agent-name ""$RootAgentName"""
+}
+
+# Call the custom CLI
 # - Uses 'uv run' to ensure installed package context
-# - Explicitly passes data-dir and mode
+# - Explicitly passes data-dir
 # - Relies on CLI's auto-discovery for .env, config.yaml, and skills/
 # Use cmd /c to wrap execution. This prevents PowerShell terminal from freezing 
 # (losing input echo) after Ctrl+C.
-cmd /c "uv run bug-sleuth serve --data-dir ""$DataDir"" --mode ag-ui"
+cmd /c "uv $cmdArgs"

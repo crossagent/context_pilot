@@ -9,42 +9,23 @@ from bug_sleuth.bug_scene_app.agent import context_pilot_agent
 
 # --- Instantiate App (Global) ---
 
-def load_agent_from_dir(agent_dir: str):
-    """Dynamically loads 'agent' from a given directory using standard import."""
-    if not os.path.isdir(agent_dir):
-        raise ValueError(f"Agent directory not found: {agent_dir}")
-        
-    # Standard ADK-like approach: Module name is the folder name.
-    # We allow the import system to handle __init__.py resolution.
-    parent_dir = os.path.dirname(agent_dir)
-    module_name = os.path.basename(agent_dir)
+# --- Select Root Agent ---
+selected_root_agent = context_pilot_agent
+target_agent_name = os.getenv("ADK_ROOT_AGENT_NAME")
+
+if target_agent_name:
+    # Look for the agent in sub-agents
+    found = False
+    if context_pilot_agent.sub_agents:
+        for sub in context_pilot_agent.sub_agents:
+            if sub.name == target_agent_name:
+                selected_root_agent = sub
+                found = True
+                break
     
-    # Ensure parent is in path so we can import the module
-    if parent_dir not in sys.path:
-        sys.path.insert(0, parent_dir)
-        
-    try:
-        module = importlib.import_module(module_name)
-    except ImportError as e:
-        raise ImportError(f"Failed to import module '{module_name}' from '{parent_dir}': {e}")
+    if not found:
+        print(f"WARNING: Requested root agent '{target_agent_name}' not found in sub-agents. Defaulting to Supervisor.")
 
-    # Strictly look for 'root_agent' as requested
-    try:
-        return getattr(module, "root_agent")
-    except AttributeError:
-        raise ImportError(f"Module '{module_name}' loaded, but has no 'root_agent' attribute. Please add 'from .X import X as root_agent' to __init__.py")
-
-# Check for dynamic target from CLI
-target_agent_dir = os.getenv("ADK_TARGET_AGENT_DIR")
-
-if target_agent_dir:
-    try:
-        selected_root_agent = load_agent_from_dir(target_agent_dir)
-    except Exception as e:
-        raise RuntimeError(f"Could not load agent from {target_agent_dir}: {e}")
-else:
-    # Default to Supervisor
-    selected_root_agent = context_pilot_agent
 
 app = App(
     name="bug_scene_app",

@@ -22,10 +22,9 @@ def main():
 @click.option("--config", envvar="CONFIG_FILE", help="Path to the configuration file.")
 @click.option("--env-file", default=".env", help="Path to .env file.")
 @click.option("--data-dir", default="adk_data", help="Directory for local data storage.")
-@click.option("--agent-dir", default=None, help="Agent startup directory (containing agent definition).")
+@click.option("--root-agent-name", default=None, help="Name of the sub-agent to start as root (e.g., bug_analyze_agent).")
 @click.option("--mode", type=click.Choice(["ag-ui", "adk-web"], case_sensitive=False), default="adk-web", help="Server mode: ag-ui (frontend middleware) or adk-web (legacy/api).")
-@click.option("--ui-path", envvar="BUG_SLEUTH_UI_PATH", help="Path to the reporter UI HTML file.")
-def serve(port, host, skills_dir, config, env_file, data_dir, agent_dir, mode, ui_path):
+def serve(port, host, skills_dir, config, env_file, data_dir, root_agent_name, mode):
     """
     Start the Bug Sleuth Agent Server.
     
@@ -56,11 +55,8 @@ def serve(port, host, skills_dir, config, env_file, data_dir, agent_dir, mode, u
     if data_dir:
         os.environ["ADK_DATA_DIR"] = data_dir
 
-    if agent_dir:
-        os.environ["ADK_TARGET_AGENT_DIR"] = os.path.abspath(agent_dir)
-
-    if ui_path:
-        os.environ["BUG_SLEUTH_UI_PATH"] = os.path.abspath(ui_path)
+    if root_agent_name:
+        os.environ["ADK_ROOT_AGENT_NAME"] = root_agent_name
 
     os.environ["ADK_APP_MODE"] = mode
 
