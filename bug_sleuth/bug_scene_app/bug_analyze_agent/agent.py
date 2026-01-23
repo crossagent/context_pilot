@@ -66,8 +66,7 @@ from .tools import (
     get_git_diff_tool,
     get_git_blame_tool,
     get_svn_log_tool,
-    get_svn_diff_tool,
-    update_investigation_plan_tool
+    get_svn_diff_tool
 )
 
 from .tools.search_file import search_file_tool
@@ -135,7 +134,7 @@ async def initialize_and_validate(callback_context: CallbackContext) -> Optional
         if plan_content:
              callback_context.state[StateKeys.CURRENT_INVESTIGATION_PLAN] = plan_content
         else:
-             callback_context.state[StateKeys.CURRENT_INVESTIGATION_PLAN] = "当前尚无调查计划 (No plan created yet). Use update_investigation_plan_tool to create one."
+             callback_context.state[StateKeys.CURRENT_INVESTIGATION_PLAN] = "当前尚无调查计划 (No plan created yet)."
     
     # 5. Initialize Token & Cost Counters
     if StateKeys.TOTAL_SESSION_TOKENS not in callback_context.state:
@@ -194,9 +193,7 @@ class TokenLimitHandler:
                         f"- 输入 (Input): {total_input} Tokens\n"
                         f"- 缓存 (Cached): {total_cached} Tokens\n"
                         f"- 输出 (Output): {total_output} Tokens\n\n"
-                        f"--- **当前调查计划 (Current Plan)** ---\n"
-                        f"{callback_context.state.get(StateKeys.CURRENT_INVESTIGATION_PLAN, '暂无计划内容')}\n"
-                        f"---------------------------------------\n"
+
                         f"请确认下一步行动 (Please confirm next step)：\n"
                         f"- **继续 (Continue)**: 重置计数器并继续任务。\n"
                         f"- **调整 (Adjust)**: 修改计划或停止。"
@@ -338,8 +335,7 @@ bug_analyze_agent = _agent_base_class(
         get_svn_log_tool,
         get_svn_diff_tool,
         load_artifacts,
-        analyze_skill_registry,
-        update_investigation_plan_tool
+        analyze_skill_registry
     ],
     output_key=AgentKeys.BUG_REASON,
 )

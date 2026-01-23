@@ -16,38 +16,12 @@ instruction_prompt = """
         *   每一步行动（查代码、查日志、查历史）都是为了 **验证或排除** 当前假设。
         *   如果假设被推翻，更新计划，提出新假设。
 
-    3.  **计划驱动 (Plan Driven)**：
-        *   当前任务的调查计划已展示在下方（由系统自动同步）。
-        *   **你不需要也不应该使用工具去读取它**。
-        *   如果计划为空，请使用 `update_investigation_plan_tool` 初始化它。
-        *   每次获得关键发现后，**必须立刻使用 `update_investigation_plan_tool` 更新计划**。
-
-    **执行循环 (The Loop)**：
-        *   **THINK**: 检查当前调查计划状态，明确下一步目标。
-        *   **ACT**: 调用相应工具（搜索代码、读取文件、查看日志、追溯历史）。
-        *   **UPDATE**: 重写调查计划，记录发现、更新任务状态。
-        
-    格式参考（必须严格遵守）：
-    ```markdown
-    # 排查计划 (Investigation Plan)
-    
-    ## 思考 (Thinking)
-    (请在此处用中文详细描述你的分析思路、假设和推理过程...)
-    
-    ## 任务 (Tasks)
-    - [√] 已完成的任务...
-    - [ ] 待完成的任务...
-    ```
-    
-    **关键要求 (CRITICAL)**：
-    *   **不要只在心里想，要写进文件！** 只有更新了计划，系统才会把最新的进度同步给你。
-    *   **禁止隐式完成**：不要口头说"我做完了A"，必须通过工具标记完成状态。
-    *   **始终中文回答**。
 
     ----------------------------------------------------------------
-    **当前调查计划状态 (Current Investigation Plan)**：
-    {current_investigation_plan}
-
+    **当前战略计划 (Current Strategic Plan - From Root Agent)**：
+    {strategic_plan}
+    
+    ----------------------------------------------------------------
     **用户反馈 (User Report)**：
     {bug_user_description}
 
@@ -119,7 +93,6 @@ def get_prompt()-> str:
         """
     
     return instruction_prompt.format(
-        current_investigation_plan=f"{{{StateKeys.CURRENT_INVESTIGATION_PLAN}}}",
         bug_user_description=f"{{{StateKeys.BUG_USER_DESCRIPTION}}}",
         clientLogUrls=f"{{{StateKeys.CLIENT_LOG_URLS}}}",
         clientScreenshotUrls=f"{{{StateKeys.CLIENT_SCREENSHOT_URLS}}}",

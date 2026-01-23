@@ -116,10 +116,7 @@ class VisualLlmAgent(LlmAgent):
                             "run_bash_command": "🖥️",
                             "read_file_tool": "📄",
                             "read_code_tool": "💻",
-                            "search_code_tool": "🔍",
-                            "list_dir_tool": "📂",
-                            "run_python_code": "🐍",
-                            "update_investigation_plan_tool": "📝"
+                            "run_python_code": "🐍"
                         }
                         icon = icons.get(tool_name, "🔧")
                         
@@ -166,22 +163,8 @@ class VisualLlmAgent(LlmAgent):
                             result_str = ""
                             icon = "✅"
 
-                            # --- Logic to extract visual text (Same as before) ---
-                            if tool_name == "update_investigation_plan_tool":
-                                if isinstance(response_payload, dict):
-                                    if "output" in response_payload:
-                                         result_str = str(response_payload["output"])
-                                    elif "result" in response_payload:
-                                         result_str = str(response_payload["result"])
-                                    else:
-                                         result_str = str(response_payload)
-                                else:
-                                     result_str = str(response_payload)
-                                
-                                if result_str:
-                                    result_str = result_str.replace("\\n", "\n")
                             
-                            elif isinstance(response_payload, dict):
+                            if isinstance(response_payload, dict):
                                 is_error = response_payload.get("status") == "error" or response_payload.get("exit_code", 0) != 0
                                 if is_error:
                                     icon = "❌"
