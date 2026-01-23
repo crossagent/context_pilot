@@ -5,7 +5,7 @@ from typing import Optional
 from llama_index.core import VectorStoreIndex, Settings
 from llama_index.core.readers import SimpleDirectoryReader
 from llama_index.llms.gemini import Gemini
-from llama_index.embeddings.google import GoogleGenerativeAIEmbeddings
+from llama_index.embeddings.google import GeminiEmbedding
 from google.adk.tools import FunctionTool
 
 logger = logging.getLogger(__name__)
@@ -32,15 +32,15 @@ def _get_index() -> VectorStoreIndex:
     Settings.llm = Gemini(model="models/gemini-2.0-flash-exp", api_key=api_key)
     
     # Use Google Embeddings (AI Studio)
-    Settings.embed_model = GoogleGenerativeAIEmbeddings(
-        model="models/embedding-001", 
+    Settings.embed_model = GeminiEmbedding(
+        model_name="models/embedding-001", 
         api_key=api_key
     )
 
     # 2. Load Data
     # Assuming run from project root, or adjust path relative to this file
     # data/knowledge_base.jsonl
-    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
     data_path = os.path.join(base_dir, "data", "knowledge_base.jsonl")
     
     if not os.path.exists(data_path):
@@ -80,6 +80,5 @@ def query_knowledge_base(query: str) -> str:
 
 # Create the ADK-compatible tool
 retrieve_rag_documentation_tool = FunctionTool(
-    query_knowledge_base,
-    description="Use this tool to retrieve documentation and reference materials from the knowledge base."
+    query_knowledge_base
 )

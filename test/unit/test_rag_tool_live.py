@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 # Load env before importing agent to ensure config is correct
 load_dotenv()
 
-from bug_sleuth.bug_scene_app.agent import retrieve_rag_documentation_tool
+from bug_sleuth.bug_scene_app.llama_rag_tool import retrieve_rag_documentation_tool
 # from bug_sleuth.bug_scene_app.tools.llama_rag_tool import retrieve_rag_documentation_tool
 
 # Setup logging
@@ -45,7 +45,10 @@ async def test_retrieve_rag_documentation_live():
         
         # We expect the content we added to be present
         # "验证测试记录" -> "这是一条用于验证 Vertex AI RAG 文件更新机制的测试记录..."
-        assert "哈希变更" in result_str or "验证" in result_str, f"Expected content not found. Got: {result_str[:200]}"
+        # Note: Gemini might translate this to English.
+        # "This is a test record used to verify the Vertex AI RAG..."
+        expected_keywords = ["哈希变更", "验证", "Vertex AI", "hash changes", "test record"]
+        assert any(k in result_str for k in expected_keywords), f"Expected content not found. Got: {result_str[:200]}"
         
         logger.info("✅ LlamaIndex RAG Tool test passed!")
         

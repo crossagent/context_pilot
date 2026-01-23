@@ -19,7 +19,7 @@ from bug_sleuth.shared_libraries import constants
 from bug_sleuth.shared_libraries.state_keys import StateKeys
 
 # RAG Imports
-from .tools.llama_rag_tool import retrieve_rag_documentation_tool
+from .llama_rag_tool import retrieve_rag_documentation_tool
 from dotenv import load_dotenv
 
 load_dotenv()
