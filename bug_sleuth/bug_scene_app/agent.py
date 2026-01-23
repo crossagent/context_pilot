@@ -19,8 +19,7 @@ from bug_sleuth.shared_libraries import constants
 from bug_sleuth.shared_libraries.state_keys import StateKeys
 
 # RAG Imports
-from google.adk.tools.retrieval.vertex_ai_rag_retrieval import VertexAiRagRetrieval
-from vertexai.preview import rag
+from .tools.llama_rag_tool import retrieve_rag_documentation_tool
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -64,19 +63,7 @@ async def before_agent_callback(callback_context: CallbackContext) -> Optional[t
     return None
 
 # --- RAG Tool Definition ---
-retrieve_rag_documentation = VertexAiRagRetrieval(
-    name='retrieve_rag_documentation',
-    description=(
-        'Use this tool to retrieve documentation and reference materials for the question from the RAG corpus.'
-    ),
-    rag_resources=[
-        rag.RagResource(
-            rag_corpus=os.environ.get("RAG_CORPUS_NAME", "projects/YOUR_PROJECT/locations/YOUR_LOCATION/ragCorpora/YOUR_CORPUS") # Fallback or env
-        )
-    ],
-    similarity_top_k=10,
-    vector_distance_threshold=0.6,
-)
+
 
 from google.adk.tools import FunctionTool
 
@@ -92,7 +79,7 @@ context_pilot_agent = LlmAgent(
     tools=[
         FunctionTool(refine_bug_state), 
         FunctionTool(update_strategic_plan), 
-        retrieve_rag_documentation, 
+        retrieve_rag_documentation_tool, 
         root_skill_registry
     ],
     before_agent_callback=before_agent_callback

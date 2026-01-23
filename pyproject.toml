@@ -25,6 +25,9 @@ dependencies = [
     "google-cloud-storage>=2.14.0",
     "google-cloud-secret-manager>=2.22.0",
     "pinecone>=3.0.0",
+    "llama-index>=0.10.0",
+    "llama-index-llms-gemini>=0.1.0",
+    "llama-index-embeddings-google>=0.1.0",
 ]
 
 [project.scripts]
