@@ -11,7 +11,7 @@ import {
   useRenderToolCall,
 } from "@copilotkit/react-core";
 import { CopilotKitCSSProperties, CopilotSidebar } from "@copilotkit/react-ui";
-import { useState } from "react";
+import React, { useState } from "react";
 
 export default function CopilotKitPage() {
   const [themeColor, setThemeColor] = useState("#6366f1");
@@ -86,14 +86,238 @@ function YourMainContent({ themeColor }: { themeColor: string }) {
     },
   });
 
-  //🪁 Generative UI: https://docs.copilotkit.ai/adk/generative-ui
+  //🪁 Generative UI: RAG Knowledge Base
   useRenderToolCall(
     {
-      name: "get_weather",
-      description: "Get the weather for a given location.",
-      parameters: [{ name: "location", type: "string", required: true }],
+      name: "retrieve_rag_documentation_tool",
+      description: "从知识库检索信息",
+      parameters: [{ name: "query", type: "string", required: true }],
       render: ({ args, result }) => {
-        return <WeatherCard location={args.location} themeColor={themeColor} />;
+        const isComplete = result !== undefined;
+        const resultText = isComplete
+          ? (typeof result === 'string' ? result : JSON.stringify(result, null, 2))
+          : null;
+
+        return (
+          <div
+            style={{
+              backgroundColor: "#f0fdf4",
+              border: "2px solid #10b981",
+              padding: "1.5rem",
+              borderRadius: "0.75rem",
+              margin: "1rem 0",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", marginBottom: "1rem" }}>
+              <span style={{ fontSize: "1.5rem", marginRight: "0.5rem" }}>
+                {isComplete ? "📚" : "🔍"}
+              </span>
+              <h3 style={{ margin: 0, fontSize: "1.1rem", color: "#065f46" }}>
+                {isComplete ? "知识库检索完成" : "正在检索知识库..."}
+              </h3>
+            </div>
+
+            <div
+              style={{
+                fontSize: "0.9rem",
+                color: "#064e3b",
+                marginBottom: "0.75rem",
+                fontStyle: "italic",
+              }}
+            >
+              查询：<strong>{args.query}</strong>
+            </div>
+
+            {isComplete && resultText && (
+              <div
+                style={{
+                  backgroundColor: "white",
+                  padding: "1rem",
+                  borderRadius: "0.5rem",
+                  border: "1px solid #d1fae5",
+                  maxHeight: "400px",
+                  overflowY: "auto",
+                }}
+              >
+                <pre
+                  style={{
+                    margin: 0,
+                    fontSize: "0.85rem",
+                    lineHeight: "1.6",
+                    whiteSpace: "pre-wrap",
+                    fontFamily: "ui-monospace, monospace",
+                    color: "#1f2937",
+                  }}
+                >
+                  {resultText}
+                </pre>
+              </div>
+            )}
+
+            {!isComplete && (
+              <div
+                style={{
+                  fontSize: "0.85rem",
+                  color: "#059669",
+                  opacity: 0.8,
+                }}
+              >
+                正在查询向量数据库...
+              </div>
+            )}
+          </div>
+        );
+      },
+    },
+    [],
+  );
+
+  // Strategic Plan Update - ADK Confirmation HITL
+  useRenderToolCall(
+    {
+      name: "update_strategic_plan",
+      description: "更新调查计划（需要用户审核）",
+      parameters: [{ name: "plan_content", type: "string", required: true }],
+      render: ({ args, result }) => {
+        const [editedPlan, setEditedPlan] = React.useState(args.plan_content || "");
+        const [responded, setResponded] = React.useState(false);
+
+        const isComplete = result !== undefined;
+
+        // Check if this is waiting for confirmation
+        // When ADK request_confirmation is called, the tool is in progress but not complete
+        const waitingForConfirmation = !isComplete && !responded;
+
+        const handleApprove = () => {
+          setResponded(true);
+          // Send confirmation response to ADK
+          result({
+            approved: true,
+            plan_content: editedPlan
+          });
+        };
+
+        const handleReject = () => {
+          setResponded(true);
+          result({
+            approved: false,
+            reason: "用户拒绝了该计划"
+          });
+        };
+
+        return (
+          <div
+            style={{
+              backgroundColor: waitingForConfirmation ? "#eff6ff" : "#1e293b",
+              color: waitingForConfirmation ? "#1e293b" : "white",
+              padding: "1.5rem",
+              borderRadius: "0.75rem",
+              margin: "1rem 0",
+              border: waitingForConfirmation ? "2px solid #3b82f6" : "2px solid #64748b",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", marginBottom: "1rem" }}>
+              <span style={{ fontSize: "1.5rem", marginRight: "0.5rem" }}>
+                {isComplete ? "📋" : waitingForConfirmation ? "👀" : "⏳"}
+              </span>
+              <h3 style={{ margin: 0, fontSize: "1.2rem" }}>
+                {isComplete
+                  ? "调查计划已更新"
+                  : waitingForConfirmation
+                    ? "📝 请审核调查计划"
+                    : "正在处理..."}
+              </h3>
+            </div>
+
+            {/* Waiting for confirmation - show editable plan */}
+            {waitingForConfirmation && (
+              <>
+                <p style={{ fontSize: "0.9rem", marginBottom: "1rem", opacity: 0.8 }}>
+                  请审核以下调查计划。您可以直接编辑后再批准。
+                </p>
+                <textarea
+                  value={editedPlan}
+                  onChange={(e) => setEditedPlan(e.target.value)}
+                  style={{
+                    width: "100%",
+                    minHeight: "200px",
+                    padding: "1rem",
+                    borderRadius: "0.5rem",
+                    border: "1px solid #cbd5e1",
+                    fontFamily: "monospace",
+                    fontSize: "0.9rem",
+                    marginBottom: "1rem",
+                    resize: "vertical"
+                  }}
+                  placeholder="编辑调查计划..."
+                />
+                <div style={{ display: "flex", gap: "0.75rem" }}>
+                  <button
+                    onClick={handleReject}
+                    style={{
+                      padding: "0.75rem 1.5rem",
+                      backgroundColor: "#ef4444",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "0.5rem",
+                      cursor: "pointer",
+                      fontWeight: "600",
+                      fontSize: "0.95rem"
+                    }}
+                  >
+                    ✗ 拒绝
+                  </button>
+                  <button
+                    onClick={handleApprove}
+                    style={{
+                      padding: "0.75rem 1.5rem",
+                      backgroundColor: "#10b981",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "0.5rem",
+                      cursor: "pointer",
+                      fontWeight: "600",
+                      fontSize: "0.95rem",
+                      flex: 1
+                    }}
+                  >
+                    ✓ 批准并保存
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* Responded - show confirmation message */}
+            {responded && !isComplete && (
+              <div style={{
+                backgroundColor: "#dcfce7",
+                color: "#166534",
+                padding: "1rem",
+                borderRadius: "0.5rem",
+                fontSize: "0.95rem"
+              }}>
+                ✓ 已发送响应，等待处理...
+              </div>
+            )}
+
+            {/* Complete - show result */}
+            {isComplete && (
+              <div
+                style={{
+                  backgroundColor: "#0f172a",
+                  padding: "1rem",
+                  borderRadius: "0.5rem",
+                  fontSize: "0.9rem",
+                  lineHeight: "1.6",
+                  whiteSpace: "pre-wrap",
+                  fontFamily: "monospace",
+                }}
+              >
+                {typeof result === 'string' ? result : JSON.stringify(result, null, 2)}
+              </div>
+            )}
+          </div>
+        );
       },
     },
     [themeColor],

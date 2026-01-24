@@ -52,39 +52,78 @@ def refine_bug_state(
     return f"Successfully updated fields: {', '.join(updated_fields)}"
 
 
-async def update_strategic_plan(tool_context: ToolContext, plan_content: str) -> str:
+async def update_strategic_plan(tool_context: ToolContext, plan_content: str):
     """
-    Update the Strategic Plan (Query Plan) for the current session.
-    This saves the plan to 'investigation_plan.md' artifact for persistence.
+    Update the Strategic Plan (Query Plan) with user review and approval (Human-in-the-Loop).
+    Uses ADK Advanced Confirmation to pause execution until user approves or rejects.
 
     Args:
         plan_content: The full content of the plan, describing what information needs to be gathered and from where.
                       Format suggestions: Markdown list or steps.
     """
-    # 1. Update State
-    state = tool_context.state
-    state[StateKeys.STRATEGIC_PLAN] = plan_content
+    # Check if this is the confirmation response (second call after user interaction)
+    tool_confirmation = tool_context.tool_confirmation
     
-    # 2. Persist to Artifact
-    try:
-        from google.genai import types
-        plan_artifact = types.Part.from_bytes(
-            data=plan_content.encode('utf-8'),
-            mime_type="text/markdown"
+    if not tool_confirmation:
+        # First call - request user confirmation
+        logger.info(f"Requesting user confirmation for strategic plan ({len(plan_content)} chars)")
+        tool_context.request_confirmation(
+            hint="Please review and approve the strategic investigation plan. You can edit it before approving.",
+            payload={
+                "plan_content": plan_content,
+                "approved": False
+            }
         )
+        # Return intermediate status - MUST be dict format
+        return {'status': 'User approval is required.'}
+    
+    # Second call - process confirmation response
+    confirmation_data = tool_confirmation.payload
+    
+    if confirmation_data.get('approved'):
+        # User approved - use the (possibly edited) plan content
+        final_content = confirmation_data.get('plan_content', plan_content)
         
-        # Add metadata to hint UI about the task nature
-        metadata = {
-            "type": "task", 
-            "subtype": "investigation_plan"
+        # 1. Update State
+        state = tool_context.state
+        state[StateKeys.STRATEGIC_PLAN] = final_content
+        
+        # 2. Persist to Artifact
+        try:
+            from google.genai import types
+            plan_artifact = types.Part.from_bytes(
+                data=final_content.encode('utf-8'),
+                mime_type="text/markdown"
+            )
+            
+            metadata = {
+                "type": "task", 
+                "subtype": "investigation_plan"
+            }
+            
+            await tool_context.save_artifact(
+                filename="investigation_plan.md",
+                artifact=plan_artifact,
+                custom_metadata=metadata
+            )
+            
+            logger.info(f"Strategic plan approved and saved ({len(final_content)} chars)")
+            return {
+                'status': 'ok',
+                'message': 'Strategic plan approved and saved successfully.',
+                'plan_length': len(final_content)
+            }
+        except Exception as e:
+            logger.error(f"Failed to save plan artifact: {e}")
+            return {
+                'status': 'error',
+                'message': f'Failed to save artifact: {e}'
+            }
+    else:
+        # User rejected
+        reason = confirmation_data.get('reason', 'User rejected the plan')
+        logger.info(f"Strategic plan rejected: {reason}")
+        return {
+            'status': 'rejected',
+            'reason': reason
         }
-        
-        await tool_context.save_artifact(
-            filename="investigation_plan.md",
-            artifact=plan_artifact,
-            custom_metadata=metadata
-        )
-        return f"Strategic Plan updated and saved to artifact.\n\nCurrent Plan:\n{plan_content}"
-    except Exception as e:
-        logger.error(f"Failed to save plan artifact: {e}")
-        return f"Strategic Plan updated in state, but failed to save artifact: {e}\n\nCurrent Plan:\n{plan_content}"

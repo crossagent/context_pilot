@@ -1,7 +1,7 @@
 import os
 import sys
 import importlib
-from google.adk.apps.app import App, EventsCompactionConfig
+from google.adk.apps.app import App, EventsCompactionConfig, ResumabilityConfig
 from google.adk.agents.context_cache_config import ContextCacheConfig
 
 # from context_pilot.context_pilot_app.bug_analyze_agent.agent import bug_analyze_agent
@@ -38,5 +38,8 @@ app = App(
     events_compaction_config=EventsCompactionConfig(
         compaction_interval=3,
         overlap_size=1
+    ),
+    resumability_config=ResumabilityConfig(
+        is_resumable=True
     )
 )
