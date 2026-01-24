@@ -92,11 +92,21 @@ def query_knowledge_base(query: str) -> str:
     """
     try:
         index = _get_index()
-        query_engine = index.as_query_engine()
-        response = query_engine.query(query)
-        return str(response)
+        # Use retriever to get raw chunks instead of synthesized answer
+        retriever = index.as_retriever(similarity_top_k=5)
+        nodes = retriever.retrieve(query)
+        
+        if not nodes:
+            return "No relevant documentation found."
+            
+        results = []
+        for node in nodes:
+            # Format: [Score] Text
+            results.append(f"--- [Relevance: {node.score:.4f}] ---\n{node.text}\n")
+            
+        return "\n".join(results)
     except Exception as e:
-        logger.error(f"LlamaIndex query failed: {e}")
+        logger.error(f"LlamaIndex retrieval failed: {e}")
         return f"Error retrieving documentation: {str(e)}"
 
 # Create the ADK-compatible tool
