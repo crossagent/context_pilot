@@ -10,21 +10,11 @@ import {
   useHumanInTheLoop,
   useRenderToolCall,
 } from "@copilotkit/react-core";
-import { CopilotKitCSSProperties, CopilotChat } from "@copilotkit/react-ui";
+import { CopilotKitCSSProperties, CopilotSidebar } from "@copilotkit/react-ui";
 import { useState } from "react";
 
 export default function CopilotKitPage() {
   const [themeColor, setThemeColor] = useState("#6366f1");
-
-  // 🪁 Shared State: https://docs.copilotkit.ai/adk/shared-state
-  const { state, setState } = useCoAgent<AgentState>({
-    name: "context_pilot_app",
-    initialState: {
-      proverbs: [
-        "CopilotKit may be new, but its the best thing since sliced bread.",
-      ],
-    },
-  });
 
   // 🪁 Frontend Actions: https://docs.copilotkit.ai/adk/frontend-actions
   useFrontendTool({
@@ -38,6 +28,61 @@ export default function CopilotKitPage() {
     ],
     handler({ themeColor }) {
       setThemeColor(themeColor);
+    },
+  });
+
+  return (
+    <main
+      style={
+        { "--copilot-kit-primary-color": themeColor } as CopilotKitCSSProperties
+      }
+    >
+      <CopilotSidebar
+        disableSystemMessage={true}
+        clickOutsideToClose={false}
+        defaultOpen={true}
+        labels={{
+          title: "Popup Assistant",
+          initial: "👋 Hi, there! You're chatting with an agent.",
+        }}
+        suggestions={[
+          {
+            title: "Generative UI",
+            message: "Get the weather in San Francisco.",
+          },
+          {
+            title: "Frontend Tools",
+            message: "Set the theme to green.",
+          },
+          {
+            title: "Write Agent State",
+            message: "Add a proverb about AI.",
+          },
+          {
+            title: "Update Agent State",
+            message:
+              "Please remove 1 random proverb from the list if there are any.",
+          },
+          {
+            title: "Read Agent State",
+            message: "What are the proverbs?",
+          },
+        ]}
+      >
+        <YourMainContent themeColor={themeColor} />
+      </CopilotSidebar>
+    </main>
+  );
+}
+
+function YourMainContent({ themeColor }: { themeColor: string }) {
+  // 🪁 Shared State: https://docs.copilotkit.ai/adk/shared-state
+  const { state, setState } = useCoAgent<AgentState>({
+    name: "context_pilot_app",
+    initialState: {
+      proverbs: [
+        "CopilotKit may be new, but its the best thing since sliced bread.",
+      ],
     },
   });
 
@@ -55,25 +100,11 @@ export default function CopilotKitPage() {
   );
 
   return (
-    <main
-      style={
-        { "--copilot-kit-primary-color": themeColor } as CopilotKitCSSProperties
-      }
-      className="h-screen"
+    <div
+      style={{ backgroundColor: themeColor }}
+      className="h-screen flex justify-center items-center flex-col transition-colors duration-300"
     >
-      <CopilotChat
-        labels={{
-          title: "ContextPilot Assistant",
-          initial: "👋 您好！我是 ContextPilot，您的智能工程领航员。",
-        }}
-        instructions="You are a helpful assistant that can help with various tasks."
-        suggestions={[
-          {
-            title: "开始使用",
-            message: "帮我分析一下当前项目的结构",
-          },
-        ]}
-      />
-    </main>
+      <ProverbsCard state={state} setState={setState} />
+    </div>
   );
 }
