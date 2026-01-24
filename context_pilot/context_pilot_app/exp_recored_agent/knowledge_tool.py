@@ -1,11 +1,10 @@
 import json
 import os
-from google.adk.tools import tool
+from google.adk.tools import FunctionTool
 
 KNOWLEDGE_BASE_PATH = os.path.join(os.getcwd(), "data", "knowledge_base.jsonl")
 
-@tool
-def record_experience_tool(title: str, method: str, tags: str = "") -> str:
+def record_experience(title: str, method: str, tags: str = "") -> str:
     """
     Record a successful problem-solving experience into the knowledge base.
     
@@ -33,3 +32,5 @@ def record_experience_tool(title: str, method: str, tags: str = "") -> str:
         return "Experience successfully recorded."
     except Exception as e:
         return f"Failed to record experience: {e}"
+
+record_experience_tool = FunctionTool(record_experience)

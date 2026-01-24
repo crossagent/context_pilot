@@ -7,21 +7,31 @@ Model selection is handled via GOOGLE_GENAI_MODEL environment variable
 """
 import pytest
 from context_pilot.testing import AgentTestClient, MockLlm
-from context_pilot.context_pilot_app.bug_report_agent.agent import bug_report_agent
+from unittest.mock import MagicMock
+# from context_pilot.context_pilot_app.bug_report_agent.agent import bug_report_agent
+from context_pilot.context_pilot_app.exp_recored_agent.agent import exp_recored_agent
+
+def test_report_agent_tools():
+    # tools = bug_report_agent.tools
+    tools = exp_recored_agent.tools
+    # Assert relevant tools are present (e.g. record_experience_tool)
+    tool_names = [getattr(t, 'name', str(t)) for t in tools]
+    # Note: Refactor changed tools from report_skill_registry to record_experience_tool
+    assert "record_experience" in tool_names
 
 
 @pytest.fixture
 def report_client():
-    """Create a test client for bug_report_agent."""
-    client = AgentTestClient(agent=bug_report_agent, app_name="test_app_report")
+    """Create a test client for exp_recored_agent."""
+    client = AgentTestClient(agent=exp_recored_agent, app_name="test_app_report")
     return client
 
 
 @pytest.mark.anyio
 async def test_agent_loading():
     """Basic test to verify agent loading."""
-    assert bug_report_agent is not None
-    assert bug_report_agent.name == "bug_report_agent"
+    assert exp_recored_agent is not None
+    assert exp_recored_agent.name == "exp_recored_agent"
 
 
 @pytest.mark.anyio

@@ -10,6 +10,81 @@ from google.adk.tools import FunctionTool
 
 logger = logging.getLogger(__name__)
 
+# Global state
+_INDEX = None
+_STORAGE_DIR = None
+
+def initialize_rag_tool(storage_path: str):
+    global _STORAGE_DIR, _INDEX
+    _STORAGE_DIR = storage_path
+    _INDEX = None
+    logger.info(f"RAG Tool initialized with storage path: {_STORAGE_DIR}")
+
+def _get_index():
+    global _INDEX, _STORAGE_DIR
+    if _INDEX is not None:
+        return _INDEX
+
+    if not _STORAGE_DIR:
+        error_msg = "RAG Tool not initialized. Call `initialize_rag_tool(path)` first."
+        logger.error(error_msg)
+        raise RuntimeError(error_msg)
+
+    # 1. Configure Settings (LLM & Embeddings)
+    api_key = os.getenv("GOOGLE_API_KEY")
+    if not api_key:
+        logger.warning("GOOGLE_API_KEY not found. RAG might fail.")
+
+    Settings.llm = Gemini(
+        model="models/gemini-2.0-flash-exp", 
+        api_key=api_key
+    )
+    
+    Settings.embed_model = GeminiEmbedding(
+        model_name="models/gemini-embedding-001",
+        api_key=api_key
+    )
+
+    storage_dir = _STORAGE_DIR
+    
+    if not os.path.exists(storage_dir):
+        error_msg = f"RAG Storage not found at {storage_dir}. Please run 'python scripts/build_index.py' to generate it."
+        logger.error(error_msg)
+        raise FileNotFoundError(error_msg)
+
+    logger.info(f"Loading persistent index from: {storage_dir}")
+    try:
+        storage_context = StorageContext.from_defaults(persist_dir=storage_dir)
+        _INDEX = load_index_from_storage(storage_context)
+        return _INDEX
+    except Exception as e:
+        logger.error(f"Failed to load index from storage: {e}")
+        raise
+
+def retrieve_rag_documentation_tool(query: str) -> str:
+    """
+    Retreives information from the local knowledge base (RAG).
+    """
+    try:
+        index = _get_index() 
+        retriever = index.as_retriever(similarity_top_k=5)
+        nodes = retriever.retrieve(query)
+        
+        if not nodes:
+            return "No relevant documentation found."
+            
+        results = []
+        for node in nodes:
+            results.append(f"--- [Relevance: {node.score:.4f}] ---\n{node.text}\n")
+            
+        return "\n".join(results)
+    except Exception as e:
+        logger.error(f"LlamaIndex retrieval failed: {e}")
+        return f"Error retrieving documentation: {str(e)}"
+
+# Safe Tool Creation
+retrieve_rag_documentation_tool = FunctionTool(retrieve_rag_documentation_tool)
+
 # ... imports ...
 
 # ... global variables ...
@@ -83,7 +158,7 @@ def _get_index() -> VectorStoreIndex:
         logger.error(f"Failed to load index from storage: {e}")
         raise
 
-def query_knowledge_base(query: str) -> str:
+def retrieve_rag_documentation_tool(query: str) -> str:
     """
     Retreives information from the local knowledge base (RAG) using LlamaIndex.
     
@@ -111,5 +186,5 @@ def query_knowledge_base(query: str) -> str:
 
 # Create the ADK-compatible tool
 retrieve_rag_documentation_tool = FunctionTool(
-    query_knowledge_base
+    retrieve_rag_documentation_tool
 )

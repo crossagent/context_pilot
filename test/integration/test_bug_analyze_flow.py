@@ -7,7 +7,7 @@ Model selection is handled via GOOGLE_GENAI_MODEL environment variable
 """
 import pytest
 from context_pilot.testing import AgentTestClient, MockLlm
-from context_pilot.context_pilot_app.bug_analyze_agent.agent import bug_analyze_agent
+from context_pilot.context_pilot_app.repo_explorer_agent.agent import repo_explorer_agent
 
 
 @pytest.fixture
@@ -24,7 +24,7 @@ async def mock_external_deps():
 async def analyze_client(mock_external_deps):
     """Create a test client for bug_analyze_agent."""
     # Direct usage of the static agent instance
-    client = AgentTestClient(agent=bug_analyze_agent, app_name="test_app")
+    client = AgentTestClient(agent=repo_explorer_agent, app_name="test_app")
     return client
 
 
@@ -35,8 +35,8 @@ async def analyze_client(mock_external_deps):
 @pytest.mark.anyio
 async def test_agent_loading(mock_external_deps):
     """Basic test to verify agent loading."""
-    assert bug_analyze_agent is not None
-    assert bug_analyze_agent.name == "bug_analyze_agent"
+    assert repo_explorer_agent is not None
+    assert repo_explorer_agent.name == "repo_explorer_agent"
 
 
 # =============================================================================
@@ -117,7 +117,7 @@ async def test_tool_svn_log(mock_external_deps, analyze_client):
         }
     })
     
-    with patch("context_pilot.context_pilot_app.bug_analyze_agent.tools.svn.run_bash_command", return_value=mock_ret):
+    with patch("context_pilot.context_pilot_app.repo_explorer_agent.tools.svn.run_bash_command", return_value=mock_ret):
         await analyze_client.create_new_session("user_1", "sess_svn_log", initial_state={})
         responses = await analyze_client.chat("Check svn log for recent changes.")
     
@@ -142,7 +142,7 @@ async def test_tool_svn_diff(mock_external_deps, analyze_client):
         }
     })
     
-    with patch("context_pilot.context_pilot_app.bug_analyze_agent.tools.svn.run_bash_command", return_value=mock_ret):
+    with patch("context_pilot.context_pilot_app.repo_explorer_agent.tools.svn.run_bash_command", return_value=mock_ret):
         await analyze_client.create_new_session("user_1", "sess_svn_diff", initial_state={})
         responses = await analyze_client.chat("Show svn diff for revision 100.")
     
