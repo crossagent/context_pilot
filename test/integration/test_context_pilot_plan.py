@@ -38,7 +38,7 @@ async def test_context_pilot_strategic_plan(mock_external_deps_and_rag):
             }
         },
         "check documentation": {
-             "tool": "retrieve_rag_documentation",
+             "tool": "query_knowledge_base",
              "args": {
                  "query": "login flow SOP"
              }
@@ -74,7 +74,7 @@ async def test_context_pilot_strategic_plan(mock_external_deps_and_rag):
     responses_2 = await client.chat("Please check documentation for login.")
     assert len(responses_2) > 0
     # Validating that no exception occurred and conversation continued.
-    # Capability is proven by the log output showing [Tool Call] retrieve_rag_documentation. 
+    # Capability is proven by the log output showing [Tool Call] query_knowledge_base. 
 
 @pytest.mark.anyio
 async def test_context_pilot_identity_and_name(mock_external_deps_and_rag):
@@ -94,4 +94,4 @@ async def test_context_pilot_identity_and_name(mock_external_deps_and_rag):
             pass
 
     assert "update_strategic_plan" in tool_names
-    assert "retrieve_rag_documentation" in tool_names
+    assert "query_knowledge_base" in tool_names
