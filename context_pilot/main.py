@@ -97,10 +97,14 @@ def serve(port, host, skills_dir, config, env_file, data_dir, root_agent_name, m
             from context_pilot.context_pilot_app.app import app as adk_app
             
             # Use Service Registry (same pattern as get_fast_api_app)
-            from google.adk.cli.service_registry import get_service_registry
+            from google.adk.cli.service_registry import get_service_registry, load_services_module
             
             # agents_dir for service registry context
             agents_dir = os.path.dirname(os.path.abspath(__file__))
+            
+            # Load services.py from agents_dir for custom service registration.
+            load_services_module(agents_dir)
+            
             service_registry = get_service_registry()
             
             # Build Session Service (using registry, with DatabaseSessionService fallback)

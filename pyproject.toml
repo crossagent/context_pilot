@@ -7,19 +7,16 @@ requires-python = ">=3.11"
 dependencies = [
     # Core ADK Framework
     "google-adk>=1.20.0",
-    
     # Web Server (ADK needs these)
     "fastapi>=0.115.12",
     "uvicorn>=0.34.2",
-    
     # Essential utilities (needed by our code)
-    "httpx>=0.28.1",  # Required by GeminiRawEmbedding
     "python-dotenv>=1.0.1",
-    
     # RAG Stack (minimal)
-    "llama-index-core>=0.10.0",  # Core only, not full llama-index
+    "llama-index-core>=0.10.0", # Core only, not full llama-index
     "llama-index-llms-gemini>=0.1.0",
     "llama-index-embeddings-gemini>=0.1.0",
+    "ag-ui-adk>=0.4.2",
 ]
 
 [project.scripts]
