@@ -61,22 +61,39 @@ class GeminiRawEmbedding(BaseEmbedding):
 
 # ... global variables ...
 # Global index instance to avoid reloading
+# ... global variables ...
+# Global index instance to avoid reloading
 _INDEX: Optional[VectorStoreIndex] = None
+# Global storage path
+_STORAGE_DIR: Optional[str] = None
 
-# Define storage path relative to project root (or configured location)
-def _get_storage_dir() -> str:
-    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-    # Use a dedicated folder for the index
-    return os.path.join(base_dir, "adk_data", "rag_storage")
+def initialize_rag_tool(storage_path: str):
+    """
+    Initializes the RAG tool with a specific storage path.
+    Should be called during application startup (e.g. in agent callback).
+    """
+    global _STORAGE_DIR, _INDEX
+    _STORAGE_DIR = storage_path
+    # Reset index to force reload if path changes (though usually init is called once)
+    _INDEX = None
+    logger.info(f"RAG Tool initialized with storage path: {_STORAGE_DIR}")
 
 def _get_index() -> VectorStoreIndex:
     """
     Initializes and returns the global VectorStoreIndex.
-    Tries to load from disk first. If missing, loads data from knowledge_base.jsonl and persists it.
+    READ-ONLY MODE: Loads from pre-built storage. 
+    Run `python scripts/build_index.py` to update the index.
     """
-    global _INDEX
+    global _INDEX, _STORAGE_DIR
     if _INDEX is not None:
         return _INDEX
+
+    if not _STORAGE_DIR:
+        # Fallback logic removed as per user request to be explicit, but user mentioned default value in `agent.py`.
+        # However, it's safer to raise error here if not initialized.
+        error_msg = "RAG Tool not initialized. Call `initialize_rag_tool(path)` first."
+        logger.error(error_msg)
+        raise RuntimeError(error_msg)
 
     # 1. Configure Settings (LLM & Embeddings)
     # Ensure GOOGLE_API_KEY is set in environment for AI Studio
@@ -93,48 +110,22 @@ def _get_index() -> VectorStoreIndex:
     # Use Custom REST-based Gemini Embedding (No Conflict)
     Settings.embed_model = GeminiRawEmbedding(api_key=api_key)
 
-    storage_dir = _get_storage_dir()
-
-    # 2. Try Loading from Persistence
-    if os.path.exists(storage_dir):
-        logger.info(f"Loading persistent index from: {storage_dir}")
-        try:
-            storage_context = StorageContext.from_defaults(persist_dir=storage_dir)
-            _INDEX = load_index_from_storage(storage_context)
-            return _INDEX
-        except Exception as e:
-             logger.warning(f"Failed to load index from storage: {e}. Rebuilding...")
-
-    # 3. Build Fresh Index (Fallback or First Run)
-    # Assuming run from project root, or adjust path relative to this file
-    # data/knowledge_base.jsonl
-    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-    data_path = os.path.join(base_dir, "data", "knowledge_base.jsonl")
+    storage_dir = _STORAGE_DIR
     
-    if not os.path.exists(data_path):
-        # Fallback for different CWD
-        data_path = os.path.abspath("data/knowledge_base.jsonl")
-    
-    if not os.path.exists(data_path):
-        raise FileNotFoundError(f"Could not find knowledge base at: {data_path}")
-
-    logger.info(f"Loading knowledge base from: {data_path}")
-    # SimpleDirectoryReader works well with JSONL if we just treat it as text or use a specific loader.
-    # For now, default text loading is usually sufficient for simplistic RAG, 
-    # but LlamaIndex JSONReader is better if we want to parse fields.
-    # Let's use the valid default reader for simplicity first.
-    documents = SimpleDirectoryReader(input_files=[data_path]).load_data()
-    
-    # 4. Create and Persist Index
-    logger.info("Building VectorStoreIndex...")
-    _INDEX = VectorStoreIndex.from_documents(documents)
-    
-    logger.info(f"Persisting index to: {storage_dir}")
     if not os.path.exists(storage_dir):
-        os.makedirs(storage_dir, exist_ok=True)
-    _INDEX.storage_context.persist(persist_dir=storage_dir)
-    
-    return _INDEX
+        error_msg = f"RAG Storage not found at {storage_dir}. Please run 'python scripts/build_index.py' to generate it."
+        logger.error(error_msg)
+        # Raise specific error that can be caught by caller to return friendly message
+        raise FileNotFoundError(error_msg)
+
+    logger.info(f"Loading persistent index from: {storage_dir}")
+    try:
+        storage_context = StorageContext.from_defaults(persist_dir=storage_dir)
+        _INDEX = load_index_from_storage(storage_context)
+        return _INDEX
+    except Exception as e:
+        logger.error(f"Failed to load index from storage: {e}")
+        raise
 
 def query_knowledge_base(query: str) -> str:
     """

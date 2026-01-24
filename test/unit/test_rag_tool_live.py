@@ -8,7 +8,8 @@ from dotenv import load_dotenv
 # Load env before importing agent to ensure config is correct
 load_dotenv()
 
-from bug_sleuth.bug_scene_app.llama_rag_tool import retrieve_rag_documentation_tool
+from bug_sleuth.bug_scene_app.llama_rag_tool import retrieve_rag_documentation_tool, initialize_rag_tool
+from scripts.rag_config import RagConfig  # Use config for the test path
 # from bug_sleuth.bug_scene_app.tools.llama_rag_tool import retrieve_rag_documentation_tool
 
 # Setup logging
@@ -22,6 +23,8 @@ async def test_retrieve_rag_documentation_live():
     Live test against LlamaIndex Local RAG.
     Requires valid GOOGLE_API_KEY.
     """
+    # Initialize Tool (Runtime Requirement)
+    initialize_rag_tool(RagConfig.STORAGE_DIR)
     query = "验证测试记录"
     
     logger.info(f"Testing LlamaIndex retrieval with query: {query}")

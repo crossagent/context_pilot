@@ -93,6 +93,7 @@ def get_prompt()-> str:
         """
     
     return instruction_prompt.format(
+        strategic_plan=f"{{{StateKeys.STRATEGIC_PLAN}}}",
         bug_user_description=f"{{{StateKeys.BUG_USER_DESCRIPTION}}}",
         clientLogUrls=f"{{{StateKeys.CLIENT_LOG_URLS}}}",
         clientScreenshotUrls=f"{{{StateKeys.CLIENT_SCREENSHOT_URLS}}}",

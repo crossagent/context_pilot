@@ -19,7 +19,7 @@ from bug_sleuth.shared_libraries import constants
 from bug_sleuth.shared_libraries.state_keys import StateKeys
 
 # RAG Imports
-from .llama_rag_tool import retrieve_rag_documentation_tool
+from .llama_rag_tool import retrieve_rag_documentation_tool, initialize_rag_tool
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -59,6 +59,25 @@ async def before_agent_callback(callback_context: CallbackContext) -> Optional[t
     for key, value in defaults.items():
         if state.get(key) is None:
             state[key] = value
+
+    # RAG Initialization
+    rag_storage_path = os.getenv("RAG_STORAGE_PATH")
+    if not rag_storage_path:
+        # Default: ProjectRoot/adk_data/rag_storage
+        # Current file: .../bug_sleuth/bug_scene_app/agent.py
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        rag_storage_path = os.path.join(base_dir, "adk_data", "rag_storage")
+
+    try:
+        initialize_rag_tool(rag_storage_path)
+    except Exception as e:
+        logger.warning(f"RAG Initialization Warning: {e}")
+        # Return a warning message to the model so it knows RAG is offline
+        return types.Content(parts=[types.Part.from_text(
+            text=f"⚠️ **System Warning**: Knowledge Base (RAG) is unavailable. "
+                 f"Reason: {str(e)}. "
+                 f"Please proceed using available tools only."
+        )])
 
     return None
 
