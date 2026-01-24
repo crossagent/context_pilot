@@ -34,7 +34,6 @@ class StateKeys:
 
     # Agent State
     USER_INTENT = "user_intent"
-    CURRENT_INVESTIGATION_PLAN = "current_investigation_plan"
     STRATEGIC_PLAN = "strategic_plan"
     STEP_COUNT = "step_count"
     

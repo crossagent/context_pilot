@@ -112,30 +112,6 @@ async def initialize_and_validate(callback_context: CallbackContext) -> Optional
     # 3. Inject Defaults (Original Logic)
     inject_default_values(callback_context)
 
-    # 4. [NEW] Inject Investigation Plan (Context Injection)
-    # Strategy: Check State -> Check Artifact -> Default
-    if StateKeys.CURRENT_INVESTIGATION_PLAN not in callback_context.state:
-        plan_content = None
-        try:
-            # Try to load from Artifact Service (Persistence)
-            plan_file_name = "investigation_plan.md"
-            artifact_part = await callback_context.load_artifact(plan_file_name)
-            
-            if artifact_part:
-                 # Handle Part content extraction
-                 if artifact_part.text:
-                     plan_content = artifact_part.text
-                 elif artifact_part.inline_data:
-                     plan_content = artifact_part.inline_data.data.decode('utf-8')
-        except Exception as e:
-            # Artifact might not exist or service error
-            logger.warning(f"Failed to load investigation plan from artifact: {e}")
-
-        if plan_content:
-             callback_context.state[StateKeys.CURRENT_INVESTIGATION_PLAN] = plan_content
-        else:
-             callback_context.state[StateKeys.CURRENT_INVESTIGATION_PLAN] = "当前尚无调查计划 (No plan created yet)."
-    
     # 5. Initialize Token & Cost Counters
     if StateKeys.TOTAL_SESSION_TOKENS not in callback_context.state:
         callback_context.state[StateKeys.TOTAL_SESSION_TOKENS] = 0
@@ -283,7 +259,8 @@ def inject_default_values(callback_context: CallbackContext):
         StateKeys.FPS: "Unknown",
         StateKeys.PING: "Unknown",
         StateKeys.CLIENT_LOG_URLS: "[]",
-        StateKeys.CLIENT_SCREENSHOT_URLS: "[]"
+        StateKeys.CLIENT_SCREENSHOT_URLS: "[]",
+        StateKeys.STRATEGIC_PLAN: "暂无计划"
     }
     for key, value in defaults.items():
         if key not in callback_context.state:

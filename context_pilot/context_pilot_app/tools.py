@@ -52,14 +52,39 @@ def refine_bug_state(
     return f"Successfully updated fields: {', '.join(updated_fields)}"
 
 
-def update_strategic_plan(tool_context: ToolContext, plan_content: str) -> str:
+async def update_strategic_plan(tool_context: ToolContext, plan_content: str) -> str:
     """
     Update the Strategic Plan (Query Plan) for the current session.
+    This saves the plan to 'investigation_plan.md' artifact for persistence.
 
     Args:
         plan_content: The full content of the plan, describing what information needs to be gathered and from where.
                       Format suggestions: Markdown list or steps.
     """
+    # 1. Update State
     state = tool_context.state
     state[StateKeys.STRATEGIC_PLAN] = plan_content
-    return f"Strategic Plan updated. Current Plan:\n{plan_content}"
+    
+    # 2. Persist to Artifact
+    try:
+        from google.genai import types
+        plan_artifact = types.Part.from_bytes(
+            data=plan_content.encode('utf-8'),
+            mime_type="text/markdown"
+        )
+        
+        # Add metadata to hint UI about the task nature
+        metadata = {
+            "type": "task", 
+            "subtype": "investigation_plan"
+        }
+        
+        await tool_context.save_artifact(
+            filename="investigation_plan.md",
+            artifact=plan_artifact,
+            custom_metadata=metadata
+        )
+        return f"Strategic Plan updated and saved to artifact.\n\nCurrent Plan:\n{plan_content}"
+    except Exception as e:
+        logger.error(f"Failed to save plan artifact: {e}")
+        return f"Strategic Plan updated in state, but failed to save artifact: {e}\n\nCurrent Plan:\n{plan_content}"

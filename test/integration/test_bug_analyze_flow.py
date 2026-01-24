@@ -212,21 +212,7 @@ async def test_tool_search_filename(mock_external_deps, analyze_client):
 # Plan Tools Tests
 # =============================================================================
 
-@pytest.mark.anyio
-async def test_tool_update_plan(mock_external_deps, analyze_client):
-    """Verifies that the agent calls 'update_investigation_plan_tool' to update plan."""
-    MockLlm.set_behaviors({
-        "update plan": {
-            "tool": "update_investigation_plan_tool",
-            "args": {"content": "# Investigation Plan\n\n## Tasks\n- [ ] Task 1"}
-        }
-    })
-    
-    await analyze_client.create_new_session("user_1", "sess_update_plan", initial_state={})
-    responses = await analyze_client.chat("Update plan with new tasks.")
-    
-    assert len(responses) > 0
-    assert "[MockLlm]" in responses[-1]
+
 
 
 # =============================================================================

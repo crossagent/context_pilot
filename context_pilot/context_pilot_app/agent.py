@@ -53,9 +53,30 @@ async def before_agent_callback(callback_context: CallbackContext) -> Optional[t
         state[StateKeys.CUR_DATE_TIME] = current_time.strftime("%Y年%m月%d日 %H:%M:%S")
 
     # Initialize default values for required prompt keys to prevent KeyError
+    # Initialize default values for required prompt keys to prevent KeyError
     defaults = {
         StateKeys.STRATEGIC_PLAN: "暂无计划"
     }
+    
+    # [NEW] Load Strategic Plan from Artifact if available
+    # This ensures the root agent sees the persistent plan across turns/restarts if state was lost or just initialized.
+    if StateKeys.STRATEGIC_PLAN not in state or state[StateKeys.STRATEGIC_PLAN] == "暂无计划":
+        try:
+            plan_file_name = "investigation_plan.md"
+            # load_artifact returns types.Part or None
+            artifact_part = await callback_context.load_artifact(plan_file_name)
+            
+            if artifact_part:
+                 if artifact_part.text:
+                     state[StateKeys.STRATEGIC_PLAN] = artifact_part.text
+                 elif artifact_part.inline_data:
+                     try:
+                        state[StateKeys.STRATEGIC_PLAN] = artifact_part.inline_data.data.decode('utf-8')
+                     except:
+                        pass
+        except Exception as e:
+            logger.warning(f"Failed to load strategic plan artifact: {e}")
+
     for key, value in defaults.items():
         if state.get(key) is None:
             state[key] = value
