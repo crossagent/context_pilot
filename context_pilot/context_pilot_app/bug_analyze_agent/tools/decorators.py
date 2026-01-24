@@ -30,7 +30,7 @@ def validate_path(func):
         context = kwargs.get('tool_context')
         
         if context and hasattr(context, 'state'):
-             from bug_sleuth.shared_libraries.state_keys import StateKeys
+             from context_pilot.shared_libraries.state_keys import StateKeys
              repos = context.state.get(StateKeys.REPO_REGISTRY, [])
              
         # Fallback to loading from env (for legacy or tools without context)

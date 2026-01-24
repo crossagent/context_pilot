@@ -8,7 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")
 
 from unittest.mock import patch
 
-from bug_sleuth.bug_scene_app.llama_rag_tool import query_knowledge_base, initialize_rag_tool
+from context_pilot.context_pilot_app.llama_rag_tool import query_knowledge_base, initialize_rag_tool
 from scripts.rag_config import RagConfig
 
 # Force logging to see errors

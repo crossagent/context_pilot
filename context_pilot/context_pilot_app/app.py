@@ -4,8 +4,8 @@ import importlib
 from google.adk.apps.app import App, EventsCompactionConfig
 from google.adk.agents.context_cache_config import ContextCacheConfig
 
-from bug_sleuth.bug_scene_app.bug_analyze_agent.agent import bug_analyze_agent
-from bug_sleuth.bug_scene_app.agent import context_pilot_agent
+from context_pilot.context_pilot_app.bug_analyze_agent.agent import bug_analyze_agent
+from context_pilot.context_pilot_app.agent import context_pilot_agent
 
 # --- Instantiate App (Global) ---
 
@@ -28,7 +28,7 @@ if target_agent_name:
 
 
 app = App(
-    name="bug_scene_app",
+    name="context_pilot_app",
     root_agent=selected_root_agent,
     context_cache_config=ContextCacheConfig(
         min_tokens=2048,

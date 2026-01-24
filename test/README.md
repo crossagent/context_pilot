@@ -1,6 +1,6 @@
 # 测试方案 (Testing Strategy)
 
-本目录包含 BugSleuth 的自动化测试基础设施。
+本目录包含 ContextPilot 的自动化测试基础设施。
 
 ## 测试金字塔 (3-Level Pyramid)
 
@@ -67,7 +67,7 @@ def reset_mock_behaviors():
 统一的应用初始化入口：
 
 ```python
-from bug_sleuth.app_factory import create_app, AppConfig
+from context_pilot.app_factory import create_app, AppConfig
 
 app = create_app(AppConfig(
     agent_name="bug_analyze_agent",  # 或 "bug_scene_agent"
@@ -79,7 +79,7 @@ app = create_app(AppConfig(
 模拟 LLM 响应：
 
 ```python
-from bug_sleuth.testing import MockLlm
+from context_pilot.testing import MockLlm
 
 MockLlm.set_behaviors({
     # 返回文本
@@ -98,7 +98,7 @@ MockLlm.set_behaviors({
 封装 ADK Runner 的测试客户端：
 
 ```python
-from bug_sleuth.testing import AgentTestClient
+from context_pilot.testing import AgentTestClient
 
 client = TestClient(agent=app.agent, app_name="test_app")
 await client.create_new_session("user_1", "sess_1")

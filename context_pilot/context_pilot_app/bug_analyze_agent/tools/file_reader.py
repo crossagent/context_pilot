@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import List, Optional
 from .decorators import validate_path
 from google.adk.tools.tool_context import ToolContext
-from bug_sleuth.shared_libraries.tool_response import ToolResponse
+from context_pilot.shared_libraries.tool_response import ToolResponse
 
 @validate_path
 async def read_file_tool(

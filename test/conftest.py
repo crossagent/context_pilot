@@ -1,7 +1,7 @@
 import os
 import pytest
 from google.adk.models import LLMRegistry
-from bug_sleuth.testing import MockLlm
+from context_pilot.testing import MockLlm
 import sys
 from unittest.mock import MagicMock
 

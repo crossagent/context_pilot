@@ -3,7 +3,7 @@ import os
 import subprocess
 import logging
 from typing import Optional
-from bug_sleuth.shared_libraries.tool_response import ToolResponse
+from context_pilot.shared_libraries.tool_response import ToolResponse
 
 async def run_bash_command(command: str, cwd: Optional[str] = None) -> dict:
     """

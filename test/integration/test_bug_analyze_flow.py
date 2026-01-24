@@ -6,8 +6,8 @@ Model selection is handled via GOOGLE_GENAI_MODEL environment variable
 (set in conftest.py to "mock/pytest" for all tests).
 """
 import pytest
-from bug_sleuth.testing import AgentTestClient, MockLlm
-from bug_sleuth.bug_scene_app.bug_analyze_agent.agent import bug_analyze_agent
+from context_pilot.testing import AgentTestClient, MockLlm
+from context_pilot.context_pilot_app.bug_analyze_agent.agent import bug_analyze_agent
 
 
 @pytest.fixture
@@ -83,7 +83,7 @@ async def test_tool_git_blame(mock_external_deps, analyze_client):
     MockLlm.set_behaviors({
         "ownership analysis": {
             "tool": "get_git_blame_tool",
-            "args": {"path": "d:/MyProject/bug_sleuth/README.md", "start_line": 1, "end_line": 10}
+            "args": {"path": "d:/MyProject/context_pilot/README.md", "start_line": 1, "end_line": 10}
         }
     })
     
@@ -117,7 +117,7 @@ async def test_tool_svn_log(mock_external_deps, analyze_client):
         }
     })
     
-    with patch("bug_sleuth.bug_scene_app.bug_analyze_agent.tools.svn.run_bash_command", return_value=mock_ret):
+    with patch("context_pilot.context_pilot_app.bug_analyze_agent.tools.svn.run_bash_command", return_value=mock_ret):
         await analyze_client.create_new_session("user_1", "sess_svn_log", initial_state={})
         responses = await analyze_client.chat("Check svn log for recent changes.")
     
@@ -142,7 +142,7 @@ async def test_tool_svn_diff(mock_external_deps, analyze_client):
         }
     })
     
-    with patch("bug_sleuth.bug_scene_app.bug_analyze_agent.tools.svn.run_bash_command", return_value=mock_ret):
+    with patch("context_pilot.context_pilot_app.bug_analyze_agent.tools.svn.run_bash_command", return_value=mock_ret):
         await analyze_client.create_new_session("user_1", "sess_svn_diff", initial_state={})
         responses = await analyze_client.chat("Show svn diff for revision 100.")
     
@@ -160,7 +160,7 @@ async def test_tool_read_file(mock_external_deps, analyze_client):
     MockLlm.set_behaviors({
         "read file": {
             "tool": "read_file_tool",
-            "args": {"path": "d:/MyProject/bug_sleuth/README.md", "start_line": 1, "end_line": 50}
+            "args": {"path": "d:/MyProject/context_pilot/README.md", "start_line": 1, "end_line": 50}
         }
     })
     

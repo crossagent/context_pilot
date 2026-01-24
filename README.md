@@ -38,7 +38,7 @@ ContextPilot 采用 **Artifact-Driven (制品驱动)** 架构：
 # 在项目根目录下执行 Editable Install
 pip install -e .
 ```
-*(注：为保持兼容性，命令行工具仍名为 `bug-sleuth`)*
+*(注：为保持兼容性，命令行工具仍名为 `context-pilot`)*
 
 ### 4.2 启动服务
 
@@ -46,10 +46,10 @@ pip install -e .
 
 ```bash
 # 默认启动 (AG-UI 模式，支持 CopilotKit 前端)
-bug-sleuth serve
+context-pilot serve
 
 # 纯后端模式 (仅 REST API)
-bug-sleuth serve --mode adk-web
+context-pilot serve --mode adk-web
 ```
 
 ### 4.3 扩展能力 (Skills)
@@ -63,7 +63,7 @@ bug-sleuth serve --mode adk-web
 ```python
 # skills/my_feature/__init__.py
 try:
-    from bug_sleuth.bug_scene_app.skill_library.extensions import root_skill_registry
+    from context_pilot.context_pilot_app.skill_library.extensions import root_skill_registry
     from google.adk.tools import FunctionTool
     from .tool import my_cool_feature
 

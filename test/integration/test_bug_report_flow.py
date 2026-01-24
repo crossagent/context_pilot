@@ -6,8 +6,8 @@ Model selection is handled via GOOGLE_GENAI_MODEL environment variable
 (set in conftest.py to "mock/pytest" for all tests).
 """
 import pytest
-from bug_sleuth.testing import AgentTestClient, MockLlm
-from bug_sleuth.bug_scene_app.bug_report_agent.agent import bug_report_agent
+from context_pilot.testing import AgentTestClient, MockLlm
+from context_pilot.context_pilot_app.bug_report_agent.agent import bug_report_agent
 
 
 @pytest.fixture

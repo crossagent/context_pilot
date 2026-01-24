@@ -8,7 +8,7 @@ $ProjectRoot = $PSScriptRoot
 $DataDir = Join-Path $ProjectRoot "adk_data"
 
 Write-Host "=============================================="
-Write-Host "Starting Bug Sleuth Server (AG-UI Mode)"
+Write-Host "Starting Context Pilot Server (AG-UI Mode)"
 Write-Host "Project Root: $ProjectRoot"
 Write-Host "Data Dir:     $DataDir"
 Write-Host "Mode:         ag-ui"
@@ -20,7 +20,7 @@ $RootAgentName = ""
 
 # Build the command arguments
 # Explicitly using ag-ui mode for UI debugging
-$cmdArgs = "run bug-sleuth serve --data-dir ""$DataDir"" --mode ag-ui"
+$cmdArgs = "run context-pilot serve --data-dir ""$DataDir"" --mode ag-ui"
 
 if ($RootAgentName) {
     $cmdArgs += " --root-agent-name ""$RootAgentName"""

@@ -4,8 +4,8 @@ import logging
 from pathlib import Path
 from typing import Optional, List
 from google.adk.tools.tool_context import ToolContext
-from bug_sleuth.shared_libraries.state_keys import StateKeys
-from bug_sleuth.shared_libraries.tool_response import ToolResponse
+from context_pilot.shared_libraries.state_keys import StateKeys
+from context_pilot.shared_libraries.tool_response import ToolResponse
 from .decorators import validate_path
 from .bash import run_bash_command
 

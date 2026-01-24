@@ -1,5 +1,5 @@
 # Agent Configuration
-product_description: "Bug Scene Test Application"
+product_description: "Context Pilot Test Application"
 # Cost Control (USD Soft Limit)
 # Prices based on Gemini 3 Flash (Standard)
 max_autonomous_budget_usd: 0.2
@@ -10,7 +10,7 @@ price_per_million_output_tokens: 3.00
 # Repository Configuration
 # Defaulting to empty list to verify startup.
 repositories:
-  - name: "bug_sleuth"
-    path: "../bug_sleuth"
+  - name: "context_pilot"
+    path: "../context_pilot"
     vcs: "git"
-    description: "The Bug Sleuth framework source code."
+    description: "The Context Pilot framework source code."

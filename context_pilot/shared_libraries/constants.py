@@ -25,12 +25,12 @@ def get_model() -> Union[str, Any]:
     # Mock mode for testing
     if model_str.startswith("mock/"):
         try:
-            from bug_sleuth.testing import MockLlm
+            from context_pilot.testing import MockLlm
             return MockLlm(model=model_str)
         except ImportError:
             raise ImportError(
-                f"MockLlm requested ({model_str}) but bug_sleuth.testing usage failed. "
-                "Ensure bug_sleuth package is installed correctly."
+                f"MockLlm requested ({model_str}) but context_pilot.testing usage failed. "
+                "Ensure context_pilot package is installed correctly."
             )
     
     # LiteLLM mode for OpenAI/Anthropic/other providers
@@ -69,7 +69,7 @@ if not isinstance(numeric_level, int):
     raise ValueError(f"Invalid log level: {loglevel}")
 
 # 2. Configure package logger
-package_logger = logging.getLogger("bug_sleuth")
+package_logger = logging.getLogger("context_pilot")
 package_logger.setLevel(numeric_level)
 
 # Prevent propagation to root logger to avoid duplicate output

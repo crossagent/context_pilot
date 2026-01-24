@@ -4,7 +4,7 @@ from typing import Optional, List, Dict
 from .bash import run_bash_command
 from google.adk.tools import ToolContext
 from .decorators import validate_path
-from bug_sleuth.shared_libraries.tool_response import ToolResponse
+from context_pilot.shared_libraries.tool_response import ToolResponse
 
 @validate_path
 async def get_git_log_tool(

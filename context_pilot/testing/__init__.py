@@ -1,16 +1,16 @@
 """
 Bug Sleuth Testing Infrastructure.
 
-This module exports utilities for integration testing Bug Sleuth agents and skills.
+This module exports utilities for integration testing Context Pilot agents and skills.
 Extensions can use these tools to verify their injections works correctly.
 
 Usage (in your test file):
-    from bug_sleuth.testing import TestClient, MockLlm
-    from bug_sleuth.app_factory import create_app, AppConfig
+    from context_pilot.testing import TestClient, MockLlm
+    from context_pilot.app_factory import create_app, AppConfig
 
     @pytest.fixture
     def app():
-        return create_app(AppConfig(skill_path="path/to/my/skills", agent_name="bug_scene_agent"))
+        return create_app(AppConfig(skill_path="path/to/my/skills", agent_name="context_pilot_agent"))
         
     async def test_my_skill(app):
         # 1. Setup Mock Behavior

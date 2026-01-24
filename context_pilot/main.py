@@ -8,11 +8,11 @@ from dotenv import load_dotenv
 
 # Configure Logging
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("bug_sleuth.main")
+logger = logging.getLogger("context_pilot.main")
 
 @click.group()
 def main():
-    """Bug Sleuth CLI Tool"""
+    """Context Pilot CLI Tool"""
     pass
 
 @main.command()
@@ -26,7 +26,7 @@ def main():
 @click.option("--mode", type=click.Choice(["ag-ui", "adk-web"], case_sensitive=False), default="adk-web", help="Server mode: ag-ui (frontend middleware) or adk-web (legacy/api).")
 def serve(port, host, skills_dir, config, env_file, data_dir, root_agent_name, mode):
     """
-    Start the Bug Sleuth Agent Server.
+    Start the Context Pilot Agent Server.
     
     Unified entry point supporting:
     - AG-UI Mode: For use with CopilotKit/AG-UI frontend.
@@ -64,7 +64,7 @@ def serve(port, host, skills_dir, config, env_file, data_dir, root_agent_name, m
     # This must be done before App/Agent loading so skills are registered
     path = os.getenv("SKILL_PATH")
     if path and os.path.exists(path):
-        from bug_sleuth.skill_library.skill_loader import SkillLoader
+        from context_pilot.skill_library.skill_loader import SkillLoader
         logger.info(f"Loading skills from: {path}")
         SkillLoader(path).load_skills()
     else:
@@ -94,7 +94,7 @@ def serve(port, host, skills_dir, config, env_file, data_dir, root_agent_name, m
             from fastapi import FastAPI
             from ag_ui_adk import ADKAgent, add_adk_fastapi_endpoint
             # Import App (Late import to ensure env vars are set)
-            from bug_sleuth.bug_scene_app.app import app as adk_app
+            from context_pilot.context_pilot_app.app import app as adk_app
             
             # Use Service Registry (same pattern as get_fast_api_app)
             from google.adk.cli.service_registry import get_service_registry
@@ -137,7 +137,7 @@ def serve(port, host, skills_dir, config, env_file, data_dir, root_agent_name, m
             )
             
             # Create FastAPI app
-            app = FastAPI(title="Bug Sleuth ADK Agent (AG-UI)")
+            app = FastAPI(title="Context Pilot ADK Agent (AG-UI)")
             
             # Add AG-UI Endpoint
             add_adk_fastapi_endpoint(app, ui_agent, path="/")
@@ -149,7 +149,7 @@ def serve(port, host, skills_dir, config, env_file, data_dir, root_agent_name, m
             from google.adk.cli.fast_api import get_fast_api_app
             
             # Determine Agents Directory
-            # Strictly use the package root (bug_sleuth directory)
+            # Strictly use the package root (context_pilot directory)
             agents_dir = os.path.dirname(os.path.abspath(__file__))
             
             logger.info(f"ADK Agents Dir (Locked): {agents_dir}")

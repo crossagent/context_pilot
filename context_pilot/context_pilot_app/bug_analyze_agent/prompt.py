@@ -1,4 +1,4 @@
-from bug_sleuth.shared_libraries.state_keys import StateKeys
+from context_pilot.shared_libraries.state_keys import StateKeys
 
 instruction_prompt = """
     你是一个项目工程分析专家。你的核心目标是 **理解功能逻辑，明确现象背后的原因**。

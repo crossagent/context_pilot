@@ -8,7 +8,7 @@ $ProjectRoot = $PSScriptRoot
 $DataDir = Join-Path $ProjectRoot "adk_data"
 
 Write-Host "=============================================="
-Write-Host "Starting Bug Sleuth Server (CLI Mode)"
+Write-Host "Starting Context Pilot Server (CLI Mode)"
 Write-Host "Project Root: $ProjectRoot"
 Write-Host "Data Dir:     $DataDir"
 Write-Host "=============================================="
@@ -18,7 +18,7 @@ Write-Host "=============================================="
 $RootAgentName = ""
 
 # Build the command arguments
-$cmdArgs = "run bug-sleuth serve --data-dir ""$DataDir"""
+$cmdArgs = "run context-pilot serve --data-dir ""$DataDir"""
 
 if ($RootAgentName) {
     $cmdArgs += " --root-agent-name ""$RootAgentName"""

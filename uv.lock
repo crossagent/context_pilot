@@ -215,45 +215,6 @@ wheels = [
 ]
 
 [[package]]
-name = "bug-sleuth"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "fastapi" },
-    { name = "google-adk" },
-    { name = "httpx" },
-    { name = "llama-index-core" },
-    { name = "llama-index-embeddings-gemini" },
-    { name = "llama-index-llms-gemini" },
-    { name = "python-dotenv" },
-    { name = "uvicorn" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "fastapi", specifier = ">=0.115.12" },
-    { name = "google-adk", specifier = ">=1.20.0" },
-    { name = "httpx", specifier = ">=0.28.1" },
-    { name = "llama-index-core", specifier = ">=0.10.0" },
-    { name = "llama-index-embeddings-gemini", specifier = ">=0.1.0" },
-    { name = "llama-index-llms-gemini", specifier = ">=0.1.0" },
-    { name = "python-dotenv", specifier = ">=1.0.1" },
-    { name = "uvicorn", specifier = ">=0.34.2" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "pytest", specifier = ">=9.0.2" },
-    { name = "pytest-asyncio", specifier = ">=0.23.0" },
-]
-
-[[package]]
 name = "cachetools"
 version = "6.2.4"
 source = { registry = "https://pypi.org/simple" }
@@ -442,6 +403,45 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/d8/53/6f443c9a4a8358a93a6792e2acffb9d9d5cb0a5cfd8802644b7b1c9a02e4/colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44", size = 27697 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d1/d6/3965ed04c63042e047cb6a3e6ed1a63a35087b6a609aa3a15ed8ac56c221/colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6", size = 25335 },
+]
+
+[[package]]
+name = "context-pilot"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "fastapi" },
+    { name = "google-adk" },
+    { name = "httpx" },
+    { name = "llama-index-core" },
+    { name = "llama-index-embeddings-gemini" },
+    { name = "llama-index-llms-gemini" },
+    { name = "python-dotenv" },
+    { name = "uvicorn" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastapi", specifier = ">=0.115.12" },
+    { name = "google-adk", specifier = ">=1.20.0" },
+    { name = "httpx", specifier = ">=0.28.1" },
+    { name = "llama-index-core", specifier = ">=0.10.0" },
+    { name = "llama-index-embeddings-gemini", specifier = ">=0.1.0" },
+    { name = "llama-index-llms-gemini", specifier = ">=0.1.0" },
+    { name = "python-dotenv", specifier = ">=1.0.1" },
+    { name = "uvicorn", specifier = ">=0.34.2" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "pytest", specifier = ">=9.0.2" },
+    { name = "pytest-asyncio", specifier = ">=0.23.0" },
 ]
 
 [[package]]

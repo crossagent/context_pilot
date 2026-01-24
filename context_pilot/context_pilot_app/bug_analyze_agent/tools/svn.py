@@ -5,7 +5,7 @@ from typing import Optional, List, Dict
 from .bash import run_bash_command
 from .decorators import validate_path
 from google.adk.tools import ToolContext
-from bug_sleuth.shared_libraries.tool_response import ToolResponse
+from context_pilot.shared_libraries.tool_response import ToolResponse
 
 @validate_path
 async def get_svn_log_tool(

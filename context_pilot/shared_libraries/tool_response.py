@@ -5,7 +5,7 @@
 以便前端 (AG-UI) 能够统一渲染工具执行状态。
 
 Usage:
-    from bug_sleuth.shared_libraries.tool_response import ToolResponse
+    from context_pilot.shared_libraries.tool_response import ToolResponse
 
     # 成功
     return ToolResponse.success(

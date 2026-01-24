@@ -5,7 +5,7 @@ from pathlib import Path
 
 # 2. Startup Check & Configuration Loading
 def load_config():
-    config_path = os.getenv("CONFIG_FILE", "bug_sleuth/config.yaml")
+    config_path = os.getenv("CONFIG_FILE", "context_pilot/config.yaml")
     if not os.path.exists(config_path):
         # Fallback to local if running from agents dir
         if os.path.exists("config.yaml"):
@@ -39,12 +39,12 @@ if not REPO_REGISTRY:
 # 3. Imports
 from datetime import datetime
 
-from bug_sleuth.shared_libraries.constants import MODEL, USER_TIMEZONE
-from bug_sleuth.skill_library.extensions import analyze_skill_registry
+from context_pilot.shared_libraries.constants import MODEL, USER_TIMEZONE
+from context_pilot.skill_library.extensions import analyze_skill_registry
 from google.adk import Agent
 from google.adk.agents.callback_context import CallbackContext
 from google.adk.agents.run_config import RunConfig
-from bug_sleuth.shared_libraries import constants
+from context_pilot.shared_libraries import constants
 from google.adk.apps.app import App
 from google.adk.agents.context_cache_config import ContextCacheConfig
 from google.adk.models.llm_response import LlmResponse
@@ -75,7 +75,7 @@ from .tools.svn import get_svn_log_tool, get_svn_diff_tool
 from google.adk.tools import load_artifacts
 from google.adk.planners import BuiltInPlanner
 from google.genai import types
-from bug_sleuth.shared_libraries.state_keys import StateKeys, AgentKeys
+from context_pilot.shared_libraries.state_keys import StateKeys, AgentKeys
 
 
 logger = logging.getLogger(__name__)

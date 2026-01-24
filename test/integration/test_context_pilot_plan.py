@@ -3,9 +3,9 @@ import pytest
 import logging
 from unittest.mock import patch, MagicMock
 
-from bug_sleuth.testing import AgentTestClient, MockLlm
-from bug_sleuth.shared_libraries.state_keys import StateKeys
-from bug_sleuth.bug_scene_app.agent import context_pilot_agent
+from context_pilot.testing import AgentTestClient, MockLlm
+from context_pilot.shared_libraries.state_keys import StateKeys
+from context_pilot.context_pilot_app.agent import context_pilot_agent
 
 logging.basicConfig(level=logging.INFO)
 
@@ -45,7 +45,7 @@ async def test_context_pilot_strategic_plan(mock_external_deps_and_rag):
         }
     })
     
-    client = AgentTestClient(agent=context_pilot_agent, app_name="bug_sleuth_app")
+    client = AgentTestClient(agent=context_pilot_agent, app_name="context_pilot_app")
     await client.create_new_session("user_test_plan", "sess_plan_001")
     
     # 1. Ask a broad question

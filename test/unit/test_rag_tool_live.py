@@ -8,9 +8,9 @@ from dotenv import load_dotenv
 # Load env before importing agent to ensure config is correct
 load_dotenv()
 
-from bug_sleuth.bug_scene_app.llama_rag_tool import retrieve_rag_documentation_tool, initialize_rag_tool
+from context_pilot.context_pilot_app.llama_rag_tool import retrieve_rag_documentation_tool, initialize_rag_tool
 from scripts.rag_config import RagConfig  # Use config for the test path
-# from bug_sleuth.bug_scene_app.tools.llama_rag_tool import retrieve_rag_documentation_tool
+# from context_pilot.context_pilot_app.tools.llama_rag_tool import retrieve_rag_documentation_tool
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)

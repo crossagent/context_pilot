@@ -14,9 +14,9 @@ from .bug_report_agent.agent import bug_report_agent
 from .tools import refine_bug_state, update_strategic_plan
 from datetime import datetime
 # from .skill_library.extensions import root_skill_registry, report_skill_registry, analyze_skill_registry
-from bug_sleuth.skill_library.extensions import root_skill_registry, report_skill_registry, analyze_skill_registry
-from bug_sleuth.shared_libraries import constants
-from bug_sleuth.shared_libraries.state_keys import StateKeys
+from context_pilot.skill_library.extensions import root_skill_registry, report_skill_registry, analyze_skill_registry
+from context_pilot.shared_libraries import constants
+from context_pilot.shared_libraries.state_keys import StateKeys
 
 # RAG Imports
 from .llama_rag_tool import retrieve_rag_documentation_tool, initialize_rag_tool
@@ -64,7 +64,7 @@ async def before_agent_callback(callback_context: CallbackContext) -> Optional[t
     rag_storage_path = os.getenv("RAG_STORAGE_PATH")
     if not rag_storage_path:
         # Default: ProjectRoot/adk_data/rag_storage
-        # Current file: .../bug_sleuth/bug_scene_app/agent.py
+        # Current file: .../context_pilot/context_pilot_app/agent.py
         base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         rag_storage_path = os.path.join(base_dir, "adk_data", "rag_storage")
 
