@@ -18,7 +18,7 @@ class RagConfig:
     SOURCE_FILENAME = "knowledge_base.jsonl"
     
     # Model Config
-    EMBEDDING_MODEL = "models/embedding-001"
+    EMBEDDING_MODEL = "models/gemini-embedding-001"
     
     @staticmethod
     def validate():
