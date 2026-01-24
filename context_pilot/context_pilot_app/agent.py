@@ -7,10 +7,8 @@ from google.adk.agents.callback_context import CallbackContext
 from google.genai import types
 
 from .prompt import ROOT_AGENT_PROMPT
-from .bug_analyze_agent.agent import bug_analyze_agent
-
-from .bug_report_agent.agent import bug_report_agent
-from .bug_report_agent.agent import bug_report_agent
+from .repo_explorer_agent.agent import repo_explorer_agent
+from .exp_recored_agent.agent import exp_recored_agent
 from .tools import refine_bug_state, update_strategic_plan
 from datetime import datetime
 # from .skill_library.extensions import root_skill_registry, report_skill_registry, analyze_skill_registry
@@ -102,6 +100,7 @@ async def before_agent_callback(callback_context: CallbackContext) -> Optional[t
 
     return None
 
+
 # --- RAG Tool Definition ---
 
 
@@ -113,13 +112,13 @@ context_pilot_agent = LlmAgent(
     model=constants.MODEL,
     instruction=ROOT_AGENT_PROMPT,
     sub_agents=[
-        bug_analyze_agent,
-        bug_report_agent,
+        repo_explorer_agent,
+        exp_recored_agent,
     ],
     tools=[
+        retrieve_rag_documentation_tool, # Primary Knowledge Source
         FunctionTool(refine_bug_state), 
         FunctionTool(update_strategic_plan), 
-        retrieve_rag_documentation_tool, 
         root_skill_registry
     ],
     before_agent_callback=before_agent_callback

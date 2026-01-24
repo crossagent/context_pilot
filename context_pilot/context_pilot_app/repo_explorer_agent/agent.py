@@ -269,11 +269,12 @@ def inject_default_values(callback_context: CallbackContext):
 
 from google.adk.agents.llm_agent import LlmAgent
 
-bug_analyze_agent = LlmAgent(
-    name="bug_analyze_agent",
+
+repo_explorer_agent = LlmAgent(
+    name="repo_explorer_agent",
     model=MODEL,
     description=(
-        "Agent to analyze the bug cause systematically via hypothesis and verification."
+        "Agent to explore the repository context and gathering facts."
     ),
     planner=BuiltInPlanner(
           thinking_config=types.ThinkingConfig(
@@ -302,4 +303,5 @@ bug_analyze_agent = LlmAgent(
     ],
     output_key=AgentKeys.BUG_REASON,
 )
+
 

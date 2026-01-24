@@ -11,17 +11,18 @@ logger = logging.getLogger(__name__)
 
 from typing import Optional, List
 from google.adk.tools import BaseTool
-from context_pilot.skill_library.extensions import report_skill_registry
 
-bug_report_agent = Agent(
-    name="bug_report_agent",
+from .knowledge_tool import record_experience_tool
+
+exp_recored_agent = Agent(
+    name="exp_recored_agent",
     model=MODEL,
     description=(
-        "Agent to confirm if user want to deliver result to platform."
+        "Agent to record the experience of the bug analysis."
     ),
-    instruction=prompt.USER_INTENT_PROMPT,
-    output_key="report_bug_info",
-    tools=[report_skill_registry]
+    instruction=prompt.EXPERIENCE_RECORDING_PROMPT,
+    output_key="record_experience_info",
+    tools=[record_experience_tool]
 )
 
 

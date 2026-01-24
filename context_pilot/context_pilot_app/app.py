@@ -4,7 +4,7 @@ import importlib
 from google.adk.apps.app import App, EventsCompactionConfig
 from google.adk.agents.context_cache_config import ContextCacheConfig
 
-from context_pilot.context_pilot_app.bug_analyze_agent.agent import bug_analyze_agent
+# from context_pilot.context_pilot_app.bug_analyze_agent.agent import bug_analyze_agent
 from context_pilot.context_pilot_app.agent import context_pilot_agent
 
 # --- Instantiate App (Global) ---
