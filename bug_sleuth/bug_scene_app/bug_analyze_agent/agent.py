@@ -291,22 +291,8 @@ def inject_default_values(callback_context: CallbackContext):
 
 
 from google.adk.agents.llm_agent import LlmAgent
-from bug_sleuth.shared_libraries.visual_llm_agent import VisualLlmAgent
 
-# 根据模式选择 Agent 类型
-# AG-UI 模式: 前端负责渲染工具调用，使用原生 LlmAgent
-# ADK-Web 模式: 后端注入可视化文本，使用 VisualLlmAgent
-_app_mode = os.getenv("ADK_APP_MODE", "adk-web").lower()
-_use_visual_agent = _app_mode != "ag-ui"
-
-if _use_visual_agent:
-    logger.info("Using VisualLlmAgent (ADK-Web mode: backend renders tool visualization)")
-    _agent_base_class = VisualLlmAgent
-else:
-    logger.info("Using LlmAgent (AG-UI mode: frontend renders tool visualization)")
-    _agent_base_class = LlmAgent
-
-bug_analyze_agent = _agent_base_class(
+bug_analyze_agent = LlmAgent(
     name="bug_analyze_agent",
     model=MODEL,
     description=(
