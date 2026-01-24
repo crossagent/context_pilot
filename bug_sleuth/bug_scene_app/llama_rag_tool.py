@@ -1,61 +1,14 @@
-
 import os
 import logging
 from typing import Any, List, Optional
 import httpx
-from llama_index.core.base.embeddings.base import BaseEmbedding
 from llama_index.core import VectorStoreIndex, Settings, StorageContext, load_index_from_storage
 from llama_index.core.readers import SimpleDirectoryReader
 from llama_index.llms.gemini import Gemini
+from llama_index.embeddings.gemini import GeminiEmbedding
 from google.adk.tools import FunctionTool
 
 logger = logging.getLogger(__name__)
-
-class GeminiRawEmbedding(BaseEmbedding):
-    """
-    Custom Embedding class for Gemini that uses raw REST API to avoid 
-    SDK dependency conflicts (google-generativeai vs google-adk/protobuf).
-    """
-    api_key: str
-    model_name: str = "models/embedding-001"
-
-    def __init__(self, api_key: str, model_name: str = "models/embedding-001", **kwargs: Any):
-        super().__init__(model_name=model_name, api_key=api_key, **kwargs)
-
-    def _get_query_embedding(self, query: str) -> List[float]:
-        return self._embed(query)
-
-    def _get_text_embedding(self, text: str) -> List[float]:
-        return self._embed(text)
-
-    def _get_text_embeddings(self, texts: List[str]) -> List[List[float]]:
-        # Simple Loop (Batching could be optimized but keep simple for now)
-        return [self._embed(t) for t in texts]
-
-    async def _aget_query_embedding(self, query: str) -> List[float]:
-        return self._embed(query)
-
-    async def _aget_text_embedding(self, text: str) -> List[float]:
-        return self._embed(text)
-
-    def _embed(self, text: str) -> List[float]:
-        url = f"https://generativelanguage.googleapis.com/v1beta/{self.model_name}:embedContent?key={self.api_key}"
-        headers = {"Content-Type": "application/json"}
-        payload = {
-            "model": self.model_name,
-            "content": {"parts": [{"text": text}]}
-        }
-        
-        try:
-            # Synchronous call for compatibility with base class synchronous methods
-            with httpx.Client() as client:
-                response = client.post(url, json=payload, headers=headers, timeout=30.0)
-                response.raise_for_status()
-                data = response.json()
-                return data["embedding"]["values"]
-        except Exception as e:
-            logger.error(f"Gemini API Embedding failed: {e}")
-            raise
 
 # ... imports ...
 
@@ -107,8 +60,11 @@ def _get_index() -> VectorStoreIndex:
         api_key=api_key
     )
     
-    # Use Custom REST-based Gemini Embedding (No Conflict)
-    Settings.embed_model = GeminiRawEmbedding(api_key=api_key)
+    # Use Standard Gemini Embedding (SDK will upgrade to 3072 dims)
+    Settings.embed_model = GeminiEmbedding(
+        model_name="models/gemini-embedding-001",
+        api_key=api_key
+    )
 
     storage_dir = _STORAGE_DIR
     

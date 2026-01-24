@@ -73,6 +73,13 @@ async def test_context_pilot_strategic_plan(mock_external_deps_and_rag):
     # 2. Ask to check docs
     responses_2 = await client.chat("Please check documentation for login.")
     assert len(responses_2) > 0
+    last_response_2 = responses_2[-1]
+    
+    # Assert that the tool execution didn't return an error message
+    # The RAG tool returns "Error retrieving documentation: ..." on failure
+    assert "Error retrieving documentation" not in last_response_2, f"RAG Tool failed: {last_response_2}"
+    assert "exception" not in last_response_2.lower()
+    
     # Validating that no exception occurred and conversation continued.
     # Capability is proven by the log output showing [Tool Call] query_knowledge_base. 
 

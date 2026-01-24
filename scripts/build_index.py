@@ -102,7 +102,7 @@ def build_index(mode: str = "auto", force: bool = False):
             return
 
         if cached_model != current_model:
-            logger.error(f"� Incremental update failed: Embedding model mismatch ({cached_model} != {current_model}). Please run with '--mode full'.")
+            logger.error(f"⚠️ Incremental update failed: Embedding model mismatch ({cached_model} != {current_model}). Please run with '--mode full'.")
             return
 
         if cached_hash == current_hash:
@@ -120,8 +120,7 @@ def build_index(mode: str = "auto", force: bool = False):
     Settings.llm = Gemini(model="models/gemini-2.0-flash-exp", api_key=api_key)
     Settings.embed_model = GeminiEmbedding(
         model_name=current_model, 
-        api_key=api_key,
-        output_dimensionality=768 # Default for build
+        api_key=api_key
     )
 
     logger.info(f"Loading/Parsing data from: {source_path}")
