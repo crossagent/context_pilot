@@ -27,7 +27,7 @@ Usage (in your test file):
         assert "[MockLlm]" in resp[-1]
 """
 
-from .test_client import AgentTestClient
+from .api_client import AdkApiTestClient
 from .mock_llm import MockLlm
 
-__all__ = ["AgentTestClient", "MockLlm"]
+__all__ = ["AdkApiTestClient", "MockLlm"]

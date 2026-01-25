@@ -40,6 +40,11 @@ def api_client(tmp_path):
     """
     from unittest.mock import patch
     from context_pilot.testing.api_client import AdkApiTestClient
+    # Use package-based loading to ensure consistency with production
+    # Import the main app definition
+    from context_pilot.context_pilot_app.app import app as main_app
     
     with patch("shutil.which", return_value="rg_mock_path"):
-        yield AdkApiTestClient(tmp_path)
+        # We pass the root agent from the main app. 
+        # AdkApiTestClient will wrap it in a test App instance.
+        yield AdkApiTestClient(tmp_path, agent=main_app.root_agent, app_name=main_app.name)

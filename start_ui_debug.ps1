@@ -31,11 +31,21 @@ if ($RootAgentName) {
 # Start Backend in background job
 Write-Host ""
 Write-Host "[1/2] Starting Backend Agent (AG-UI Mode) on port $BackendPort..."
-$backendJob = Start-Job -ScriptBlock {
-    param($root, $args)
-    Set-Location $root
-    cmd /c "uv $args"
-} -ArgumentList $ProjectRoot, $backendArgs
+# Start Backend using Start-Process for better visibility and environment inheritance
+Write-Host ""
+Write-Host "[1/2] Starting Backend Agent (AG-UI Mode) on port $BackendPort..."
+
+$uvPath = "uv"  # Assume 'uv' is in PATH. If not, you might need a full path or "cmd /c uv"
+
+# We execute 'uv' directly. 
+# ArgumentList must be parsed carefully by PowerShell.
+# We pass the rest of the command as arguments to 'uv'.
+# The constructed $backendArgs string (e.g. "run context-pilot serve ...") needs to be split or passed correctly.
+
+# To simplify, we'll use 'cmd /c' to run the full command string, 
+# ensuring correct parsing of quotes and spaces by the shell.
+# This opens a new window for the backend server.
+Start-Process -FilePath "cmd" -ArgumentList "/c uv $backendArgs" -WorkingDirectory $ProjectRoot
 
 # Wait a bit for backend to initialize
 Start-Sleep -Seconds 3
@@ -61,6 +71,8 @@ finally {
     # Cleanup: Stop backend when frontend exits
     Write-Host ""
     Write-Host "Stopping Backend Agent..."
-    Stop-Job -Job $backendJob
-    Remove-Job -Job $backendJob
+    # Cleanup: Backend is running in a separate window, so we don't need to kill a local job.
+    # User can close the backend window manually.
+    Write-Host ""
+    Write-Host "Frontend stopped. Please close the Backend window manually if needed."
 }

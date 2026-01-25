@@ -47,16 +47,16 @@ export default function CopilotKitPage() {
         }}
         suggestions={[
           {
+            title: "Manual Test: Custom Strategy",
+            message: "调用定制策略工具，我需要定一个简单的计划，这是功能测试，不需要关注复杂的信息",
+          },
+          {
             title: "Generative UI",
             message: "Get the weather in San Francisco.",
           },
           {
             title: "Frontend Tools",
             message: "Set the theme to green.",
-          },
-          {
-            title: "Write Agent State",
-            message: "Add a proverb about AI.",
           },
           {
             title: "Update Agent State",
