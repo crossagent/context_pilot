@@ -6,6 +6,10 @@ import click
 import uvicorn
 from dotenv import load_dotenv
 
+# Import for RunConfig configuration
+from google.adk.agents.run_config import StreamingMode, RunConfig as ADKRunConfig
+from ag_ui.core import RunAgentInput
+
 # Configure Logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("context_pilot.main")
@@ -130,6 +134,23 @@ def serve(port, host, skills_dir, config, env_file, data_dir, root_agent_name, m
 
             # Create AG-UI Adapter Agent
             # Wraps the ADK agent with AG-UI protocol support
+            
+            # Define run config factory to disable streaming
+            def create_no_stream_run_config(input: RunAgentInput) -> ADKRunConfig:
+                params = {
+                    'streaming_mode': StreamingMode.NONE,
+                    'save_input_blobs_as_artifacts': True
+                }
+                # Add custom metadata for context if input has it
+                if input.context:
+                    params['custom_metadata'] = {
+                        'ag_ui_context': [
+                            {"description": ctx.description, "value": ctx.value}
+                            for ctx in input.context
+                        ]
+                    }
+                return ADKRunConfig(**params)
+
             ui_agent = ADKAgent.from_app(
                  app=adk_app,
                  user_id="demo_user",
@@ -138,6 +159,8 @@ def serve(port, host, skills_dir, config, env_file, data_dir, root_agent_name, m
                  # Inject persistent services
                  session_service=session_service,
                  artifact_service=artifact_service,
+                 # Disable streaming for stability
+                 run_config_factory=create_no_stream_run_config,
             )
             
             # Create FastAPI app
