@@ -32,8 +32,33 @@ class MockAgentLoader(BaseAgentLoader):
 
 class AdkApiTestClient:
     """
-    A reusable integration test client that spins up the real ADK Web Server (FastAPI).
-    It wraps fastapi.testclient.TestClient to provide agent-specific helper methods.
+    The Next-Generation Integration Testing Framework for Context Pilot.
+    
+    This client bridges the gap between Unit Tests and End-to-End Tests by combining
+    the **Real ADK Runtime** with a **Deterministic Simulation Layer**.
+
+    **Core Advantages:**
+    
+    1.  **Production Fidelity (Real-World Simulation)**: 
+        Runs the full `AdkWebServer` (FastAPI) stack locally.
+        Verifies the entire request lifecycle: 
+        *HTTP -> Routing -> Session Manager -> Agent Runner -> Tool Execution -> Event Output*.
+        This ensures that if a test passes, the entire system configuration is valid.
+
+    2.  **Deterministic & Zero-Cost (MockLlm)**:
+        Integrated deeply with `MockLlm` to replace stochastic model calls with precise, scripted behaviors.
+        *   **Stable**: Eliminates flakiness; tools are called strictly as defined.
+        *   **Fast**: Tests execute in milliseconds without network latency.
+        *   **Free**: No API token usage, perfect for high-frequency CI/CD execution.
+
+    3.  **Complete & Isolated Coverage**:
+        *   **Full Flow**: Validates edge cases like serialization, event compaction, and error handling.
+        *   **Isolation**: Supports `agent_override` to spin up disposable apps on-the-fly, allowing 
+            unit-level testing of sub-agents (e.g. `repo_explorer_agent`) within the real server context.
+
+    4.  **No Port Conflicts (In-Memory execution)**:
+        *   Uses `Starlette/FastAPI TestClient` to execute requests directly against the ASGI interface.
+        *   **No physical TCP ports** are bound or consumed. Testing is safe to run alongside a running server.
     """
 
     def __init__(self, tmp_path, agent=None, app_name="context_pilot_app"):
@@ -68,6 +93,10 @@ class AdkApiTestClient:
 
         # If agent is provided, we manually construct the server to serve it
         if self.agent:
+            # --- MODE A: Unit/Component Test Mode ---
+            # Scenario: You want to test a SPECIFIC Agent instance (e.g., a sub-agent, or a new agent not yet on disk).
+            # Action: We manually construct a 'Fake' App wrapping just this agent and force the server to load it.
+            # Benefit: Allows testing 'repo_explorer_agent' tools directly without going through the Root Agent's router.
             print(f"[AdkApiTestClient] Initializing Manual Server for Single Agent: {self.agent.name}")
             
             # 1. Create App Wrapper
@@ -107,7 +136,10 @@ class AdkApiTestClient:
             return TestClient(app)
 
         else:
-            # Default Mode: Load from Directory
+            # --- MODE B: Integration/System Test Mode ---
+            # Scenario: You want to test the REAL Application as configured in your project (task.md, main.py).
+            # Action: We simulate the 'context-pilot serve' startup logic, scanning the agents directory.
+            # Benefit: Verifies that directory structure, config files, and multi-agent routing are working correctly.
             agents_dir = os.path.join(project_root, "context_pilot")
             print(f"[AdkApiTestClient] Initializing Server with agents_dir: {agents_dir}")
 
