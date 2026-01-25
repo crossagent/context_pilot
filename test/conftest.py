@@ -31,3 +31,15 @@ def reset_mock_behaviors():
     Reset mock behaviors before each test to ensure isolation.
     """
     MockLlm.clear_behaviors()
+
+@pytest.fixture
+def api_client(tmp_path):
+    """
+    Fixture to provide the standardized AdkApiTestClient.
+    Mocks external dependencies like 'rg'.
+    """
+    from unittest.mock import patch
+    from context_pilot.testing.api_client import AdkApiTestClient
+    
+    with patch("shutil.which", return_value="rg_mock_path"):
+        yield AdkApiTestClient(tmp_path)
