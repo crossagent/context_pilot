@@ -61,7 +61,7 @@ Write-Host "  - API Docs:  http://localhost:$BackendPort/docs"
 Write-Host "=============================================="
 Write-Host ""
 
-Set-Location (Join-Path $ProjectRoot "frontend")
+Push-Location (Join-Path $ProjectRoot "frontend")
 
 try {
     # Run frontend (this will block)
@@ -75,4 +75,6 @@ finally {
     # User can close the backend window manually.
     Write-Host ""
     Write-Host "Frontend stopped. Please close the Backend window manually if needed."
+    
+    Pop-Location
 }
