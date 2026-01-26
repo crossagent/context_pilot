@@ -15,6 +15,6 @@ EXPERIENCE_RECORDING_PROMPT = """
         - **tags**: 逗号分隔的关键标签。
 
     **记录原则**:
-    *   **Method over Conclusion**: 重点记录“怎么查到的/怎么解决的”，模块的结构和业务的流程。
+    *   **Method over Conclusion**: 重点记录“怎么查到的/怎么解决的”，记录模块的结构和业务的流程。
     *   **Generalization (通用化)**: 尽量将具体的行号抽象为“检查 X 函数的入口”，以便未来检索。
     """
