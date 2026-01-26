@@ -1,26 +1,33 @@
 import json
 import os
+import uuid
+from datetime import datetime
 from google.adk.tools import FunctionTool
 
 KNOWLEDGE_BASE_PATH = os.path.join(os.getcwd(), "data", "knowledge_base.jsonl")
 
-def record_experience(title: str, method: str, tags: str = "") -> str:
+def record_experience(question: str, answer: str, category: str, contributor: str, tags: str = "") -> str:
     """
-    Record a successful problem-solving experience into the knowledge base.
+    Record a Q&A experience into the knowledge base.
     
     Args:
-        title: A concise title for the problem (e.g., "Inventory Sync Failure").
-        method: The EFFECTIVE method used to solve or diagnose it (e.g., "Checked Server.log for 'InventorySyncError'").
+        question: The problem or question (e.g., "Inventory Sync Failure").
+        answer: The solution or effective method (e.g., "Checked Server.log for 'InventorySyncError'").
+        category: The category of the knowledge (e.g., "BugAnalysis").
+        contributor: The name of the person adding this entry.
         tags: Optional comma-separated tags (e.g., "Network, Inventory").
         
     Returns:
         Success message.
     """
     entry = {
-        "title": title,
-        "content": method,
+        "id": str(uuid.uuid4()),
+        "title": question,
+        "content": answer,
         "metadata": {
-            "category": "AutoRecorded",
+            "category": category,
+            "contributor": contributor,
+            "timestamp": datetime.now().isoformat(),
             "tags": [t.strip() for t in tags.split(",") if t.strip()]
         }
     }

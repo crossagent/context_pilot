@@ -40,23 +40,31 @@ def calculate_file_hash(file_path: str) -> str:
 def granular_load_documents(file_path: str) -> List[Document]:
     """
     Parses JSONL into individual Documents. 
-    Uses content hash as doc_id to enable stable incremental updates.
+    Uses content hash as doc_id if explicit 'id' is missing.
     """
     documents = []
     with open(file_path, 'r', encoding='utf-8') as f:
         for line in f:
             if not line.strip(): continue
-            text = line
             try:
                 data = json.loads(line)
-                if isinstance(data, dict):
-                    text = data.get("text") or data.get("content") or json.dumps(data, ensure_ascii=False)
-            except:
+                if not isinstance(data, dict):
+                    continue # Skip invalid entries
+
+                text = data.get("text") or data.get("content") or json.dumps(data, ensure_ascii=False)
+                
+                # Use 'id' if available (preferred), otherwise fall back to hash
+                if "id" in data:
+                    doc_id = data["id"]
+                else:
+                    doc_id = hashlib.sha256(text.encode('utf-8')).hexdigest()
+                
+                doc = Document(text=text, id_=doc_id, metadata=data.get("metadata", {}))
+                documents.append(doc)
+            except Exception as e:
+                logger.warning(f"Skipping malformed line: {e}")
                 pass
             
-            doc_hash = hashlib.sha256(text.encode('utf-8')).hexdigest()
-            doc = Document(text=text, id_=doc_hash)
-            documents.append(doc)
     return documents
 
 def build_index(mode: str = "auto", force: bool = False):
