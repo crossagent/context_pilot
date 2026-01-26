@@ -26,10 +26,23 @@ if target_agent_name:
     if not found:
         print(f"WARNING: Requested root agent '{target_agent_name}' not found in sub-agents. Defaulting to Supervisor.")
 
+# --- Configure Plugins based on mode ---
+_app_mode = os.getenv("ADK_APP_MODE", "adk-web").lower()
+_plugins = []
+
+if _app_mode == "ag-ui":
+    # Add LoggingPlugin for detailed debugging in UI mode
+    try:
+        from google.adk.plugins.logging_plugin import LoggingPlugin
+        _plugins.append(LoggingPlugin())
+        print("[App] LoggingPlugin enabled for AG-UI mode")
+    except ImportError:
+        print("[App] Warning: LoggingPlugin not available")
 
 app = App(
     name="context_pilot_app",
     root_agent=selected_root_agent,
+    plugins=_plugins,
     context_cache_config=ContextCacheConfig(
         min_tokens=2048,
         ttl_seconds=600,
@@ -43,3 +56,4 @@ app = App(
         is_resumable=True
     )
 )
+
