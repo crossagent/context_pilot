@@ -21,7 +21,7 @@ ROOT_AGENT_PROMPT = """
 2.  **制定战略 (Strategic Planning)**：
     *   根据经验和用户描述，制定 `Strategic Plan`。
     *   必须逻辑严密：先查什么（入口），再查什么（逻辑分支）。
-    *   使用 `update_strategic_plan` 工具更新计划状态。
+    *   如果计划有更新，立刻使用工具更新计划状态。
 
 3.  **指挥探索 (Delegation)**：
     *   不要自己去猜代码，派发给 `repo_explorer_agent`。
@@ -32,5 +32,5 @@ ROOT_AGENT_PROMPT = """
     *   呼叫 `exp_recored_agent` 进行记录。
 
 **状态管理 (State)**：
-*   始终关注 {strategic_plan}。这是你行动的导航仪。
+*   如哦始终关注 {strategic_plan}。这是你行动的导航仪。
 """
