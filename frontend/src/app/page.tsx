@@ -173,35 +173,45 @@ function YourMainContent({ themeColor }: { themeColor: string }) {
   );
 
   // Strategic Plan Update - ADK Confirmation HITL
-  useRenderToolCall(
+  // useHumanInTheLoop provides 'respond' callback for sending results back
+  useHumanInTheLoop(
     {
       name: "update_strategic_plan",
       description: "更新调查计划（需要用户审核）",
       parameters: [{ name: "plan_content", type: "string", required: true }],
-      render: ({ args, result }) => {
+      render: ({ args, result, status, respond }) => {
         const [editedPlan, setEditedPlan] = React.useState(args.plan_content || "");
         const [responded, setResponded] = React.useState(false);
 
-        const isComplete = result !== undefined;
+        const isComplete = status === "complete";
+        const isExecuting = status === "executing";
 
-        // Check if this is waiting for confirmation
-        // When ADK request_confirmation is called, the tool is in progress but not complete
-        const waitingForConfirmation = !isComplete && !responded;
+        // Waiting for confirmation when status is "executing" and user hasn't responded
+        const waitingForConfirmation = isExecuting && !responded;
 
         const handleApprove = () => {
+          if (!respond) return;
           setResponded(true);
-          // Send confirmation response to ADK
-          result({
-            approved: true,
-            plan_content: editedPlan
+          // Send FunctionResponse via respond callback
+          // Payload structure matches ADK expectation
+          respond({
+            confirmed: true,
+            payload: {
+              approved: true,
+              plan_content: editedPlan
+            }
           });
         };
 
         const handleReject = () => {
+          if (!respond) return;
           setResponded(true);
-          result({
-            approved: false,
-            reason: "用户拒绝了该计划"
+          respond({
+            confirmed: true,
+            payload: {
+              approved: false,
+              reason: "用户拒绝了该计划"
+            }
           });
         };
 
