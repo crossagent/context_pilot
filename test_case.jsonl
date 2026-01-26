@@ -1,6 +1,0 @@
-{"title": "如何查询玩家背包同步失败的日志？", "content": "检查 Server.log 文件，搜索关键字 'InventorySyncError'。通常会附带 PlayerID 和具体的 ItemID 偏移量。", "metadata": {"category": "BugAnalysis", "module": "Inventory", "priority": "High"}}
-{"title": "服务器同步延迟过高时，位置预测补偿在哪里配置？", "content": "在 Scripts/Server/NetConfig.cs 脚本中，修改 MovementPredictionThreshold 的值。该值越大，客户端预测越激进但易产生瞬移感。", "metadata": {"category": "Development", "language": "CSharp", "module": "Network"}}
-{"title": "场景中由于 Texel Density 过高导致的显存溢出如何排查？", "content": "打开检查工具，定位到 Assets/Art/Textures 目录，查看 MipMap 生成策略是否开启。默认针对大场景建筑需要启用 Streaming Mipmaps。", "metadata": {"category": "Graphics", "module": "Optimization", "system": "Rendering"}}
-{"title": "生存游戏中的资源采集倍率（如木材、矿石）在哪个表配置？", "content": "前往 DataConfig/World/ResourceNodes.xlsx，查看 'YieldMultiplier' 列。注意不同区域（Biomes）可能有独立的覆盖系数。", "metadata": {"category": "TechnicalPlanning", "module": "Economy", "file_type": "xlsx"}}
-{"title": "分析工具如何获取客户端死循环（Infinity Loop）的堆栈信息？", "content": "日志分析 Agent 应捕获 'ThreadAbortException' 或持续的 'MainThread Timeout'。对应的堆栈上下文通常在 Logs/ThreadStatus.log 中。", "metadata": {"category": "BugAnalysis", "tool": "AIAgent", "module": "Diagnostics"}}
-{"title": "高清画质下，树木遮挡剔除（Occlusion Culling）的距离阈值", "content": "在 GraphicSettings.json 中搜索 'TreeCullingDistance'。目前默认配置：超高画质为 1500，中等画质为 800。", "metadata": {"category": "Graphics", "module": "Rendering", "config_file": "json"}}
