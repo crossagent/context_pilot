@@ -37,14 +37,10 @@ def test_hitl_flow(hitl_client):
              
              if 'content' in ev and ev['content'] and 'parts' in ev['content']:
                  for part in ev['content']['parts']:
-                     if 'text' in part and part['text']:
-                         f.write(f"  [Text] {part['text'][:50]}...\n")
                      fc = part.get('functionCall') or part.get('function_call')
                      if fc:
-                         f.write(f"  [FunctionCall] Name: {fc.get('name')} ID: {fc.get('id')}\n")
-                         f.write(f"    Args: {fc.get('args')}\n")
-                         
-             # Check for toolConfirmation field specifically
+                         print(f"[{i}] Function Call: {fc.get('name')} ID: {fc.get('id')}")
+
              if 'toolConfirmation' in ev:
                  tc = ev['toolConfirmation']
                  f.write(f"  [ToolConfirmation] Hint: {tc.get('hint')}\n")
