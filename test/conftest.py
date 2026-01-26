@@ -1,5 +1,8 @@
 import os
 import pytest
+from dotenv import load_dotenv
+load_dotenv()
+
 from google.adk.models import LLMRegistry
 from context_pilot.testing import MockLlm
 import sys
@@ -10,9 +13,23 @@ def pytest_configure(config):
     Set up environment for testing BEFORE any imports happen.
     This ensures constants.py picks up the mock model.
     """
-    # Set mock model for all tests by default
-    os.environ["GOOGLE_GENAI_MODEL"] = "mock/pytest"
-    print(">>> [conftest] Set GOOGLE_GENAI_MODEL=mock/pytest")
+    # Set mock model for all tests by default, unless overridden or --live is used
+    if config.getoption("--live"):
+        if "GOOGLE_API_KEY" not in os.environ:
+            pytest.exit("To run live tests, you must set GOOGLE_API_KEY environment variable.")
+        
+        # User requested "gemini3flash", mapping to available flash model
+        live_model = os.environ.get("GOOGLE_GENAI_MODEL", "gemini-3-flash-preview")
+        os.environ["GOOGLE_GENAI_MODEL"] = live_model
+        print(f">>> [conftest] LIVE MODE ENABLED. Using model: {live_model}")
+    elif "GOOGLE_GENAI_MODEL" not in os.environ:
+        os.environ["GOOGLE_GENAI_MODEL"] = "mock/pytest"
+        print(">>> [conftest] Set GOOGLE_GENAI_MODEL=mock/pytest (Default)")
+    else:
+        print(f">>> [conftest] Using existing GOOGLE_GENAI_MODEL={os.environ['GOOGLE_GENAI_MODEL']}")
+
+def pytest_addoption(parser):
+    parser.addoption("--live", action="store_true", help="Run tests against REAL LLM")
 
 
 @pytest.fixture(scope="session", autouse=True)
