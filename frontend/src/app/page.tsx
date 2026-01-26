@@ -47,8 +47,8 @@ export default function CopilotKitPage() {
         }}
         suggestions={[
           {
-            title: "Manual Test: Custom Strategy",
-            message: "调用定制策略工具，我需要定一个简单的计划，这是功能测试，不需要关注复杂的信息",
+            title: "Manual Test: Check",
+            message: "我想知道低画质下树的LOD是多少",
           },
           {
             title: "Generative UI",
@@ -178,8 +178,16 @@ function YourMainContent({ themeColor }: { themeColor: string }) {
     {
       name: "update_strategic_plan",
       description: "更新调查计划（需要用户审核）",
-      parameters: [{ name: "plan_content", type: "string", required: true }],
+      parameters: [
+        {
+          name: "plan_content",
+          type: "string",
+          required: true,
+          description: "必须填写。这是完整的调查计划内容，请使用 Markdown 格式的任务列表详细描述接下来的步骤。"
+        }
+      ],
       render: ({ args, result, status, respond }) => {
+        console.log("HITL render args:", args);
         const [editedPlan, setEditedPlan] = React.useState(args.plan_content || "");
         const [responded, setResponded] = React.useState(false);
 
