@@ -52,5 +52,6 @@ class TestKnowledgeTool(unittest.TestCase):
             self.assertIn("timestamp", metadata)
             self.assertEqual(metadata["tags"], ["tag1", "tag2"])
 
+
 if __name__ == '__main__':
     unittest.main()

@@ -5,3 +5,4 @@
 {"title": "分析工具如何获取客户端死循环（Infinity Loop）的堆栈信息？", "content": "日志分析 Agent 应捕获 'ThreadAbortException' 或持续的 'MainThread Timeout'。对应的堆栈上下文通常在 Logs/ThreadStatus.log 中。", "metadata": {"category": "BugAnalysis", "tool": "AIAgent", "module": "Diagnostics"}}
 {"title": "高清画质下，树木遮挡剔除（Occlusion Culling）的距离阈值", "content": "在 GraphicSettings.json 中搜索 'TreeCullingDistance'。目前默认配置：超高画质为 1500，中等画质为 800。", "metadata": {"category": "Graphics", "module": "Rendering", "config_file": "json"}}
 {"title": "验证测试记录", "content": "这是一条用于验证 Vertex AI RAG 文件更新机制的测试记录，用于触发由于文件哈希变更导致的重新导入。", "metadata": {"category": "Test", "module": "RAG_Verification"}}
+{"id": "b332bc76-b43f-46aa-b535-a2aa7594208d", "title": "Test Question via Tool", "content": "This is a test answer added via the unit test tool.", "metadata": {"category": "Test", "contributor": "Antigravity", "timestamp": "2026-01-28T23:39:59.594903", "tags": ["test", "automated"]}}
