@@ -28,6 +28,9 @@ if ($RootAgentName) {
     $backendArgs += " --root-agent-name `"$RootAgentName`""
 }
 
+# Enable Logging Plugin for Debugging
+$env:ADK_ENABLE_LOGGING_PLUGIN = "true"
+
 # Start Backend in background job
 Write-Host ""
 Write-Host "[1/2] Starting Backend Agent (AG-UI Mode) on port $BackendPort..."

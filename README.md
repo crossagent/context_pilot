@@ -50,6 +50,10 @@ context-pilot serve
 
 # 纯后端模式 (仅 REST API)
 context-pilot serve --mode adk-web
+
+# 开启调试日志 (LoggingPlugin)
+# 设置环境变量 ADK_ENABLE_LOGGING_PLUGIN=true
+
 ```
 
 ### 4.3 扩展能力 (Skills)

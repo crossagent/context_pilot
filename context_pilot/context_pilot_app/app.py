@@ -30,12 +30,12 @@ if target_agent_name:
 _app_mode = os.getenv("ADK_APP_MODE", "adk-web").lower()
 _plugins = []
 
-if _app_mode == "ag-ui":
-    # Add LoggingPlugin for detailed debugging in UI mode
+if os.getenv("ADK_ENABLE_LOGGING_PLUGIN", "false").lower() == "true":
+    # Add LoggingPlugin for detailed debugging if explicitly enabled
     try:
         from google.adk.plugins.logging_plugin import LoggingPlugin
         _plugins.append(LoggingPlugin())
-        print("[App] LoggingPlugin enabled for AG-UI mode")
+        print("[App] LoggingPlugin enabled (ADK_ENABLE_LOGGING_PLUGIN=true)")
     except ImportError:
         print("[App] Warning: LoggingPlugin not available")
 
