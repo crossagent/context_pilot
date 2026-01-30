@@ -12,10 +12,13 @@ const serviceAdapter = new ExperimentalEmptyAdapter();
 
 // 2. Create the CopilotRuntime instance and utilize the AG-UI client
 //    to setup the connection with the ADK agent.
+const agent = new HttpAgent({ url: "http://localhost:8002/" });
+
 const runtime = new CopilotRuntime({
   agents: {
-    // Our FastAPI endpoint URL
-    "context_pilot_agent": new HttpAgent({ url: "http://localhost:8002/" }),
+    // Register as both default (for chat) and named (for useCoAgent state sync)
+    "default": agent,
+    "context_pilot_agent": agent,
   }
 });
 

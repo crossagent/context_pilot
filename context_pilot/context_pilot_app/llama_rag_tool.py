@@ -62,10 +62,6 @@ def _get_index():
         logger.error(f"Failed to load index from storage: {e}")
         raise
 
-
-# Safe Tool Creation
-retrieve_rag_documentation_tool = FunctionTool(retrieve_rag_documentation_tool)
-
 # ... imports ...
 
 # ... global variables ...
