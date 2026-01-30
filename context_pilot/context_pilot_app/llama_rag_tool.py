@@ -108,7 +108,7 @@ def _get_index() -> VectorStoreIndex:
 
     # Use Native Gemini LLM
     Settings.llm = Gemini(
-        model="models/gemini-2.0-flash-exp", 
+        model="models/gemini-3-flash-preview", 
         api_key=api_key
     )
     
