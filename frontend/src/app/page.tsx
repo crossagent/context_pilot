@@ -1,14 +1,14 @@
 "use client";
 
-import { ProverbsCard } from "@/components/proverbs";
-import { WeatherCard } from "@/components/weather";
+import { StrategicPlanCard } from "@/components/dashboard/StrategicPlanCard";
+import { ContextInfoCard } from "@/components/dashboard/ContextInfoCard";
+import { KnowledgeStateCard } from "@/components/dashboard/KnowledgeStateCard";
 import { AgentState } from "@/lib/types";
 import {
   useCoAgent,
-  useDefaultTool,
-  useFrontendTool,
   useHumanInTheLoop,
   useRenderToolCall,
+  CopilotKit,
 } from "@copilotkit/react-core";
 import { CopilotKitCSSProperties, CopilotSidebar } from "@copilotkit/react-ui";
 import React, { useState } from "react";
@@ -16,73 +16,47 @@ import React, { useState } from "react";
 export default function CopilotKitPage() {
   const [themeColor, setThemeColor] = useState("#6366f1");
 
-  // 🪁 Frontend Actions: https://docs.copilotkit.ai/adk/frontend-actions
-  useFrontendTool({
-    name: "setThemeColor",
-    parameters: [
-      {
-        name: "themeColor",
-        description: "The theme color to set. Make sure to pick nice colors.",
-        required: true,
-      },
-    ],
-    handler({ themeColor }) {
-      setThemeColor(themeColor);
-    },
-  });
-
   return (
     <main
       style={
         { "--copilot-kit-primary-color": themeColor } as CopilotKitCSSProperties
       }
+      className="bg-slate-50 dark:bg-black h-screen w-screen overflow-hidden"
     >
-      <CopilotSidebar
-        disableSystemMessage={true}
-        clickOutsideToClose={false}
-        defaultOpen={true}
-        labels={{
-          title: "Popup Assistant",
-          initial: "👋 Hi, there! You're chatting with an agent.",
+      <CopilotKit
+        runtimeUrl="/api/copilotkit"
+        // [NEW] Pass User Identity to Backend
+        properties={{
+          userId: "ZXY_Engineer_001" // In a real app, this comes from your Auth Provider
         }}
-        suggestions={[
-          {
-            title: "Manual Test: Check",
-            message: "我想知道低画质下树的LOD是多少",
-          },
-          {
-            title: "Generative UI",
-            message: "Get the weather in San Francisco.",
-          },
-          {
-            title: "Frontend Tools",
-            message: "Set the theme to green.",
-          },
-          {
-            title: "Update Agent State",
-            message:
-              "Please remove 1 random proverb from the list if there are any.",
-          },
-          {
-            title: "Read Agent State",
-            message: "What are the proverbs?",
-          },
-        ]}
       >
-        <YourMainContent themeColor={themeColor} />
-      </CopilotSidebar>
+        <CopilotSidebar
+          disableSystemMessage={true}
+          clickOutsideToClose={false}
+          defaultOpen={true}
+          labels={{
+            title: "ContextPilot Mission Control",
+            initial: "👋 Ready to assist with engineering tasks.",
+          }}
+        >
+          <YourMainContent themeColor={themeColor} />
+        </CopilotSidebar>
+      </CopilotKit>
     </main>
   );
 }
 
 function YourMainContent({ themeColor }: { themeColor: string }) {
   // 🪁 Shared State: https://docs.copilotkit.ai/adk/shared-state
-  const { state, setState } = useCoAgent<AgentState>({
+  const { state } = useCoAgent<AgentState>({
     name: "context_pilot_agent",
     initialState: {
-      proverbs: [
-        "CopilotKit may be new, but its the best thing since sliced bread.",
-      ],
+      strategic_plan: "Initializing...",
+      user_id: "Connecting...",
+      repository_list: "Loading...",
+      cur_date_time: "",
+      current_os: "",
+      total_estimated_cost: 0
     },
   });
 
@@ -99,70 +73,31 @@ function YourMainContent({ themeColor }: { themeColor: string }) {
           : null;
 
         return (
-          <div
-            style={{
-              backgroundColor: "#f0fdf4",
-              border: "2px solid #10b981",
-              padding: "1.5rem",
-              borderRadius: "0.75rem",
-              margin: "1rem 0",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", marginBottom: "1rem" }}>
-              <span style={{ fontSize: "1.5rem", marginRight: "0.5rem" }}>
+          <div className="bg-emerald-50 dark:bg-emerald-950 border border-emerald-500 rounded-xl p-5 my-4">
+            <div className="flex items-center mb-4">
+              <span className="text-2xl mr-2">
                 {isComplete ? "📚" : "🔍"}
               </span>
-              <h3 style={{ margin: 0, fontSize: "1.1rem", color: "#065f46" }}>
-                {isComplete ? "知识库检索完成" : "正在检索知识库..."}
+              <h3 className="text-lg font-semibold text-emerald-800 dark:text-emerald-300 m-0">
+                {isComplete ? "Knowledge Retrieved" : "Searching Knowledge Base..."}
               </h3>
             </div>
 
-            <div
-              style={{
-                fontSize: "0.9rem",
-                color: "#064e3b",
-                marginBottom: "0.75rem",
-                fontStyle: "italic",
-              }}
-            >
-              查询：<strong>{args.query}</strong>
+            <div className="text-sm text-emerald-700 dark:text-emerald-400 mb-3 italic">
+              Query: <strong>{args.query}</strong>
             </div>
 
             {isComplete && resultText && (
-              <div
-                style={{
-                  backgroundColor: "white",
-                  padding: "1rem",
-                  borderRadius: "0.5rem",
-                  border: "1px solid #d1fae5",
-                  maxHeight: "400px",
-                  overflowY: "auto",
-                }}
-              >
-                <pre
-                  style={{
-                    margin: 0,
-                    fontSize: "0.85rem",
-                    lineHeight: "1.6",
-                    whiteSpace: "pre-wrap",
-                    fontFamily: "ui-monospace, monospace",
-                    color: "#1f2937",
-                  }}
-                >
+              <div className="bg-white dark:bg-slate-900 p-4 rounded-lg border border-emerald-200 dark:border-emerald-800/50 max-h-96 overflow-y-auto">
+                <pre className="m-0 text-xs leading-relaxed whitespace-pre-wrap font-mono text-slate-700 dark:text-slate-300">
                   {resultText}
                 </pre>
               </div>
             )}
 
             {!isComplete && (
-              <div
-                style={{
-                  fontSize: "0.85rem",
-                  color: "#059669",
-                  opacity: 0.8,
-                }}
-              >
-                正在查询向量数据库...
+              <div className="text-sm text-emerald-600 dark:text-emerald-500 opacity-80">
+                Scanning vector index...
               </div>
             )}
           </div>
@@ -173,7 +108,6 @@ function YourMainContent({ themeColor }: { themeColor: string }) {
   );
 
   // Strategic Plan Update - ADK Confirmation HITL
-  // useHumanInTheLoop provides 'respond' callback for sending results back
   useHumanInTheLoop(
     {
       name: "update_strategic_plan",
@@ -193,15 +127,11 @@ function YourMainContent({ themeColor }: { themeColor: string }) {
 
         const isComplete = status === "complete";
         const isExecuting = status === "executing";
-
-        // Waiting for confirmation when status is "executing" and user hasn't responded
         const waitingForConfirmation = isExecuting && !responded;
 
         const handleApprove = () => {
           if (!respond) return;
           setResponded(true);
-          // Send FunctionResponse via respond callback
-          // Payload structure matches ADK expectation
           respond({
             confirmed: true,
             payload: {
@@ -224,113 +154,56 @@ function YourMainContent({ themeColor }: { themeColor: string }) {
         };
 
         return (
-          <div
-            style={{
-              backgroundColor: waitingForConfirmation ? "#eff6ff" : "#1e293b",
-              color: waitingForConfirmation ? "#1e293b" : "white",
-              padding: "1.5rem",
-              borderRadius: "0.75rem",
-              margin: "1rem 0",
-              border: waitingForConfirmation ? "2px solid #3b82f6" : "2px solid #64748b",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", marginBottom: "1rem" }}>
-              <span style={{ fontSize: "1.5rem", marginRight: "0.5rem" }}>
+          <div className={`p-6 rounded-xl my-4 border-2 ${waitingForConfirmation ? 'bg-blue-50 border-blue-500 dark:bg-blue-900/20' : 'bg-slate-800 border-slate-600'}`}>
+            <div className="flex items-center mb-4">
+              <span className="text-2xl mr-2">
                 {isComplete ? "📋" : waitingForConfirmation ? "👀" : "⏳"}
               </span>
-              <h3 style={{ margin: 0, fontSize: "1.2rem" }}>
+              <h3 className={`text-lg font-bold m-0 ${waitingForConfirmation ? 'text-slate-900 dark:text-white' : 'text-white'}`}>
                 {isComplete
-                  ? "调查计划已更新"
+                  ? "Plan Updated"
                   : waitingForConfirmation
-                    ? "📝 请审核调查计划"
-                    : "正在处理..."}
+                    ? "Review Proposed Plan"
+                    : "Processing..."}
               </h3>
             </div>
 
-            {/* Waiting for confirmation - show editable plan */}
             {waitingForConfirmation && (
               <>
-                <p style={{ fontSize: "0.9rem", marginBottom: "1rem", opacity: 0.8 }}>
-                  请审核以下调查计划。您可以直接编辑后再批准。
+                <p className="text-sm text-slate-600 dark:text-slate-300 mb-4 opacity-90">
+                  Please review and edit the proposed strategic plan below.
                 </p>
                 <textarea
                   value={editedPlan}
                   onChange={(e) => setEditedPlan(e.target.value)}
-                  style={{
-                    width: "100%",
-                    minHeight: "200px",
-                    padding: "1rem",
-                    borderRadius: "0.5rem",
-                    border: "1px solid #cbd5e1",
-                    fontFamily: "monospace",
-                    fontSize: "0.9rem",
-                    marginBottom: "1rem",
-                    resize: "vertical"
-                  }}
-                  placeholder="编辑调查计划..."
+                  className="w-full min-h-[200px] p-4 rounded-lg border border-slate-300 dark:border-slate-700 font-mono text-sm mb-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 resize-y focus:ring-2 focus:ring-blue-500 outline-none"
+                  placeholder="Edit plan here..."
                 />
-                <div style={{ display: "flex", gap: "0.75rem" }}>
+                <div className="flex gap-3">
                   <button
                     onClick={handleReject}
-                    style={{
-                      padding: "0.75rem 1.5rem",
-                      backgroundColor: "#ef4444",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "0.5rem",
-                      cursor: "pointer",
-                      fontWeight: "600",
-                      fontSize: "0.95rem"
-                    }}
+                    className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition-colors"
                   >
-                    ✗ 拒绝
+                    ✗ Object
                   </button>
                   <button
                     onClick={handleApprove}
-                    style={{
-                      padding: "0.75rem 1.5rem",
-                      backgroundColor: "#10b981",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "0.5rem",
-                      cursor: "pointer",
-                      fontWeight: "600",
-                      fontSize: "0.95rem",
-                      flex: 1
-                    }}
+                    className="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-semibold flex-1 transition-colors shadow-sm"
                   >
-                    ✓ 批准并保存
+                    ✓ Approve Plan
                   </button>
                 </div>
               </>
             )}
 
-            {/* Responded - show confirmation message */}
             {responded && !isComplete && (
-              <div style={{
-                backgroundColor: "#dcfce7",
-                color: "#166534",
-                padding: "1rem",
-                borderRadius: "0.5rem",
-                fontSize: "0.95rem"
-              }}>
-                ✓ 已发送响应，等待处理...
+              <div className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300 p-3 rounded-lg text-sm font-medium">
+                ✓ Response sent, resuming agent...
               </div>
             )}
 
-            {/* Complete - show result */}
             {isComplete && (
-              <div
-                style={{
-                  backgroundColor: "#0f172a",
-                  padding: "1rem",
-                  borderRadius: "0.5rem",
-                  fontSize: "0.9rem",
-                  lineHeight: "1.6",
-                  whiteSpace: "pre-wrap",
-                  fontFamily: "monospace",
-                }}
-              >
+              <div className="bg-slate-900 p-4 rounded-lg text-sm leading-relaxed whitespace-pre-wrap font-mono text-slate-300">
                 {typeof result === 'string' ? result : JSON.stringify(result, null, 2)}
               </div>
             )}
@@ -341,12 +214,34 @@ function YourMainContent({ themeColor }: { themeColor: string }) {
     [themeColor],
   );
 
+  // [NEW] Dashboard Layout
   return (
-    <div
-      style={{ backgroundColor: themeColor }}
-      className="h-screen flex justify-center items-center flex-col transition-colors duration-300"
-    >
-      <ProverbsCard state={state} setState={setState} />
+    <div className="h-full w-full flex flex-col md:flex-row p-6 gap-6 pt-20 box-border">
+      {/* Left Column: Strategic Plan (High Priority) */}
+      <div className="flex-1 w-full md:w-2/3 h-[500px] md:h-full min-h-[400px]">
+        <StrategicPlanCard plan={state.strategic_plan || ""} />
+      </div>
+
+      {/* Right Column: Context & State Info */}
+      <div className="w-full md:w-1/3 flex flex-col gap-6">
+        <ContextInfoCard state={state} />
+        <KnowledgeStateCard lastQuery={state.last_rag_query} />
+
+        {/* Telemetry Mini Card */}
+        <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-5">
+          <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Telemetry</h3>
+          <div className="flex justify-between items-end">
+            <div>
+              <div className="text-2xl font-bold text-slate-700 dark:text-slate-200">${state.total_estimated_cost?.toFixed(4) || "0.00"}</div>
+              <div className="text-[10px] text-slate-500">Est. Cost</div>
+            </div>
+            <div className="text-right">
+              <div className="text-xs font-mono text-slate-500">{state.cur_date_time?.split(' ')[1] || "--:--"}</div>
+              <div className="text-[10px] text-slate-400">{state.current_os}</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

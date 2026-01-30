@@ -4,6 +4,7 @@ from typing import List, Optional
 from .decorators import validate_path
 from google.adk.tools.tool_context import ToolContext
 from context_pilot.shared_libraries.tool_response import ToolResponse
+from context_pilot.shared_libraries.state_keys import StateKeys
 
 @validate_path
 async def read_file_tool(
@@ -56,6 +57,9 @@ async def read_file_tool(
         return ToolResponse.error("File is not valid UTF-8 text.")
     except Exception as e:
         return ToolResponse.error(f"Error reading file: {e}")
+
+    # [NEW] Track active context
+    _update_active_context(tool_context, str(_path))
 
     lines = content.splitlines()
     total_lines = len(lines)
@@ -123,71 +127,23 @@ def _handle_dir_list(path: Path) -> dict:
     except Exception as e:
         return ToolResponse.error(f"Error listing directory: {e}")
 
-@validate_path
-async def read_code_tool(
-    path: str,
-    tool_context: ToolContext
-) -> dict:
-    """
-    Read a CODE file completely to understand full context.
-    Use this for .cs, .py, .cpp, .lua, etc.
-    
-    Args:
-        path: Absolute path to the code file.
-        
-    Returns:
-        dict: Full file content.
-    """
-    MAX_CHARS = 100000  # 100k chars limit (~20k-30k tokens)
-    
-    if not path:
-        return ToolResponse.error("Path is required.")
-        
-    _path = Path(path)
-    if not _path.is_absolute():
-        return ToolResponse.error(f"Path must be absolute: {path}")
-        
-    if not _path.exists():
-        return ToolResponse.error(f"Path does not exist: {path}")
-        
-    if _path.is_dir():
-         return ToolResponse.error(f"Path is a directory, not a file: {path}. Use list_dir_tool.")
-
+def _update_active_context(tool_context: ToolContext, path: str):
+    """Updates the ACTIVE_CONTEXT_FILES list in state."""
     try:
-        # Read text
-        content = _path.read_text(encoding='utf-8')
+        active_files = tool_context.state.get(StateKeys.ACTIVE_CONTEXT_FILES, [])
+        # Ensure it's a list
+        if not isinstance(active_files, list):
+            active_files = []
         
-        if len(content) > MAX_CHARS:
-            # Safety Truncation
-            head = content[:2000]
-            tail = content[-2000:]
-            return ToolResponse.error(
-                error=(
-                    f"File too large ({len(content)} chars). Limit is {MAX_CHARS}. "
-                    "Reading huge files can overflow the context window.\n"
-                    "Showing Head (2000) and Tail (2000) only.\n\n"
-                    f"{head}\n\n...[Truncated]...\n\n{tail}"
-                ),
-                summary="File too large, showing partial content."
-            )
-            
-        # Add line numbers for reference
-        lines = content.splitlines()
-        formatted_output = []
-        for i, line in enumerate(lines):
-            formatted_output.append(f"{i+1:4} | {line}")
-            
-        final_output = "\n".join(formatted_output)
+        # Add to front (Most Recently Used) and deduplicate
+        if path in active_files:
+            active_files.remove(path)
+        active_files.insert(0, path)
         
-        # Determine language for markdown
-        ext = _path.suffix.lstrip('.') if _path.suffix else 'text'
+        # Keep only top 5 to avoid clutter
+        # active_files = active_files[:5]
         
-        return ToolResponse.success(
-            summary=f"Read full code file {path} ({len(lines)} lines)",
-            output=f"Code File: {path}\n```{ext}\n{final_output}\n```"
-        )
-        
-    except UnicodeDecodeError:
-         return ToolResponse.error("File is not valid UTF-8 text.")
+        tool_context.state[StateKeys.ACTIVE_CONTEXT_FILES] = active_files
     except Exception as e:
-         return ToolResponse.error(f"Error reading code file: {e}")
+        # Don't fail the tool if state update fails
+        pass

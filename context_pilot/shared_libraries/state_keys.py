@@ -46,6 +46,11 @@ class StateKeys:
     TOTAL_OUTPUT_TOKENS = "total_output_tokens"
     TOTAL_ESTIMATED_COST = "total_estimated_cost"  # Float (USD)
 
+    # Context & Insight Keys
+    USER_ID = "user_id"
+    LAST_RAG_QUERY = "last_rag_query"
+    ACTIVE_CONTEXT_FILES = "active_context_files"  # List[str]
+
 
 class AgentKeys:
     BUG_REASON = "bug_reason_agent"

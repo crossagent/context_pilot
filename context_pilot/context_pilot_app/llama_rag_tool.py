@@ -6,7 +6,8 @@ from llama_index.core import VectorStoreIndex, Settings, StorageContext, load_in
 from llama_index.core.readers import SimpleDirectoryReader
 from llama_index.llms.gemini import Gemini
 from llama_index.embeddings.gemini import GeminiEmbedding
-from google.adk.tools import FunctionTool
+from google.adk.tools import FunctionTool, ToolContext
+from context_pilot.shared_libraries.state_keys import StateKeys
 
 logger = logging.getLogger(__name__)
 
@@ -61,26 +62,6 @@ def _get_index():
         logger.error(f"Failed to load index from storage: {e}")
         raise
 
-def retrieve_rag_documentation_tool(query: str) -> str:
-    """
-    Retreives information from the local knowledge base (RAG).
-    """
-    try:
-        index = _get_index() 
-        retriever = index.as_retriever(similarity_top_k=5)
-        nodes = retriever.retrieve(query)
-        
-        if not nodes:
-            return "No relevant documentation found."
-            
-        results = []
-        for node in nodes:
-            results.append(f"--- [Relevance: {node.score:.4f}] ---\n{node.text}\n")
-            
-        return "\n".join(results)
-    except Exception as e:
-        logger.error(f"LlamaIndex retrieval failed: {e}")
-        return f"Error retrieving documentation: {str(e)}"
 
 # Safe Tool Creation
 retrieve_rag_documentation_tool = FunctionTool(retrieve_rag_documentation_tool)
@@ -158,7 +139,7 @@ def _get_index() -> VectorStoreIndex:
         logger.error(f"Failed to load index from storage: {e}")
         raise
 
-def retrieve_rag_documentation_tool(query: str) -> str:
+def retrieve_rag_documentation_tool(query: str, tool_context: ToolContext) -> str:
     """
     Retreives information from the local knowledge base (RAG) using LlamaIndex.
     
@@ -166,6 +147,9 @@ def retrieve_rag_documentation_tool(query: str) -> str:
         query: The question or search term.
     """
     try:
+        # [NEW] Capture Query for Insight
+        tool_context.state[StateKeys.LAST_RAG_QUERY] = query
+        
         index = _get_index()
         # Use retriever to get raw chunks instead of synthesized answer
         retriever = index.as_retriever(similarity_top_k=5)

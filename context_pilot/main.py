@@ -151,9 +151,23 @@ def serve(port, host, skills_dir, config, env_file, data_dir, root_agent_name, m
                     }
                 return ADKRunConfig(**params)
 
+            # [NEW] Advanced User Extraction Logic
+            def extract_user_from_props(input_data: RunAgentInput) -> str:
+                """Extracts userId from frontend forwarded_props or falls back to env var/default."""
+                # 1. Try to get from frontend properties
+                if input_data.forwarded_props and isinstance(input_data.forwarded_props, dict):
+                    user_id = input_data.forwarded_props.get("userId")
+                    if user_id:
+                        return str(user_id)
+                
+                # 2. Fallback to Env Var (for dev convenience)
+                return os.getenv("ADK_USER_ID", "anonymous_pilot")
+
             ui_agent = ADKAgent.from_app(
                  app=adk_app,
-                 user_id="demo_user",
+                 # user_id must be None to enable extractor
+                 user_id=None,
+                 user_id_extractor=extract_user_from_props,
                  session_timeout_seconds=3600,
                  use_in_memory_services=False,
                  # Inject persistent services
