@@ -56,10 +56,6 @@ async def before_agent_callback(callback_context: CallbackContext) -> Optional[t
         StateKeys.STRATEGIC_PLAN: "暂无计划"
     }
 
-    # [NEW] Sync Operator Identity from Session
-    if not state.get(StateKeys.USER_ID):
-        state[StateKeys.USER_ID] = callback_context.user_id or "Pilot"
-    
     # [NEW] Load Strategic Plan from Artifact if available
     # This ensures the root agent sees the persistent plan across turns/restarts if state was lost or just initialized.
     if StateKeys.STRATEGIC_PLAN not in state or state[StateKeys.STRATEGIC_PLAN] == "暂无计划":
