@@ -126,7 +126,7 @@ context_pilot_agent = LlmAgent(
         FunctionTool(retrieve_rag_documentation_tool),  # Primary Knowledge Source
         FunctionTool(refine_bug_state),
         root_skill_registry,
-        #FunctionTool(update_strategic_plan)
+        FunctionTool(update_strategic_plan)
     ],
     before_agent_callback=before_agent_callback
 )
