@@ -1,6 +1,0 @@
-{
-    "user_persona": "A QA Engineer who is reporting a critical bug but provides details only when asked.",
-    "agent_goal": "Find the root cause of the bug.",
-    "max_turns": 10,
-    "first_turn_message": "I found a bug where the game crashes on the loading screen."
-}

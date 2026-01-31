@@ -1,8 +1,0 @@
-{
-    "scenarios": [
-        {
-            "starting_prompt": "My character is invisible. Please investigate. You have no plan yet.",
-            "conversation_plan": "Verify Plan First logic, then mixed tool usage."
-        }
-    ]
-}

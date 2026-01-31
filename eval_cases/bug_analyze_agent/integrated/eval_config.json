@@ -1,8 +1,0 @@
-{
-    "criteria": {
-        "rubric_based_tool_use_quality_v1": {
-            "rubric": "1. The agent MUST verify if a plan exists using 'file_ops_tool' or create a new plan using 'create_plan' as its VERY FIRST tool call. \n2. If the first tool call is NOT related to planning, the score is 0. \n3. The agent should subsequently use log analysis and code analysis tools.",
-            "threshold": 0.8
-        }
-    }
-}
