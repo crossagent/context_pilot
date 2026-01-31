@@ -111,23 +111,8 @@ async def before_agent_callback(callback_context: CallbackContext) -> Optional[t
 from google.adk.tools import FunctionTool
 
 # --- 4. Instantiate Root Agent (Global) ---
-# Build tools list based on mode
-# In AG-UI mode, HITL tools like update_strategic_plan are handled by frontend
-_app_mode = os.getenv("ADK_APP_MODE", "adk-web").lower()
-_base_tools = [
-    retrieve_rag_documentation_tool,  # Primary Knowledge Source
-    FunctionTool(refine_bug_state),
-    root_skill_registry
-]
-
-if _app_mode == "ag-ui":
-    # Frontend handles HITL via useHumanInTheLoop
-    logger.info("AG-UI Mode: Excluding backend HITL tools (handled by frontend)")
-    _agent_tools = _base_tools
-else:
-    # ADK-Web mode: Include all backend tools
-    logger.info("ADK-Web Mode: Including all backend tools")
-    _agent_tools = _base_tools + [FunctionTool(update_strategic_plan)]
+# Build tools list based on mode (Unified Mode)
+# ADK-Web mode: Include all backend tools
 
 context_pilot_agent = LlmAgent(
     name="context_pilot_agent",
@@ -137,7 +122,12 @@ context_pilot_agent = LlmAgent(
         repo_explorer_agent,
         exp_recored_agent,
     ],
-    tools=_agent_tools,
+    tools=[
+        FunctionTool(retrieve_rag_documentation_tool),  # Primary Knowledge Source
+        FunctionTool(refine_bug_state),
+        root_skill_registry,
+        #FunctionTool(update_strategic_plan)
+    ],
     before_agent_callback=before_agent_callback
 )
 

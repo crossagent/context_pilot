@@ -163,8 +163,3 @@ def retrieve_rag_documentation_tool(query: str, tool_context: ToolContext) -> st
     except Exception as e:
         logger.error(f"LlamaIndex retrieval failed: {e}")
         return f"Error retrieving documentation: {str(e)}"
-
-# Create the ADK-compatible tool
-retrieve_rag_documentation_tool = FunctionTool(
-    retrieve_rag_documentation_tool
-)

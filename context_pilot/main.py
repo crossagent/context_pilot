@@ -27,14 +27,9 @@ def main():
 @click.option("--env-file", default=".env", help="Path to .env file.")
 @click.option("--data-dir", default="adk_data", help="Directory for local data storage.")
 @click.option("--root-agent-name", default=None, help="Name of the sub-agent to start as root (e.g., bug_analyze_agent).")
-@click.option("--mode", type=click.Choice(["ag-ui", "adk-web"], case_sensitive=False), default="adk-web", help="Server mode: ag-ui (frontend middleware) or adk-web (legacy/api).")
-def serve(port, host, skills_dir, config, env_file, data_dir, root_agent_name, mode):
+def serve(port, host, skills_dir, config, env_file, data_dir, root_agent_name):
     """
     Start the Context Pilot Agent Server.
-    
-    Unified entry point supporting:
-    - AG-UI Mode: For use with CopilotKit/AG-UI frontend.
-    - ADK-Web Mode: For use with standard ADK web tools.
     """
     # 1. Load Environment Variables
     if os.path.exists(env_file):
@@ -62,7 +57,8 @@ def serve(port, host, skills_dir, config, env_file, data_dir, root_agent_name, m
     if root_agent_name:
         os.environ["ADK_ROOT_AGENT_NAME"] = root_agent_name
 
-    os.environ["ADK_APP_MODE"] = mode
+    # Set default mode to 'adk-web' equivalent for any downstream consumers, though logic is now explicit here
+    os.environ["ADK_APP_MODE"] = "adk-web"
 
     # 3. Load Skills
     # This must be done before App/Agent loading so skills are registered
@@ -74,11 +70,11 @@ def serve(port, host, skills_dir, config, env_file, data_dir, root_agent_name, m
     else:
         logger.info("No skills loaded or SKILL_PATH not found.")
 
-    # 4. Initialize Server based on Mode
+    # 4. Initialize Server
     try:
         app = None
         
-        # Configure Data/Artifact Paths for ADK (Common for both modes)
+        # Configure Data/Artifact Paths for ADK
         data_dir_env = os.getenv("ADK_DATA_DIR", "adk_data")
         data_dir = os.path.abspath(data_dir_env) if not os.path.isabs(data_dir_env) else data_dir_env
         artifacts_dir = os.path.join(data_dir, "artifacts")
@@ -91,118 +87,25 @@ def serve(port, host, skills_dir, config, env_file, data_dir, root_agent_name, m
         session_db_path = os.path.join(data_dir, "sessions.db")
         session_service_uri = f"sqlite+aiosqlite:///{session_db_path}"
 
-        if mode == "ag-ui":
-            logger.info("Starting in AG-UI Middleware Mode (Frontend enabled)")
-            
-            # Imports for AG-UI
-            from fastapi import FastAPI
-            from ag_ui_adk import ADKAgent, add_adk_fastapi_endpoint
-            # Import App (Late import to ensure env vars are set)
-            from context_pilot.context_pilot_app.app import app as adk_app
-            
-            # Use Service Registry (same pattern as get_fast_api_app)
-            from google.adk.cli.service_registry import get_service_registry, load_services_module
-            
-            # agents_dir for service registry context
-            agents_dir = os.path.dirname(os.path.abspath(__file__))
-            
-            # Load services.py from agents_dir for custom service registration.
-            load_services_module(agents_dir)
-            
-            service_registry = get_service_registry()
-            
-            # Build Session Service (using registry, with DatabaseSessionService fallback)
-            session_service = service_registry.create_session_service(
-                session_service_uri, agents_dir=agents_dir
-            )
-            if not session_service:
-                # Fallback to DatabaseSessionService if registry doesn't support the URI
-                from google.adk.sessions.database_session_service import DatabaseSessionService
-                session_service = DatabaseSessionService(db_url=session_service_uri)
-            logger.info(f"Session Service Configured: {session_service_uri}")
-            
-            # Build Artifact Service (using registry)
-            artifact_service = service_registry.create_artifact_service(
-                artifact_service_uri, agents_dir=agents_dir
-            )
-            if not artifact_service:
-                logger.warning(f"Could not create artifact service for {artifact_service_uri}, using InMemory fallback.")
-                from google.adk.artifacts.in_memory_artifact_service import InMemoryArtifactService
-                artifact_service = InMemoryArtifactService()
-            else:
-                logger.info(f"Artifact Service Configured: {artifact_service_uri}")
+        logger.info("Starting in ADK Web Server Mode")
+        
+        # Imports for ADK Web
+        from google.adk.cli.fast_api import get_fast_api_app
+        
+        # Determine Agents Directory
+        # Strictly use the package root (context_pilot directory)
+        agents_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        logger.info(f"ADK Agents Dir (Locked): {agents_dir}")
 
-            # Create AG-UI Adapter Agent
-            # Wraps the ADK agent with AG-UI protocol support
-            
-            # Define run config factory to disable streaming
-            def create_no_stream_run_config(input: RunAgentInput) -> ADKRunConfig:
-                params = {
-                    'streaming_mode': StreamingMode.NONE,
-                    'save_input_blobs_as_artifacts': True
-                }
-                # Add custom metadata for context if input has it
-                if input.context:
-                    params['custom_metadata'] = {
-                        'ag_ui_context': [
-                            {"description": ctx.description, "value": ctx.value}
-                            for ctx in input.context
-                        ]
-                    }
-                return ADKRunConfig(**params)
-
-            # [NEW] Advanced User Extraction Logic
-            def extract_user_from_props(input_data: RunAgentInput) -> str:
-                """Extracts userId from frontend forwarded_props or falls back to env var/default."""
-                # 1. Try to get from frontend properties
-                if input_data.forwarded_props and isinstance(input_data.forwarded_props, dict):
-                    user_id = input_data.forwarded_props.get("userId")
-                    if user_id:
-                        return str(user_id)
-                
-                # 2. Fallback to Env Var (for dev convenience)
-                return os.getenv("ADK_USER_ID", "anonymous_pilot")
-
-            ui_agent = ADKAgent.from_app(
-                 app=adk_app,
-                 # user_id must be None to enable extractor
-                 user_id=None,
-                 user_id_extractor=extract_user_from_props,
-                 session_timeout_seconds=3600,
-                 use_in_memory_services=False,
-                 # Inject persistent services
-                 session_service=session_service,
-                 artifact_service=artifact_service,
-                 # Disable streaming for stability
-                 run_config_factory=create_no_stream_run_config,
-            )
-            
-            # Create FastAPI app
-            app = FastAPI(title="Context Pilot ADK Agent (AG-UI)")
-            
-            # Add AG-UI Endpoint
-            add_adk_fastapi_endpoint(app, ui_agent, path="/")
-            
-        else:
-            logger.info("Starting in ADK Web Server Mode (API server)")
-            
-            # Imports for ADK Web
-            from google.adk.cli.fast_api import get_fast_api_app
-            
-            # Determine Agents Directory
-            # Strictly use the package root (context_pilot directory)
-            agents_dir = os.path.dirname(os.path.abspath(__file__))
-            
-            logger.info(f"ADK Agents Dir (Locked): {agents_dir}")
-
-            # Use standard ADK Web Server wrapper
-            app = get_fast_api_app(
-                agents_dir=agents_dir,
-                session_service_uri=session_service_uri,
-                artifact_service_uri=artifact_service_uri,
-                web=True,
-                a2a=False
-            )
+        # Use standard ADK Web Server wrapper
+        app = get_fast_api_app(
+            agents_dir=agents_dir,
+            session_service_uri=session_service_uri,
+            artifact_service_uri=artifact_service_uri,
+            web=True,
+            a2a=False
+        )
         
         # 5. Start Server
         logger.info(f"Starting Server on {host}:{port}")

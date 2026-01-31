@@ -16,7 +16,6 @@ dependencies = [
     "llama-index-core>=0.10.0", # Core only, not full llama-index
     "llama-index-llms-gemini>=0.1.0",
     "llama-index-embeddings-gemini>=0.1.0",
-    "ag-ui-adk>=0.4.2",
 ]
 
 [project.scripts]

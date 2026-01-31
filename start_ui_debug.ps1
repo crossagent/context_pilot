@@ -22,7 +22,7 @@ $RootAgentName = ""
 $BackendPort = 8002
 
 # Build the backend command arguments
-$backendArgs = "run context-pilot serve --data-dir `"$DataDir`" --mode ag-ui --port $BackendPort"
+$backendArgs = "run context-pilot serve --data-dir `"$DataDir`" --port $BackendPort"
 
 if ($RootAgentName) {
     $backendArgs += " --root-agent-name `"$RootAgentName`""
