@@ -304,4 +304,6 @@ repo_explorer_agent = LlmAgent(
     output_key=AgentKeys.BUG_REASON,
 )
 
+root_agent = repo_explorer_agent
+
 

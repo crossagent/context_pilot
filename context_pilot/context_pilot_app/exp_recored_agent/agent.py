@@ -25,4 +25,6 @@ exp_recored_agent = Agent(
     tools=[record_experience_tool]
 )
 
+root_agent = exp_recored_agent
+
 

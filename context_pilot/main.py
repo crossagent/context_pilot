@@ -26,8 +26,7 @@ def main():
 @click.option("--config", envvar="CONFIG_FILE", help="Path to the configuration file.")
 @click.option("--env-file", default=".env", help="Path to .env file.")
 @click.option("--data-dir", default="adk_data", help="Directory for local data storage.")
-@click.option("--root-agent-name", default=None, help="Name of the sub-agent to start as root (e.g., bug_analyze_agent).")
-def serve(port, host, skills_dir, config, env_file, data_dir, root_agent_name):
+def serve(port, host, skills_dir, config, env_file, data_dir):
     """
     Start the Context Pilot Agent Server.
     """
@@ -54,8 +53,7 @@ def serve(port, host, skills_dir, config, env_file, data_dir, root_agent_name):
     if data_dir:
         os.environ["ADK_DATA_DIR"] = data_dir
 
-    if root_agent_name:
-        os.environ["ADK_ROOT_AGENT_NAME"] = root_agent_name
+
 
     # Set default mode to 'adk-web' equivalent for any downstream consumers, though logic is now explicit here
     os.environ["ADK_APP_MODE"] = "adk-web"

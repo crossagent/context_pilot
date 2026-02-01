@@ -9,25 +9,7 @@ from context_pilot.context_pilot_app.agent import context_pilot_agent
 
 # --- Instantiate App (Global) ---
 
-# --- Select Root Agent ---
-selected_root_agent = context_pilot_agent
-target_agent_name = os.getenv("ADK_ROOT_AGENT_NAME")
-
-if target_agent_name:
-    # Look for the agent in sub-agents
-    found = False
-    if context_pilot_agent.sub_agents:
-        for sub in context_pilot_agent.sub_agents:
-            if sub.name == target_agent_name:
-                selected_root_agent = sub
-                found = True
-                break
-    
-    if not found:
-        print(f"WARNING: Requested root agent '{target_agent_name}' not found in sub-agents. Defaulting to Supervisor.")
-
-# --- Configure Plugins based on mode ---
-_app_mode = os.getenv("ADK_APP_MODE", "adk-web").lower()
+# --- Configure Plugins based on mode ---haod
 _plugins = []
 
 if os.getenv("ADK_ENABLE_LOGGING_PLUGIN", "false").lower() == "true":
@@ -41,7 +23,7 @@ if os.getenv("ADK_ENABLE_LOGGING_PLUGIN", "false").lower() == "true":
 
 app = App(
     name="context_pilot_app",
-    root_agent=selected_root_agent,
+    root_agent=context_pilot_agent,
     plugins=_plugins,
     context_cache_config=ContextCacheConfig(
         min_tokens=2048,

@@ -13,16 +13,14 @@ Write-Host "Project Root: $ProjectRoot"
 Write-Host "Data Dir:     $DataDir"
 Write-Host "=============================================="
 
-# Optional: Set this to start with a specific sub-agent (e.g. "bug_analyze_agent")
-# If empty, it defaults to the Supervisor (context_pilot_agent)
-$RootAgentName = ""
 
 # Build the command arguments
-$cmdArgs = "run context-pilot serve --data-dir ""$DataDir"""
+# Debug Mode: Uses standard ADK Web CLI which supports targeting sub-agents directly
+$cmdArgs = "run python -m google.adk.cli web .\context_pilot_app\ --data-dir ""$DataDir"""
 
-if ($RootAgentName) {
-    $cmdArgs += " --root-agent-name ""$RootAgentName"""
-}
+# Note: To debug a sub-agent, you can edit this script to point to the sub-agent directory:
+# $cmdArgs = "run python -m google.adk.cli web .\context_pilot_app\exp_recored_agent\ --data-dir ""$DataDir"""
+
 
 # Call the custom CLI
 # - Uses 'uv run' to ensure installed package context
