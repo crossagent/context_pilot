@@ -35,8 +35,9 @@ async def test_retrieve_rag_documentation_live():
         mock_context = MagicMock()
         
         # Call the tool's run_async method
-        result = await retrieve_rag_documentation_tool.run_async(
-            args={'query': query},
+        # Call the tool function directly (it's a sync function, not a FunctionTool instance here)
+        result = retrieve_rag_documentation_tool(
+            query=query,
             tool_context=mock_context
         )
             
