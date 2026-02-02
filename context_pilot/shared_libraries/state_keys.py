@@ -49,6 +49,7 @@ class StateKeys:
     # Context & Insight Keys
 
     LAST_RAG_QUERY = "last_rag_query"
+    RAG_CONTEXT_NODES = "rag_context_nodes"  # List[Dict] - Structured nodes for UI
     ACTIVE_CONTEXT_FILES = "active_context_files"  # List[str]
 
 

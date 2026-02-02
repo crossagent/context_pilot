@@ -152,12 +152,25 @@ def retrieve_rag_documentation_tool(query: str, tool_context: ToolContext) -> st
         nodes = retriever.retrieve(query)
         
         if not nodes:
+            tool_context.state[StateKeys.RAG_CONTEXT_NODES] = []
             return "No relevant documentation found."
             
+        # Serialize nodes for UI
+        ui_nodes = []
         results = []
         for node in nodes:
-            # Format: [Score] Text
+            # Format for LLM: [Score] Text
             results.append(f"--- [Relevance: {node.score:.4f}] ---\n{node.text}\n")
+            
+            # Format for UI
+            ui_nodes.append({
+                "text": node.text,
+                "score": node.score if node.score else 0.0,
+                "metadata": node.metadata or {}
+            })
+            
+        # Update State for Frontend
+        tool_context.state[StateKeys.RAG_CONTEXT_NODES] = ui_nodes
             
         return "\n".join(results)
     except Exception as e:
