@@ -11,6 +11,16 @@ Write-Host "=============================================="
 Write-Host "Starting Context Pilot Server (CLI Mode)"
 Write-Host "Project Root: $ProjectRoot"
 Write-Host "Data Dir:     $DataDir"
+
+# Inject CONFIG_FILE if available (Aligning with main.py logic)
+$ConfigFile = Join-Path $ProjectRoot "config.yaml"
+if (Test-Path $ConfigFile) {
+    $env:CONFIG_FILE = $ConfigFile
+    Write-Host "Config File:  $ConfigFile"
+} else {
+    Write-Host "Config File:  Not found (using defaults)"
+}
+
 Write-Host "=============================================="
 
 

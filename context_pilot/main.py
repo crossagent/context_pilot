@@ -53,11 +53,6 @@ def serve(port, host, skills_dir, config, env_file, data_dir):
     if data_dir:
         os.environ["ADK_DATA_DIR"] = data_dir
 
-
-
-    # Set default mode to 'adk-web' equivalent for any downstream consumers, though logic is now explicit here
-    os.environ["ADK_APP_MODE"] = "adk-web"
-
     # 3. Load Skills
     # This must be done before App/Agent loading so skills are registered
     path = os.getenv("SKILL_PATH")
