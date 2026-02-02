@@ -1,4 +1,6 @@
 import os
+import json
+import yaml
 import logging
 from typing import Optional
 from google.adk.agents.llm_agent import LlmAgent
@@ -15,6 +17,7 @@ from datetime import datetime
 from context_pilot.skill_library.extensions import root_skill_registry, report_skill_registry, analyze_skill_registry
 from context_pilot.shared_libraries import constants
 from context_pilot.shared_libraries.state_keys import StateKeys
+from context_pilot.shared_libraries.config_utils import load_and_inject_config
 
 # RAG Imports
 from .llama_rag_tool import retrieve_rag_documentation_tool, initialize_rag_tool
@@ -55,6 +58,9 @@ async def before_agent_callback(callback_context: CallbackContext) -> Optional[t
     defaults = {
         StateKeys.STRATEGIC_PLAN: "暂无计划"
     }
+
+    # [NEW] Inject Configuration & Repositories (Using Shared Library)
+    load_and_inject_config(state)
 
     # [NEW] Load Strategic Plan from Artifact if available
     # This ensures the root agent sees the persistent plan across turns/restarts if state was lost or just initialized.

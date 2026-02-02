@@ -1,43 +1,8 @@
 import os
-import json
-import yaml
-from pathlib import Path
-
-# 2. Startup Check & Configuration Loading
-def load_config():
-    config_path = os.getenv("CONFIG_FILE", "context_pilot/config.yaml")
-    if not os.path.exists(config_path):
-        # Fallback to local if running from agents dir
-        if os.path.exists("config.yaml"):
-             config_path = "config.yaml"
-        else:
-             print(f"WARNING: Config file not found at {config_path}. Using default empty config.")
-             return {}
-    
-    try:
-        with open(config_path, 'r', encoding='utf-8') as f:
-            return yaml.safe_load(f) or {}
-    except Exception as e:
-        raise ValueError(f"Critical Error: Failed to load config file: {e}")
-
-CONFIG = load_config()
-
-# Repositories
-# Repositories (Lazy Load or Default Empty)
-REPO_REGISTRY = CONFIG.get("repositories", [])
-
-# Note: Strict validation moved to initialize_and_validate or factory to allow import without config.
-if not REPO_REGISTRY:
-    # Try legacy env var
-    try:
-        if env_repos := os.getenv("REPOSITORIES"):
-            REPO_REGISTRY = json.loads(env_repos)
-    except:
-        pass
-
 
 # 3. Imports
 from datetime import datetime
+from context_pilot.shared_libraries.config_utils import load_and_inject_config
 
 from context_pilot.shared_libraries.constants import MODEL, USER_TIMEZONE
 from context_pilot.skill_library.extensions import analyze_skill_registry
@@ -83,11 +48,24 @@ logger = logging.getLogger(__name__)
 
 async def initialize_and_validate(callback_context: CallbackContext) -> Optional[types.Content]:
     """在此代理初始化前运行的验证逻辑"""
+    # [MODIFIED] Validation moved to Root Agent. Sub-agent assumes state is populated.
     inject_default_values(callback_context)
-    # 1. Validate Repositories
-    # (Already validated at startup, but good to ensure state is clean)
-    if not REPO_REGISTRY:
-         return types.Content(parts=[types.Part(text="Error: No configured repositories available.")])
+    
+    # 1. Check if Repositories are available in State (Populated by Root Agent)
+    # If missing (standalone sub-agent run), attempt to initialize using shared logic.
+    if "repository_list" not in callback_context.state:
+        logger.info("Info: Agent state not pre-initialized. Attempting to load configuration.")
+        load_and_inject_config(callback_context.state)
+        
+        # Re-check after initialization attempt
+        if "repository_list" not in callback_context.state:
+            error_msg = (
+                "CRITICAL ERROR: Repository Configuration Missing.\n"
+                "Failed to initialize 'repository_list' from config.yaml.\n"
+                "Please ensure Config File exists and contains 'repositories' list."
+            )
+            logger.error(error_msg)
+            return types.Content(parts=[types.Part.from_text(text=error_msg)])
 
 
     # 2. Validate Search Tools (Unified Check)
@@ -108,9 +86,6 @@ async def initialize_and_validate(callback_context: CallbackContext) -> Optional
     if not client_log_url:
          logger.warning("Warning: Missing 'clientLogUrl'. Agent will proceed without log analysis.")
          # Not returning error Content, allowing the agent to continue.
-
-    # 3. Inject Defaults (Original Logic)
-    inject_default_values(callback_context)
 
     # 5. Initialize Token & Cost Counters
     if StateKeys.TOTAL_SESSION_TOKENS not in callback_context.state:
@@ -137,8 +112,8 @@ class TokenLimitHandler:
         current_autonomous_cost = callback_context.state.get(StateKeys.CURRENT_AUTONOMOUS_COST, 0.0)
         
         # Budget Configuration
-        # Direct access to global CONFIG (loaded from config.yaml)
-        max_budget = CONFIG.get("max_autonomous_budget_usd", 0.5)
+        # [MODIFIED] Access config directly from State (flattened injection)
+        max_budget = callback_context.state.get("max_autonomous_budget_usd", 0.5)
 
         # Log internal status (Debug only)
         # logger.info(f"Budget Check: ${current_autonomous_cost:.4f} / ${max_budget:.4f}")
@@ -194,10 +169,10 @@ class TokenLimitHandler:
             callback_context.state[StateKeys.TOTAL_OUTPUT_TOKENS] = callback_context.state.get(StateKeys.TOTAL_OUTPUT_TOKENS, 0) + output_tokens
 
             # Update Cost (Internal Tracking Only)
-            # Direct access to global CONFIG
-            price_in = CONFIG.get("price_per_million_input_tokens", 0.50)
-            price_cached = CONFIG.get("price_per_million_cached_tokens", 0.10)
-            price_out = CONFIG.get("price_per_million_output_tokens", 1.50)
+            # Direct access to State Config
+            price_in = callback_context.state.get("price_per_million_input_tokens", 0.50)
+            price_cached = callback_context.state.get("price_per_million_cached_tokens", 0.10)
+            price_out = callback_context.state.get("price_per_million_output_tokens", 1.50)
 
             step_cost = (
                 (input_tokens / 1_000_000 * price_in) +
@@ -231,23 +206,13 @@ def inject_default_values(callback_context: CallbackContext):
     current_os = f"{platform.system()} {platform.release()}"
     callback_context.state[StateKeys.CURRENT_OS] = current_os
     
-    # Inject Repository Registry (Object)
-    callback_context.state[StateKeys.REPO_REGISTRY] = REPO_REGISTRY
-    
     # Inject Formatted Repository List (For Prompt)
-    repo_list_str = []
-    for r in REPO_REGISTRY:
-        capabilities = []
-        if r.get("symbol_index_path") or r.get("symbol_index_paths"):
-            capabilities.append("**[Symbol Index Available]**")
-        
-        desc = r.get('description', '')
-        cap_str = " ".join(capabilities)
-        repo_list_str.append(f"- **{r.get('name')}**: `{r.get('path')}` - {desc} {cap_str}")
-    callback_context.state["repository_list"] = "\n    ".join(repo_list_str)
+    # [MODIFIED] Assuming Root Agent strictly handles this. Logic removed.
+    # repo_list_str logic moved to agent.py
+    pass
 
     # Inject Product
-    product_description = CONFIG.get("product_description") or os.getenv("PRODUCT_DESCRIPTION") or "Rust-like Survival Game"
+    product_description = callback_context.state.get("product_description") or os.getenv("PRODUCT_DESCRIPTION") or "Rust-like Survival Game"
     callback_context.state[StateKeys.PRODUCT_DESCRIPTION] = product_description
 
     defaults = {

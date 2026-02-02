@@ -24,12 +24,15 @@ if (Test-Path $ConfigFile) {
 Write-Host "=============================================="
 
 
+# Set ADK_DATA_DIR environment variable (CLI logic relies on this or default)
+$env:ADK_DATA_DIR = $DataDir
+
 # Build the command arguments
 # Debug Mode: Uses standard ADK Web CLI which supports targeting sub-agents directly
-$cmdArgs = "run python -m google.adk.cli web .\context_pilot_app\ --data-dir ""$DataDir"""
-
+# Removed --data-dir as it is not a valid option for 'adk web'
+$cmdArgs = "run python -m google.adk.cli web .\context_pilot\"
 # Note: To debug a sub-agent, you can edit this script to point to the sub-agent directory:
-# $cmdArgs = "run python -m google.adk.cli web .\context_pilot_app\exp_recored_agent\ --data-dir ""$DataDir"""
+# $cmdArgs = "run python -m google.adk.cli web .\context_pilot\context_pilot_app\"
 
 
 # Call the custom CLI
