@@ -1,5 +1,6 @@
 import os
 import logging
+import json
 from typing import Any, List, Optional
 import httpx
 from llama_index.core import VectorStoreIndex, Settings, StorageContext, load_index_from_storage
@@ -14,22 +15,51 @@ logger = logging.getLogger(__name__)
 # Global state
 _INDEX = None
 _STORAGE_DIR = None
+_LAST_BUILD_TIME = None
 
 def initialize_rag_tool(storage_path: str):
-    global _STORAGE_DIR, _INDEX
+    global _STORAGE_DIR, _INDEX, _LAST_BUILD_TIME
     _STORAGE_DIR = storage_path
     _INDEX = None
+    _LAST_BUILD_TIME = None
     logger.info(f"RAG Tool initialized with storage path: {_STORAGE_DIR}")
 
-def _get_index():
-    global _INDEX, _STORAGE_DIR
-    if _INDEX is not None:
-        return _INDEX
+def _get_current_build_time(storage_dir: str) -> Optional[str]:
+    """Reads the build_time from the manifest file."""
+    manifest_path = os.path.join(storage_dir, "index_meta.json")
+    if os.path.exists(manifest_path):
+        try:
+            with open(manifest_path, 'r') as f:
+                data = json.load(f)
+                return data.get("build_time")
+        except:
+            pass
+    return None
 
+def _get_index():
+    global _INDEX, _STORAGE_DIR, _LAST_BUILD_TIME
+    
     if not _STORAGE_DIR:
         error_msg = "RAG Tool not initialized. Call `initialize_rag_tool(path)` first."
         logger.error(error_msg)
         raise RuntimeError(error_msg)
+
+    # Check/Setup Storage
+    storage_dir = _STORAGE_DIR
+    if not os.path.exists(storage_dir):
+        error_msg = f"RAG Storage not found at {storage_dir}. Please run 'python scripts/build_index.py' to generate it."
+        logger.error(error_msg)
+        raise FileNotFoundError(error_msg)
+
+    # Auto-reload logic
+    current_build_time = _get_current_build_time(storage_dir)
+    if _INDEX is not None:
+        # If build time has changed, force reload
+        if current_build_time != _LAST_BUILD_TIME:
+            logger.info(f"Index update detected (Old: {_LAST_BUILD_TIME}, New: {current_build_time}). Reloading...")
+            _INDEX = None
+        else:
+            return _INDEX
 
     # 1. Configure Settings (LLM & Embeddings)
     api_key = os.getenv("GOOGLE_API_KEY")
@@ -46,17 +76,11 @@ def _get_index():
         api_key=api_key
     )
 
-    storage_dir = _STORAGE_DIR
-    
-    if not os.path.exists(storage_dir):
-        error_msg = f"RAG Storage not found at {storage_dir}. Please run 'python scripts/build_index.py' to generate it."
-        logger.error(error_msg)
-        raise FileNotFoundError(error_msg)
-
     logger.info(f"Loading persistent index from: {storage_dir}")
     try:
         storage_context = StorageContext.from_defaults(persist_dir=storage_dir)
         _INDEX = load_index_from_storage(storage_context)
+        _LAST_BUILD_TIME = current_build_time
         return _INDEX
     except Exception as e:
         logger.error(f"Failed to load index from storage: {e}")

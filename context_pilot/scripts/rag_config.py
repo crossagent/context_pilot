@@ -7,15 +7,15 @@ load_dotenv()
 @dataclass
 class RagConfig:
     # Local Data Config
-    LOCAL_DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../data"))
+    LOCAL_DATA_DIR = os.getenv("RAG_DATA_DIR", os.path.abspath(os.path.join(os.path.dirname(__file__), "../../data")))
     
     # Storage Config (Persistent Index)
     # Using adk_data/rag_storage to keep it separate from raw data
-    STORAGE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../adk_data/rag_storage"))
+    STORAGE_DIR = os.getenv("RAG_STORAGE_DIR", os.path.abspath(os.path.join(os.path.dirname(__file__), "../../adk_data/rag_storage")))
     
     # Manifest File (scheme C versioning)
     MANIFEST_FILE = "index_meta.json"
-    SOURCE_FILENAME = "knowledge_base.jsonl"
+    SOURCE_FILENAME = os.getenv("RAG_SOURCE_FILENAME", "knowledge_base.jsonl")
     
     # Model Config
     EMBEDDING_MODEL = "models/gemini-embedding-001"

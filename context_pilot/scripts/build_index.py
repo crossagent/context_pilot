@@ -16,8 +16,9 @@ from typing import Any, List, Optional
 
 # Load configuration
 try:
-    from rag_config import RagConfig
+    from .rag_config import RagConfig
 except ImportError:
+    # Fallback for direct script execution if needed, though module run is preferred
     import sys
     sys.path.append(os.path.dirname(os.path.abspath(__file__)))
     from rag_config import RagConfig
@@ -125,7 +126,7 @@ def build_index(mode: str = "auto", force: bool = False):
     if not api_key:
         raise ValueError("GOOGLE_API_KEY environment variable is not set.")
     
-    Settings.llm = Gemini(model="models/gemini-2.0-flash-exp", api_key=api_key)
+    Settings.llm = Gemini(model="models/gemini-3-flash-preview", api_key=api_key)
     Settings.embed_model = GeminiEmbedding(
         model_name=current_model, 
         api_key=api_key

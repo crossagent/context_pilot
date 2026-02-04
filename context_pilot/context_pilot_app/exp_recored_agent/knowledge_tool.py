@@ -4,7 +4,8 @@ import uuid
 from datetime import datetime
 from google.adk.tools import FunctionTool
 
-KNOWLEDGE_BASE_PATH = os.path.join(os.getcwd(), "data", "knowledge_base.jsonl")
+data_dir = os.getenv("RAG_DATA_DIR", os.path.join(os.getcwd(), "data"))
+KNOWLEDGE_BASE_PATH = os.path.join(data_dir, "knowledge_base.jsonl")
 
 def record_experience(
     intent: str, 

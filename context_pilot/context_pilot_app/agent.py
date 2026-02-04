@@ -86,7 +86,7 @@ async def before_agent_callback(callback_context: CallbackContext) -> Optional[t
             state[key] = value
 
     # RAG Initialization
-    rag_storage_path = os.getenv("RAG_STORAGE_PATH")
+    rag_storage_path = os.getenv("RAG_STORAGE_DIR")
     if not rag_storage_path:
         # Default: ProjectRoot/adk_data/rag_storage
         # Current file: .../context_pilot/context_pilot_app/agent.py
