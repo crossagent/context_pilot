@@ -5,7 +5,6 @@ from datetime import datetime
 from google.adk.tools import FunctionTool
 
 data_dir = os.getenv("RAG_DATA_DIR", os.path.join(os.getcwd(), "data"))
-KNOWLEDGE_BASE_PATH = os.path.join(data_dir, "knowledge_base.jsonl")
 
 # Import DB Manager
 try:

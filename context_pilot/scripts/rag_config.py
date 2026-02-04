@@ -15,7 +15,6 @@ class RagConfig:
     
     # Manifest File (scheme C versioning)
     MANIFEST_FILE = "index_meta.json"
-    SOURCE_FILENAME = os.getenv("RAG_SOURCE_FILENAME", "knowledge_base.jsonl")
     DB_FILENAME = "knowledge_base.sqlite"
     
     @property
