@@ -1,6 +1,5 @@
 import os
 import json
-import hashlib
 import logging
 import shutil
 from datetime import datetime
@@ -8,20 +7,24 @@ from dotenv import load_dotenv
 
 # LlamaIndex Imports
 from llama_index.core import VectorStoreIndex, Settings, StorageContext, Document, load_index_from_storage
-from llama_index.core.readers import SimpleDirectoryReader
 from llama_index.llms.gemini import Gemini
 from llama_index.embeddings.gemini import GeminiEmbedding
-import httpx
-from typing import Any, List, Optional
 
 # Load configuration
 try:
     from .rag_config import RagConfig
 except ImportError:
-    # Fallback for direct script execution if needed, though module run is preferred
     import sys
     sys.path.append(os.path.dirname(os.path.abspath(__file__)))
     from rag_config import RagConfig
+
+# Import DB Manager
+try:
+    from context_pilot.utils.db_manager import default_db_manager
+except ImportError:
+    import sys
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")))
+    from context_pilot.utils.db_manager import default_db_manager
 
 # Load Env
 load_dotenv()
@@ -30,57 +33,69 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-def calculate_file_hash(file_path: str) -> str:
-    """Calculates SHA256 hash of a file."""
-    sha256_hash = hashlib.sha256()
-    with open(file_path, "rb") as f:
-        for byte_block in iter(lambda: f.read(4096), b""):
-            sha256_hash.update(byte_block)
-    return sha256_hash.hexdigest()
+def reconstruct_markdown(row) -> str:
+    """Reconstructs the markdown content from DB columns."""
+    return f"""# Intent
+{row['intent']}
 
-def granular_load_documents(file_path: str) -> List[Document]:
-    """
-    Parses JSONL into individual Documents. 
-    Uses content hash as doc_id if explicit 'id' is missing.
-    """
+# 1. Problem Context
+{row['problem_context']}
+
+# 2. Root Cause Analysis
+{row['root_cause']}
+
+# 3. Solution / SOP
+{row['solution_steps']}
+
+# 4. Evidence
+{row['evidence']}
+"""
+
+def load_documents_from_db() -> list[Document]:
+    """Loads all entries from SQLite and converts them to LlamaIndex Documents."""
     documents = []
-    with open(file_path, 'r', encoding='utf-8') as f:
-        for line in f:
-            if not line.strip(): continue
-            try:
-                data = json.loads(line)
-                if not isinstance(data, dict):
-                    continue # Skip invalid entries
-
-                text = data.get("text") or data.get("content") or json.dumps(data, ensure_ascii=False)
-                
-                # Use 'id' if available (preferred), otherwise fall back to hash
-                if "id" in data:
-                    doc_id = data["id"]
-                else:
-                    doc_id = hashlib.sha256(text.encode('utf-8')).hexdigest()
-                
-                doc = Document(text=text, id_=doc_id, metadata=data.get("metadata", {}))
-                documents.append(doc)
-            except Exception as e:
-                logger.warning(f"Skipping malformed line: {e}")
-                pass
+    
+    # Ensure DB exists/is initialized before reading
+    default_db_manager.init_db()
+    
+    try:
+        with default_db_manager.get_connection() as conn:
+            rows = conn.execute("SELECT * FROM knowledge_entries").fetchall()
             
+            for row in rows:
+                text = reconstruct_markdown(row)
+                
+                # Construct metadata
+                tags = [t.strip() for t in (row['tags'] or "").split(",") if t.strip()]
+                metadata = {
+                    "tags": tags,
+                    "contributor": row['contributor'],
+                    "timestamp": row['created_at'],
+                    "type": "cookbook_record",
+                    "intent": row['intent']
+                }
+                
+                # Create Document with explicit ID from DB
+                doc = Document(
+                    text=text, 
+                    id_=row['id'], 
+                    metadata=metadata
+                )
+                documents.append(doc)
+    except Exception as e:
+        logger.error(f"Failed to load documents from DB: {e}")
+        
     return documents
 
 def build_index(mode: str = "auto", force: bool = False):
     """
-    Builds/Updates the vector index.
+    Builds/Updates the vector index from SQLite DB.
     """
     RagConfig.validate()
     
-    source_path = os.path.join(RagConfig.LOCAL_DATA_DIR, RagConfig.SOURCE_FILENAME)
-    if not os.path.exists(source_path):
-        logger.error(f"Source file not found: {source_path}")
-        return
-
+    # DB path check is handled by db_manager or implicit in load
+    
     manifest_path = os.path.join(RagConfig.STORAGE_DIR, RagConfig.MANIFEST_FILE)
-    current_hash = calculate_file_hash(source_path)
     current_model = RagConfig.EMBEDDING_MODEL
     
     storage_exists = os.path.exists(RagConfig.STORAGE_DIR)
@@ -94,7 +109,6 @@ def build_index(mode: str = "auto", force: bool = False):
         except: 
             pass
 
-    cached_hash = meta.get("file_hash")
     cached_model = meta.get("embedding_model")
     
     # Logic Decision
@@ -105,20 +119,14 @@ def build_index(mode: str = "auto", force: bool = False):
         strategy = "full"
     else:
         # Incremental Mode (Default)
-        # Strict Pre-checks
-        if not storage_exists or not manifest_exists:
-            logger.error("🛑 Incremental update failed: No valid index found. Please run with '--mode full' to initialize.")
-            return
-
-        if cached_model != current_model:
-            logger.error(f"⚠️ Incremental update failed: Embedding model mismatch ({cached_model} != {current_model}). Please run with '--mode full'.")
-            return
-
-        if cached_hash == current_hash:
-            logger.info("✅ Source content identical (Hash match). No changes needed.")
-            return
-            
-        strategy = "incremental"
+        if not storage_exists:
+            logger.info("No existing index found. Switching to FULL build.")
+            strategy = "full"
+        elif cached_model != current_model:
+            logger.warning(f"Embedding model changed ({cached_model} -> {current_model}). Triggering FULL rebuild.")
+            strategy = "full"
+        else:
+            strategy = "incremental"
 
     logger.info(f"=== Starting Build (Strategy: {strategy.upper()}) ===")
 
@@ -132,9 +140,13 @@ def build_index(mode: str = "auto", force: bool = False):
         api_key=api_key
     )
 
-    logger.info(f"Loading/Parsing data from: {source_path}")
-    documents = granular_load_documents(source_path)
+    logger.info(f"Loading data from SQLite DB: {RagConfig.DB_PATH}")
+    documents = load_documents_from_db()
     logger.info(f"Loaded {len(documents)} documents.")
+    
+    if not documents and strategy == "full":
+        logger.warning("No documents found in DB. Nothing to build.")
+        return
 
     index = None
     
@@ -153,6 +165,7 @@ def build_index(mode: str = "auto", force: bool = False):
             index = load_index_from_storage(storage_context)
             
             logger.info("Refreshing index (Incremental Update)...")
+            # refresh() updates docs with matching IDs if hash is different, and adds new docs
             result = index.refresh(documents) 
             changes = sum(result)
             logger.info(f"Incremental update applied. {changes} documents updated/added.")
@@ -164,27 +177,28 @@ def build_index(mode: str = "auto", force: bool = False):
             os.makedirs(RagConfig.STORAGE_DIR, exist_ok=True)
             index = VectorStoreIndex.from_documents(documents)
 
-    logger.info(f"Persisting index to: {RagConfig.STORAGE_DIR}")
-    index.storage_context.persist(persist_dir=RagConfig.STORAGE_DIR)
+    if index:
+        logger.info(f"Persisting index to: {RagConfig.STORAGE_DIR}")
+        index.storage_context.persist(persist_dir=RagConfig.STORAGE_DIR)
 
-    manifest = {
-        "source_file": RagConfig.SOURCE_FILENAME,
-        "file_hash": current_hash,
-        "build_time": datetime.now().isoformat(),
-        "embedding_model": current_model,
-        "strategy": strategy
-    }
-    with open(manifest_path, 'w') as f:
-        json.dump(manifest, f, indent=2)
+        manifest = {
+            "source": "sqlite",
+            "build_time": datetime.now().isoformat(),
+            "embedding_model": current_model,
+            "strategy": strategy,
+            "doc_count": len(documents)
+        }
+        with open(manifest_path, 'w') as f:
+            json.dump(manifest, f, indent=2)
     
     logger.info("✅ Build Complete.")
 
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description="Build/Update RAG Index")
+    parser = argparse.ArgumentParser(description="Build/Update RAG Index form SQLite")
     parser.add_argument("--mode", choices=["incremental", "full"], default="incremental", 
-                      help="Build mode: incremental (default, updates only changed docs), full (wipe & rebuild)")
-    parser.add_argument("--force", "-f", action="store_true", help="Force rebuild (equivalent to --mode full)")
+                      help="Build mode: incremental (default), full (wipe & rebuild)")
+    parser.add_argument("--force", "-f", action="store_true", help="Force rebuild")
     args = parser.parse_args()
     
     build_index(mode=args.mode, force=args.force)
