@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from context_pilot.context_pilot_app.llama_rag_tool import retrieve_rag_documentation_tool, initialize_rag_tool
-from scripts.rag_config import RagConfig  # Use config for the test path
+from context_pilot.scripts.rag_config import RagConfig  # Use config for the test path
 # from context_pilot.context_pilot_app.tools.llama_rag_tool import retrieve_rag_documentation_tool
 
 # Setup logging

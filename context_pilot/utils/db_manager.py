@@ -22,7 +22,9 @@ class DBManager:
         self._ensure_dir()
 
     def _ensure_dir(self):
-        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
+        dirname = os.path.dirname(self.db_path)
+        if dirname:
+            os.makedirs(dirname, exist_ok=True)
 
     def init_db(self):
         """Initializes the database using WAL mode and creates tables if they don't exist."""
