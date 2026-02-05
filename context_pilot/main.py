@@ -26,7 +26,8 @@ def main():
 @click.option("--config", envvar="CONFIG_FILE", help="Path to the configuration file.")
 @click.option("--env-file", default=".env", help="Path to .env file.")
 @click.option("--data-dir", default="adk_data", help="Directory for local data storage.")
-def serve(port, host, skills_dir, config, env_file, data_dir):
+@click.option("--knowledge-base-dir", help="Path to the knowledge base directory.")
+def serve(port, host, skills_dir, config, env_file, data_dir, knowledge_base_dir):
     """
     Start the Context Pilot Agent Server.
     """
@@ -36,6 +37,12 @@ def serve(port, host, skills_dir, config, env_file, data_dir):
         load_dotenv(env_file)
     
     # 2. Set Environment Variables
+    
+    # Set RAG_DATA_DIR if knowledge_base_dir is provided
+    if knowledge_base_dir:
+        abs_kb_dir = os.path.abspath(knowledge_base_dir)
+        os.environ["RAG_DATA_DIR"] = abs_kb_dir
+        logger.info(f"Set RAG_DATA_DIR to {abs_kb_dir}")
     # Auto-discovery for skills
     if not skills_dir and os.path.exists("skills") and os.path.isdir("skills"):
         skills_dir = "skills"
