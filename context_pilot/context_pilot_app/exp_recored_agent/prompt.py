@@ -14,12 +14,12 @@ EXPERIENCE_RECORDING_PROMPT = """
         - **Solution/SOP (操作)**: Step-by-step 的修复步骤。
         - **Evidence (证据)**: commit hash, log snapshot 等。。
 
-    2.  **合成与记录 (Synthesis & Record)**:
-        - 当信息完备时，调用工具 `record_experience`。
+    2.  **合成 (Synthesis)**:
         - **Intent**: 必须是陈述句或疑问句，方便向量检索 (e.g. "Fix Redis Timeout in Production").
         - **Tags**: 提取关键技术栈 (e.g. "redis, infrastructure, production").
         
     **质量标准**:
+    *   **记录方法而不是结果**: 目标是整理一份事实的核对手册，而不是答案集合。
     *   **不要废话**: Root Cause 必须直击技术原理。
     *   **可执行性**: Solution 必须是其他工程师可以直接照做的指令。
     *   **区分事实与推测**: 如果是推测，请注明<推测>。

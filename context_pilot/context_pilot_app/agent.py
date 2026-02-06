@@ -122,7 +122,7 @@ context_pilot_agent = LlmAgent(
     instruction=ROOT_AGENT_PROMPT,
     sub_agents=[
         repo_explorer_agent,
-        #exp_recored_agent,
+        exp_recored_agent,
     ],
     tools=[
         FunctionTool(retrieve_rag_documentation_tool),  # Primary Knowledge Source
