@@ -1,0 +1,128 @@
+﻿>>> [conftest] Set GOOGLE_GENAI_MODEL=mock/pytest (Default)
+============================= test session starts =============================
+platform win32 -- Python 3.13.2, pytest-9.0.2, pluggy-1.6.0 -- D:\MyProject\context_pilot\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\MyProject\context_pilot
+configfile: pyproject.toml
+plugins: anyio-4.12.0, asyncio-1.3.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collecting ... collected 3 items
+
+test/integration/test_knowledge_tool_flow.py::test_extract_experience_tool PASSED [ 33%]
+test/integration/test_knowledge_tool_flow.py::test_save_experience_tool PASSED [ 66%]
+uv : D:\MyProject\cont
+ext_pilot\.venv\Lib\si
+te-packages\aiosqlite\
+core.py:127: Deprecati
+onWarning: There is no
+ current event loop
+所在位置 行:1 字符: 1
++ uv run pytest test/i
+ntegration/test_knowle
+dge_tool_flow.py -v 2>
+&1 |  ...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~
+    + CategoryInfo    
+          : NotSpecifi
+ed: (D:\MyPr    oject\
+co...rent event lo    
+op:String) [], RemoteE
+xc    eption
+    + FullyQualifiedEr
+rorId     : NativeComm
+andError
+ 
+  future = asyncio.get
+_event_loop().create_f
+uture()
+test/integration/test_knowledge_tool_flow.py::test_update_experience_tool PASSED [100%]
+
+============================== warnings summary ===============================
+test/integration/test_knowledge_tool_flow.py::test_extract_experience_tool
+  D:\MyProject\context_pilot\.venv\Lib\site-packages\httplib2\auth.py:19: DeprecationWarning: 'setName' deprecated - use 'set_name'
+    token = pp.Word(tchar).setName("token")
+
+test/integration/test_knowledge_tool_flow.py::test_extract_experience_tool
+  D:\MyProject\context_pilot\.venv\Lib\site-packages\httplib2\auth.py:20: DeprecationWarning: 'leaveWhitespace' deprecated - use 'leave_whitespace'
+    token68 = pp.Combine(pp.Word("-._~+/" + pp.nums + pp.alphas) + pp.Optional(pp.Word("=").leaveWhitespace())).setName(
+
+test/integration/test_knowledge_tool_flow.py::test_extract_experience_tool
+  D:\MyProject\context_pilot\.venv\Lib\site-packages\httplib2\auth.py:20: DeprecationWarning: 'setName' deprecated - use 'set_name'
+    token68 = pp.Combine(pp.Word("-._~+/" + pp.nums + pp.alphas) + pp.Optional(pp.Word("=").leaveWhitespace())).setName(
+
+test/integration/test_knowledge_tool_flow.py::test_extract_experience_tool
+  D:\MyProject\context_pilot\.venv\Lib\site-packages\httplib2\auth.py:24: DeprecationWarning: 'setName' deprecated - use 'set_name'
+    quoted_string = pp.dblQuotedString.copy().setName("quoted-string").setParseAction(unquote)
+
+test/integration/test_knowledge_tool_flow.py::test_extract_experience_tool
+  D:\MyProject\context_pilot\.venv\Lib\site-packages\httplib2\auth.py:24: DeprecationWarning: 'setParseAction' deprecated - use 'set_parse_action'
+    quoted_string = pp.dblQuotedString.copy().setName("quoted-string").setParseAction(unquote)
+
+test/integration/test_knowledge_tool_flow.py::test_extract_experience_tool
+  D:\MyProject\context_pilot\.venv\Lib\site-packages\httplib2\auth.py:25: DeprecationWarning: 'setName' deprecated - use 'set_name'
+    auth_param_name = token.copy().setName("auth-param-name").addParseAction(downcaseTokens)
+
+test/integration/test_knowledge_tool_flow.py::test_extract_experience_tool
+  D:\MyProject\context_pilot\.venv\Lib\site-packages\httplib2\auth.py:25: DeprecationWarning: 'addParseAction' deprecated - use 'add_parse_action'
+    auth_param_name = token.copy().setName("auth-param-name").addParseAction(downcaseTokens)
+
+test/integration/test_knowledge_tool_flow.py::test_extract_experience_tool
+  D:\MyProject\context_pilot\.venv\Lib\site-packages\httplib2\auth.py:27: DeprecationWarning: 'delimitedList' deprecated - use 'DelimitedList'
+    params = pp.Dict(pp.delimitedList(pp.Group(auth_param)))
+
+test/integration/test_knowledge_tool_flow.py::test_extract_experience_tool
+  D:\MyProject\context_pilot\.venv\Lib\site-packages\httplib2\auth.py:33: DeprecationWarning: 'delimitedList' deprecated - use 'DelimitedList'
+    www_authenticate = pp.delimitedList(pp.Group(challenge))
+
+test/integration/test_knowledge_tool_flow.py::test_extract_experience_tool
+  D:\MyProject\context_pilot\.venv\Lib\site-packages\llama_index\llms\gemini\base.py:21: FutureWarning: 
+  
+  All support for the `google.generativeai` package has ended. It will no longer be receiving 
+  updates or bug fixes. Please switch to the `google.genai` package as soon as possible.
+  See README for more details:
+  
+  https://github.com/google-gemini/deprecated-generative-ai-python/blob/main/README.md
+  
+    import google.generativeai as genai
+
+test/integration/test_knowledge_tool_flow.py::test_extract_experience_tool
+  D:\MyProject\context_pilot\context_pilot\context_pilot_app\app.py:28: UserWarning: [EXPERIMENTAL] ContextCacheConfig: This feature is experimental and may change or be removed in future versions without notice. It may introduce breaking changes at any time.
+    context_cache_config=ContextCacheConfig(
+
+test/integration/test_knowledge_tool_flow.py::test_extract_experience_tool
+  D:\MyProject\context_pilot\context_pilot\context_pilot_app\app.py:33: UserWarning: [EXPERIMENTAL] EventsCompactionConfig: This feature is experimental and may change or be removed in future versions without notice. It may introduce breaking changes at any time.
+    events_compaction_config=EventsCompactionConfig(
+
+test/integration/test_knowledge_tool_flow.py::test_extract_experience_tool
+  D:\MyProject\context_pilot\context_pilot\context_pilot_app\app.py:37: UserWarning: [EXPERIMENTAL] ResumabilityConfig: This feature is experimental and may change or be removed in future versions without notice. It may introduce breaking changes at any time.
+    resumability_config=ResumabilityConfig(
+
+test/integration/test_knowledge_tool_flow.py::test_extract_experience_tool
+test/integration/test_knowledge_tool_flow.py::test_save_experience_tool
+test/integration/test_knowledge_tool_flow.py::test_update_experience_tool
+  D:\MyProject\context_pilot\context_pilot\testing\api_client.py:119: UserWarning: [EXPERIMENTAL] InMemoryCredentialService: This feature is experimental and may change or be removed in future versions without notice. It may introduce breaking changes at any time.
+    credential_service = InMemoryCredentialService()
+
+test/integration/test_knowledge_tool_flow.py::test_extract_experience_tool
+test/integration/test_knowledge_tool_flow.py::test_save_experience_tool
+test/integration/test_knowledge_tool_flow.py::test_update_experience_tool
+  D:\MyProject\context_pilot\.venv\Lib\site-packages\google\adk\auth\credential_service\in_memory_credential_service.py:33: UserWarning: [EXPERIMENTAL] BaseCredentialService: This feature is experimental and may change or be removed in future versions without notice. It may introduce breaking changes at any time.
+    super().__init__()
+
+test/integration/test_knowledge_tool_flow.py::test_extract_experience_tool
+test/integration/test_knowledge_tool_flow.py::test_save_experience_tool
+test/integration/test_knowledge_tool_flow.py::test_save_experience_tool
+test/integration/test_knowledge_tool_flow.py::test_update_experience_tool
+test/integration/test_knowledge_tool_flow.py::test_update_experience_tool
+  D:\MyProject\context_pilot\.venv\Lib\site-packages\google\adk\runners.py:1381: DeprecationWarning: deprecated
+    save_input_blobs_as_artifacts=run_config.save_input_blobs_as_artifacts,
+
+test/integration/test_knowledge_tool_flow.py: 23 warnings
+  D:\MyProject\context_pilot\.venv\Lib\site-packages\google\adk\sessions\database_session_service.py:726: DeprecationWarning: datetime.datetime.utcfromtimestamp() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.fromtimestamp(timestamp, datetime.UTC).
+    update_time = datetime.utcfromtimestamp(event.timestamp)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 3 passed, 47 warnings in 2.16s ========================

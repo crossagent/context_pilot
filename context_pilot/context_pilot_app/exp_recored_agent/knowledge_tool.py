@@ -53,10 +53,14 @@ def extract_experience(
         f"Please review the details. If correct, proceed to save."
     )
 
-def save_experience(tool_context: ToolContext) -> str:
+def save_experience(tool_context: ToolContext, entry_id: str = "") -> str:
     """
     Commits the staged experience data to the permanent Knowledge Base.
     Must be called AFTER extract_experience.
+    
+    Args:
+        entry_id: Optional. If provided and exists in DB, update that entry.
+                  If not provided or not found, create a new entry.
     """
     # Retrieve from individual state keys
     intent = tool_context.state.get(StateKeys.EXP_INTENT)
@@ -70,7 +74,6 @@ def save_experience(tool_context: ToolContext) -> str:
     if not intent or not root_cause:
         return "❌ No pending experience found (Intent or Root Cause missing). Please extract experience first."
     
-    entry_id = str(uuid.uuid4())
     now = datetime.now().isoformat()
     
     # Ensure DB is ready
@@ -78,22 +81,55 @@ def save_experience(tool_context: ToolContext) -> str:
     
     try:
         with default_db_manager.get_connection() as conn:
-            conn.execute("""
-                INSERT INTO knowledge_entries 
-                (id, intent, problem_context, root_cause, solution_steps, evidence, tags, contributor, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                entry_id, 
-                intent, 
-                problem_context, 
-                root_cause, 
-                solution_steps, 
-                evidence, 
-                tags, 
-                contributor, 
-                now, 
-                now
-            ))
+            # Check if entry_id exists (for update)
+            is_update = False
+            if entry_id:
+                existing = conn.execute(
+                    "SELECT id FROM knowledge_entries WHERE id = ?", 
+                    (entry_id,)
+                ).fetchone()
+                is_update = existing is not None
+            
+            if is_update:
+                # UPDATE existing entry
+                conn.execute("""
+                    UPDATE knowledge_entries 
+                    SET intent=?, problem_context=?, root_cause=?, solution_steps=?, 
+                        evidence=?, tags=?, contributor=?, updated_at=?
+                    WHERE id=?
+                """, (
+                    intent, 
+                    problem_context, 
+                    root_cause, 
+                    solution_steps, 
+                    evidence, 
+                    tags, 
+                    contributor, 
+                    now,
+                    entry_id
+                ))
+                result_id = entry_id
+                action = "updated"
+            else:
+                # INSERT new entry
+                result_id = str(uuid.uuid4())
+                conn.execute("""
+                    INSERT INTO knowledge_entries 
+                    (id, intent, problem_context, root_cause, solution_steps, evidence, tags, contributor, created_at, updated_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    result_id, 
+                    intent, 
+                    problem_context, 
+                    root_cause, 
+                    solution_steps, 
+                    evidence, 
+                    tags, 
+                    contributor, 
+                    now, 
+                    now
+                ))
+                action = "created"
             
         # Clear state after successful save
         tool_context.state[StateKeys.EXP_INTENT] = None
@@ -104,7 +140,7 @@ def save_experience(tool_context: ToolContext) -> str:
         tool_context.state[StateKeys.EXP_TAGS] = None
         tool_context.state[StateKeys.EXP_CONTRIBUTOR] = None
         
-        return f"✅ Experience permanently saved to Knowledge Base. (ID: {entry_id})"
+        return f"✅ Experience {action} in Knowledge Base. (ID: {result_id})"
     except Exception as e:
         return f"❌ Failed to save experience to DB: {e}"
 
