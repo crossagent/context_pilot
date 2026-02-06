@@ -20,8 +20,16 @@ EXPERIENCE_RECORDING_PROMPT = """
 
     **合成指南 (Synthesis Guidelines)**:
         - **Intent**: 必须是陈述句或疑问句，方便向量检索 (e.g. "Fix Redis Timeout in Production").
-        - **Tags**: 提取关键技术栈 (e.g. "redis, infrastructure, production").
         
+    **当前暂存数据 (Current Staged Data)**:
+    - Intent: {exp_intent}
+    - Problem Context: {exp_problem_context}
+    - Root Cause: {exp_root_cause}
+    - Solution Steps: {exp_solution_steps}
+    - Evidence: {exp_evidence}
+    - Tags: {exp_tags}
+    - Contributor: {exp_contributor}
+
     **质量标准**:
     *   **记录方法而不是结果**: 目标是整理一份事实的核对手册，而不是答案集合。
     *   **不要废话**: Root Cause 必须直击技术原理。
