@@ -17,9 +17,9 @@ from .knowledge_tool import extract_experience_tool, save_experience_tool
 
 from context_pilot.shared_libraries.state_keys import StateKeys
 
-def initialize_experience_state(context: CallbackContext):
+def initialize_experience_state(callback_context: CallbackContext):
     """Initializes experience recording state keys to None."""
-    state = context.session.state
+    state = callback_context.state
     keys_to_init = [
         StateKeys.EXP_INTENT,
         StateKeys.EXP_PROBLEM_CONTEXT,
