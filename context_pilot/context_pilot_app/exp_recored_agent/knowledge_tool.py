@@ -2,7 +2,8 @@ import json
 import os
 import uuid
 from datetime import datetime
-from google.adk.tools import FunctionTool
+from google.adk.tools import FunctionTool, ToolContext
+from context_pilot.shared_libraries.state_keys import StateKeys
 
 data_dir = os.getenv("RAG_DATA_DIR", os.path.join(os.getcwd(), "data"))
 
@@ -14,7 +15,8 @@ except ImportError:
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")))
     from context_pilot.utils.db_manager import default_db_manager
 
-def record_experience(
+def extract_experience(
+    tool_context: ToolContext,
     intent: str, 
     problem_context: str,
     root_cause: str,
@@ -24,10 +26,10 @@ def record_experience(
     contributor: str = "User"
 ) -> str:
     """
-    Records a structured engineering experience into the Knowledge Base (Cookbook).
+    Extracts and stages experience data from conversation to be saved later.
     
     Args:
-        intent: The core question or goal this experience answers (e.g., "Fix Redis Timeout").
+        intent: The core question or goal this experience answers.
         problem_context: Description of the symptoms, environment, and trigger.
         root_cause: The technical reason why the issue occurred.
         solution_steps: The specific steps taken to fix it (SOP).
@@ -35,6 +37,38 @@ def record_experience(
         tags: Comma-separated tags (e.g., "redis, timeout, production").
         contributor: Name of the author.
     """
+    # Store in individual state keys
+    tool_context.state[StateKeys.EXP_INTENT] = intent
+    tool_context.state[StateKeys.EXP_PROBLEM_CONTEXT] = problem_context
+    tool_context.state[StateKeys.EXP_ROOT_CAUSE] = root_cause
+    tool_context.state[StateKeys.EXP_SOLUTION_STEPS] = solution_steps
+    tool_context.state[StateKeys.EXP_EVIDENCE] = evidence
+    tool_context.state[StateKeys.EXP_TAGS] = tags
+    tool_context.state[StateKeys.EXP_CONTRIBUTOR] = contributor
+    
+    return (
+        f"✅ Experience extracted and staged for review.\n"
+        f"Intent: {intent}\n"
+        f"Tags: {tags}\n\n"
+        f"Please review the details. If correct, proceed to save."
+    )
+
+def save_experience(tool_context: ToolContext) -> str:
+    """
+    Commits the staged experience data to the permanent Knowledge Base.
+    Must be called AFTER extract_experience.
+    """
+    # Retrieve from individual state keys
+    intent = tool_context.state.get(StateKeys.EXP_INTENT)
+    problem_context = tool_context.state.get(StateKeys.EXP_PROBLEM_CONTEXT)
+    root_cause = tool_context.state.get(StateKeys.EXP_ROOT_CAUSE)
+    solution_steps = tool_context.state.get(StateKeys.EXP_SOLUTION_STEPS)
+    evidence = tool_context.state.get(StateKeys.EXP_EVIDENCE)
+    tags = tool_context.state.get(StateKeys.EXP_TAGS)
+    contributor = tool_context.state.get(StateKeys.EXP_CONTRIBUTOR)
+    
+    if not intent or not root_cause:
+        return "❌ No pending experience found (Intent or Root Cause missing). Please extract experience first."
     
     entry_id = str(uuid.uuid4())
     now = datetime.now().isoformat()
@@ -61,8 +95,18 @@ def record_experience(
                 now
             ))
             
-        return f"✅ Experience recorded successfully: '{intent}' (ID: {entry_id})"
+        # Clear state after successful save
+        tool_context.state[StateKeys.EXP_INTENT] = None
+        tool_context.state[StateKeys.EXP_PROBLEM_CONTEXT] = None
+        tool_context.state[StateKeys.EXP_ROOT_CAUSE] = None
+        tool_context.state[StateKeys.EXP_SOLUTION_STEPS] = None
+        tool_context.state[StateKeys.EXP_EVIDENCE] = None
+        tool_context.state[StateKeys.EXP_TAGS] = None
+        tool_context.state[StateKeys.EXP_CONTRIBUTOR] = None
+        
+        return f"✅ Experience permanently saved to Knowledge Base. (ID: {entry_id})"
     except Exception as e:
-        return f"❌ Failed to record experience: {e}"
+        return f"❌ Failed to save experience to DB: {e}"
 
-record_experience_tool = FunctionTool(record_experience)
+extract_experience_tool = FunctionTool(extract_experience)
+save_experience_tool = FunctionTool(save_experience)

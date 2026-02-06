@@ -52,6 +52,15 @@ class StateKeys:
     RAG_CONTEXT_NODES = "rag_context_nodes"  # List[Dict] - Structured nodes for UI
     ACTIVE_CONTEXT_FILES = "active_context_files"  # List[str]
 
+    # Experience Recording Keys
+    EXP_INTENT = "exp_intent"
+    EXP_PROBLEM_CONTEXT = "exp_problem_context"
+    EXP_ROOT_CAUSE = "exp_root_cause"
+    EXP_SOLUTION_STEPS = "exp_solution_steps"
+    EXP_EVIDENCE = "exp_evidence"
+    EXP_TAGS = "exp_tags"
+    EXP_CONTRIBUTOR = "exp_contributor"
+
 
 class AgentKeys:
     BUG_REASON = "bug_reason_agent"
