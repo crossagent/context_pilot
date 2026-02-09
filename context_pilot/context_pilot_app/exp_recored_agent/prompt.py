@@ -7,16 +7,22 @@ EXPERIENCE_RECORDING_PROMPT = """
     你的任务是将散乱的对话历史转化为 **结构化、高质量的工程经验 (Cookbook Entry)**，供 RAG 系统未来检索。
 
     **工作流程**:
-    1.  **提取 (Extract)**: 调用工具从对话历史中提取结构化经验数据。分析以下核心信息：
+    1.  **提取 (Extract)**: 调用 `extract_experience` 工具从对话历史中提取结构化经验数据。分析以下核心信息：
         - **Intent (意图)**: 用户最初想解决什么问题？(作为检索标题)
         - **Problem Context (背景)**: 症状是什么？环境是什么？报错日志是什么？
         - **Root Cause (根因)**: *为什么* 会发生这个问题？(原理层面的解释)
         - **Solution/SOP (操作)**: Step-by-step 的修复步骤。
-        - **Evidence (证据)**: commit hash, log snapshot 等。。
+        - **Evidence (证据)**: commit hash, log snapshot 等。
     
-    2.  **审查 (Review)**: 检查提取出的数据是否准确、完整。
+    2.  **等待确认 (Wait for Confirmation)**: 
+        ⚠️ **重要**: 提取完成后，**必须停止并等待用户确认**。
+        - 向用户展示提取的经验摘要
+        - 提示用户："如需保存，请点击界面上的确认按钮或说'保存'"
+        - **绝对不要自动调用 save_experience**
     
-    3.  **保存 (Save)**: 确认无误后，调用工具将数据永久保存到数据库。
+    3.  **保存 (Save)**: 
+        - **仅当用户明确说"保存"、"确认"、"save"等时**，才调用 `save_experience` 工具
+        - 未经用户明确指示，禁止自动保存
 
     **合成指南 (Synthesis Guidelines)**:
         - **Intent**: 必须是陈述句或疑问句，方便向量检索 (e.g. "Fix Redis Timeout in Production").
@@ -36,3 +42,4 @@ EXPERIENCE_RECORDING_PROMPT = """
     *   **可执行性**: Solution 必须是其他工程师可以直接照做的指令。
     *   **区分事实与推测**: 如果是推测，请注明<推测>。
     """
+
