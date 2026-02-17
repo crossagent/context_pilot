@@ -12,7 +12,7 @@ try:
     from context_pilot.utils.db_manager import default_db_manager
 except ImportError:
     import sys
-    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")))
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../")))
     from context_pilot.utils.db_manager import default_db_manager
 
 def extract_experience(

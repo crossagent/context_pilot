@@ -10,8 +10,9 @@ from google.genai import types
 
 from .prompt import ROOT_AGENT_PROMPT
 from .repo_explorer_agent.agent import repo_explorer_agent
-from .exp_recored_agent.agent import exp_recored_agent
-from .tools import refine_bug_state, update_strategic_plan
+# exp_recored_agent removed - functionality moved to planning_expert_agent
+from .tools import refine_bug_state
+# update_strategic_plan moved to planning_expert_agent
 from datetime import datetime
 # from .skill_library.extensions import root_skill_registry, report_skill_registry, analyze_skill_registry
 from context_pilot.skill_library.extensions import root_skill_registry, report_skill_registry, analyze_skill_registry
@@ -85,36 +86,29 @@ async def before_agent_callback(callback_context: CallbackContext) -> Optional[t
         if state.get(key) is None:
             state[key] = value
 
-    # RAG Initialization
-    rag_storage_path = os.getenv("RAG_STORAGE_DIR")
-    if not rag_storage_path:
-        # Default: ProjectRoot/adk_data/rag_storage
-        # Current file: .../context_pilot/context_pilot_app/agent.py
-        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        rag_storage_path = os.path.join(base_dir, "adk_data", "rag_storage")
-
-    try:
-        initialize_rag_tool(rag_storage_path)
-    except Exception as e:
-        logger.warning(f"RAG Initialization Warning: {e}")
-        # Return a warning message to the model so it knows RAG is offline
-        return types.Content(parts=[types.Part.from_text(
-            text=f"⚠️ **System Warning**: Knowledge Base (RAG) is unavailable. "
-                 f"Reason: {str(e)}. "
-                 f"Please proceed using available tools only."
-        )])
+    # RAG initialization moved to planning_expert_agent
+    # Main agent now delegates RAG operations via A2A
 
     return None
 
 
-# --- RAG Tool Definition ---
-
+# --- RAG Tools moved to planning_expert_agent ---
+# planning_expert_agent accessed as remote sub_agent via A2A
 
 from google.adk.tools import FunctionTool
+from google.adk.agents.remote_a2a_agent import RemoteA2aAgent, AGENT_CARD_WELL_KNOWN_PATH
 
 # --- 4. Instantiate Root Agent (Global) ---
 # Build tools list based on mode (Unified Mode)
 # ADK-Web mode: Include all backend tools
+
+# Remote Planning Expert Agent via A2A
+planning_expert_url = os.getenv("PLANNING_EXPERT_URL", "http://localhost:8001")
+planning_expert_agent = RemoteA2aAgent(
+    name="planning_expert_agent",
+    description="Planning Expert Agent responsible for strategic planning, knowledge retrieval (RAG), and experience recording.",
+    agent_card=f"{planning_expert_url}/a2a/planning_expert_agent{AGENT_CARD_WELL_KNOWN_PATH}"
+)
 
 context_pilot_agent = LlmAgent(
     name="context_pilot_agent",
@@ -122,13 +116,11 @@ context_pilot_agent = LlmAgent(
     instruction=ROOT_AGENT_PROMPT,
     sub_agents=[
         repo_explorer_agent,
-        exp_recored_agent,
+        planning_expert_agent,  # Remote A2A agent as sub_agent
     ],
     tools=[
-        FunctionTool(retrieve_rag_documentation_tool),  # Primary Knowledge Source
         #FunctionTool(refine_bug_state),
         root_skill_registry,
-        FunctionTool(update_strategic_plan)
     ],
     before_agent_callback=before_agent_callback
 )

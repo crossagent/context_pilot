@@ -13,7 +13,7 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 from context_pilot.utils.db_manager import DBManager, default_db_manager
-from context_pilot.context_pilot_app.exp_recored_agent.knowledge_tool import record_experience
+from context_pilot.context_pilot_app.remote_a2a.planning_expert_agent.knowledge_tool import record_experience
 from context_pilot.scripts.build_index import build_index
 from context_pilot.scripts.rag_config import RagConfig
 from llama_index.core import StorageContext, load_index_from_storage

@@ -5,7 +5,7 @@ import sqlite3
 import uuid
 from datetime import datetime
 from context_pilot.utils.db_manager import default_db_manager, DBManager
-from context_pilot.context_pilot_app.exp_recored_agent.knowledge_tool import record_experience
+from context_pilot.context_pilot_app.remote_a2a.planning_expert_agent.knowledge_tool import record_experience
 from context_pilot.scripts.build_index import load_documents_from_db, reconstruct_markdown
 
 # Use a temporary DB for testing

@@ -6,7 +6,7 @@ def exp_record_client(tmp_path):
     """
     Configure MockLlm and return client for Experience Recording Agent.
     """
-    from context_pilot.context_pilot_app.exp_recored_agent.agent import exp_recored_agent
+    from context_pilot.context_pilot_app.remote_a2a.planning_expert_agent.agent import planning_expert_agent
     from context_pilot.testing import AdkApiTestClient
     
     MockLlm.set_behaviors({
@@ -32,7 +32,7 @@ def exp_record_client(tmp_path):
         }
     })
     
-    client = AdkApiTestClient(tmp_path, agent=exp_recored_agent, app_name="context_pilot_app")
+    client = AdkApiTestClient(tmp_path, agent=planning_expert_agent, app_name="context_pilot_app")
     yield client
 
 
