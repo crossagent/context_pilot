@@ -3,42 +3,35 @@ services:
     build: .
     ports:
       # Host:Container
-      # 54089: Updated port
       - "54089:8000"
 
-    # [Security Fix] Load secrets from local .env file
-    # These contain API KEYs etc. that should NOT be committed.
+    # Load secrets from local .env file (API keys etc.)
     env_file:
-      - context_pilot_app/.env
+      - .env
 
     volumes:
-      # Mount the current directory (Host) to /app (Container)
-      # This handles agent code
+      # Mount project code into container
       - .:/app
-      # [CRITICAL] Mount the actual Game Source Code (from Host)
-      # This allows the agent to read the repo without copying it.
-      # Users should update this path to their local project root.
-      # - "path/to/project:/project_root"
-      # [Docker Fix] MASK the .env file to prevent contamination
-      # Maps /dev/null (empty) over the .env file in the container
-      # This ensures Python ONLY sees the variables defined in 'environment' section below
-      - /dev/null:/app/context_pilot_app/.env
+      # [CRITICAL] Mount the actual source code repository from the host machine.
+      # The repo_explorer_agent runs on the host and accesses files directly,
+      # so this volume is NOT needed for file exploration.
+      # Only needed if you want the container itself to reference source paths.
+      # - "C:/path/to/your/project:/project_root"
+
     environment:
-      # [Override] These values TAKE PRECEDENCE over env_file
-      # This is how we fix PROJECT_ROOT while keeping secrets
+      # These OVERRIDE .env values
       - PROJECT_ROOT=/project_root
       - PYTHONPATH=/app
       - ADK_DATA_DIR=/app/adk_data
-      # Ensure output is flushed immediately
       - PYTHONUNBUFFERED=1
-      # Remote A2A Agents URLs
-      # planning_expert runs in Docker (same network, use service name)
+      # Remote A2A Agent URLs
+      # planning_expert runs in Docker (same Docker network, use service name as hostname)
       - PLANNING_EXPERT_URL=http://planning_expert:8001
-      # repo_explorer runs on host machine (needs local file system access)
+      # repo_explorer runs on the Windows host machine (needs local file system access)
+      # host.docker.internal is supported natively by Docker Desktop on Windows
       - REPO_EXPLORER_URL=http://host.docker.internal:8002
     depends_on:
       - planning_expert
-    # Restart policy
     restart: unless-stopped
 
   planning_expert:
@@ -46,14 +39,14 @@ services:
     ports:
       - "8001:8001"
     env_file:
-      - context_pilot_app/.env
+      - .env
     volumes:
       - .:/app
-      - /dev/null:/app/context_pilot_app/.env
     environment:
       - PYTHONPATH=/app
       - PYTHONUNBUFFERED=1
       - RAG_STORAGE_DIR=/app/adk_data/rag_storage
+    # Override the default CMD to start the planning_expert A2A server instead
     command: >
       python -m uvicorn context_pilot.context_pilot_app.remote_a2a.planning_expert_agent.agent:app --host 0.0.0.0 --port 8001
     restart: unless-stopped

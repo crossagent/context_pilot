@@ -22,12 +22,15 @@ RUN pip install --no-cache-dir -r requirements.txt
 # NOTE: We DO NOT copy the application code here because it is massive (200GB+).
 # It will be mounted via docker-compose volumes.
 
-# Expose port 8000
-EXPOSE 8000
+# Expose ports
+# 8000: Main app (context_pilot serve)
+# 8001: Planning Expert A2A service
+EXPOSE 8000 8001
 
 # Set environment variables
 ENV PROJECT_ROOT=/app
 ENV PYTHONUNBUFFERED=1
 
-# Run the server
-CMD ["python", "deployment/server.py"]
+# Run the main app server
+# --host 0.0.0.0 is required in Docker to accept connections from outside the container
+CMD ["python", "context_pilot/main.py", "serve", "--host", "0.0.0.0", "--port", "8000"]
