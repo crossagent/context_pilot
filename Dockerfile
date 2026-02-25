@@ -16,11 +16,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy the dependency definitions
 COPY requirements.txt .
 
-# Install packages
+# Install dependencies
+# -e . (local editable install) is excluded from requirements.txt;
+# PYTHONPATH=/app in docker-compose makes the mounted code importable instead.
 RUN pip install --no-cache-dir -r requirements.txt
-
-# NOTE: We DO NOT copy the application code here because it is massive (200GB+).
-# It will be mounted via docker-compose volumes.
 
 # Expose ports
 # 8000: Main app (context_pilot serve)
