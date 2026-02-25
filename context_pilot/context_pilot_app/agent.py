@@ -9,8 +9,8 @@ from google.adk.agents.callback_context import CallbackContext
 from google.genai import types
 
 from .prompt import ROOT_AGENT_PROMPT
-from .repo_explorer_agent.agent import repo_explorer_agent
-# exp_recored_agent removed - functionality moved to planning_expert_agent
+# repo_explorer_agent accessed as remote sub_agent via A2A (runs on local machine)
+# exp_recorded_agent removed - functionality moved to planning_expert_agent
 from .tools import refine_bug_state
 # update_strategic_plan moved to planning_expert_agent
 from datetime import datetime
@@ -102,12 +102,20 @@ from google.adk.agents.remote_a2a_agent import RemoteA2aAgent, AGENT_CARD_WELL_K
 # Build tools list based on mode (Unified Mode)
 # ADK-Web mode: Include all backend tools
 
-# Remote Planning Expert Agent via A2A
+# Remote Planning Expert Agent via A2A (runs in Docker)
 planning_expert_url = os.getenv("PLANNING_EXPERT_URL", "http://localhost:8001")
 planning_expert_agent = RemoteA2aAgent(
     name="planning_expert_agent",
     description="Planning Expert Agent responsible for strategic planning, knowledge retrieval (RAG), and experience recording.",
-    agent_card=f"{planning_expert_url}/a2a/planning_expert_agent{AGENT_CARD_WELL_KNOWN_PATH}"
+    agent_card=f"{planning_expert_url}{AGENT_CARD_WELL_KNOWN_PATH}"
+)
+
+# Remote Repo Explorer Agent via A2A (runs on local machine, needs local file system access)
+repo_explorer_url = os.getenv("REPO_EXPLORER_URL", "http://localhost:8002")
+repo_explorer_agent = RemoteA2aAgent(
+    name="repo_explorer_agent",
+    description="Agent to explore the repository context and gather facts (file reading, search, git/svn, bash commands).",
+    agent_card=f"{repo_explorer_url}{AGENT_CARD_WELL_KNOWN_PATH}"
 )
 
 context_pilot_agent = LlmAgent(

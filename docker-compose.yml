@@ -31,5 +31,29 @@ services:
       - ADK_DATA_DIR=/app/adk_data
       # Ensure output is flushed immediately
       - PYTHONUNBUFFERED=1
+      # Remote A2A Agents URLs
+      # planning_expert runs in Docker (same network, use service name)
+      - PLANNING_EXPERT_URL=http://planning_expert:8001
+      # repo_explorer runs on host machine (needs local file system access)
+      - REPO_EXPLORER_URL=http://host.docker.internal:8002
+    depends_on:
+      - planning_expert
     # Restart policy
+    restart: unless-stopped
+
+  planning_expert:
+    build: .
+    ports:
+      - "8001:8001"
+    env_file:
+      - context_pilot_app/.env
+    volumes:
+      - .:/app
+      - /dev/null:/app/context_pilot_app/.env
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      - RAG_STORAGE_DIR=/app/adk_data/rag_storage
+    command: >
+      python -m uvicorn context_pilot.context_pilot_app.remote_a2a.planning_expert_agent.agent:app --host 0.0.0.0 --port 8001
     restart: unless-stopped

@@ -271,4 +271,11 @@ repo_explorer_agent = LlmAgent(
 
 root_agent = repo_explorer_agent
 
+# A2A app for remote access
+# Usage: uvicorn context_pilot.context_pilot_app.remote_a2a.repo_explorer_agent.agent:app --port 8002 --reload
+from google.adk.a2a.utils.agent_to_a2a import to_a2a
 
+app = to_a2a(
+    repo_explorer_agent,
+    port=8002,  # Default port, can be overridden via uvicorn CLI: --port <port>
+)

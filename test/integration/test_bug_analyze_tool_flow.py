@@ -6,7 +6,7 @@ def analyze_client(tmp_path):
     """
     Configure MockLlm and return client for Repo Explorer Agent.
     """
-    from context_pilot.context_pilot_app.repo_explorer_agent.agent import repo_explorer_agent
+    from context_pilot.context_pilot_app.remote_a2a.repo_explorer_agent.agent import repo_explorer_agent
     from context_pilot.testing import AdkApiTestClient # Loading from package export
     from unittest.mock import patch
 
