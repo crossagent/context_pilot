@@ -22,14 +22,14 @@ from context_pilot.testing import MockLlm
 @pytest.fixture
 def planning_expert_client(tmp_path):
     """
-    Client for testing planning_expert_agent's integrated capabilities.
+    Client for testing context_pilot_agent's integrated capabilities.
     Tests the agent directly (not via remote A2A) to avoid server dependency.
     """
-    from context_pilot.context_pilot_app.remote_a2a.planning_expert_agent.agent import planning_expert_agent
+    from context_pilot.context_pilot_app.agent import context_pilot_agent
     from context_pilot.testing import AdkApiTestClient
     
-    # Create client directly for planning_expert_agent
-    client = AdkApiTestClient(tmp_path, agent=planning_expert_agent, app_name="planning_expert")
+    # Create client directly for context_pilot_agent
+    client = AdkApiTestClient(tmp_path, agent=context_pilot_agent, app_name="context_pilot")
     return client
 
 
