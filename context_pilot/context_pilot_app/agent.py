@@ -24,7 +24,7 @@ from context_pilot.shared_libraries.config_utils import load_and_inject_config
 from .llama_rag_tool import retrieve_rag_documentation_tool, initialize_rag_tool
 from dotenv import load_dotenv
 
-load_dotenv(override=False)
+load_dotenv()
 
 
 logger = logging.getLogger(__name__)

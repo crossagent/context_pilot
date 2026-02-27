@@ -5,10 +5,6 @@ services:
       # Host:Container
       - "54089:8000"
 
-    # Load secrets from local .env file (API keys etc.)
-    env_file:
-      - .env
-
     volumes:
       # Mount project code into container
       - .:/app
@@ -19,7 +15,9 @@ services:
       # - "C:/path/to/your/project:/project_root"
 
     environment:
-      # These OVERRIDE .env values
+      # Inject Docker-specific routing URLs.
+      # Because .env is read by Python (via load_dotenv), we avoid defining these URLs in .env 
+      # so that these hardcoded environment overrides take precedence inside the container.
       - PROJECT_ROOT=/project_root
       - PYTHONPATH=/app
       - ADK_DATA_DIR=/app/adk_data
@@ -38,8 +36,6 @@ services:
     build: .
     ports:
       - "8001:8001"
-    env_file:
-      - .env
     volumes:
       - .:/app
     environment:

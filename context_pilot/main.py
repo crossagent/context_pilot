@@ -33,7 +33,7 @@ def serve(port, host, skills_dir, config, env_file, data_dir, knowledge_base_dir
     # 1. Load Environment Variables
     if os.path.exists(env_file):
         logger.info(f"Loading environment from {env_file}")
-        load_dotenv(env_file, override=False)
+        load_dotenv(env_file)
     
     # 2. Set Environment Variables
     
