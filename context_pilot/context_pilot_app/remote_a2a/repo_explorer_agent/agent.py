@@ -280,8 +280,22 @@ root_agent = repo_explorer_agent
 from google.adk.a2a.utils.agent_to_a2a import to_a2a
 from google.adk.runners import Runner
 from google.adk.apps.app import App
-from google.adk.sessions.in_memory_session_service import InMemorySessionService
-from google.adk.artifacts.in_memory_artifact_service import InMemoryArtifactService
+from google.adk.sessions.sqlite_session_service import SqliteSessionService
+from google.adk.artifacts.file_artifact_service import FileArtifactService
+from pathlib import Path
+
+# --- Configuration for Persistence ---
+# Define local data directory on the host machine
+data_dir = os.path.abspath(os.getenv("ADK_DATA_DIR", "adk_data"))
+repo_data_dir = os.path.join(data_dir, "repo_explorer")
+artifacts_dir = os.path.join(repo_data_dir, "artifacts")
+
+os.makedirs(repo_data_dir, exist_ok=True)
+os.makedirs(artifacts_dir, exist_ok=True)
+
+session_db_path = os.path.join(repo_data_dir, "sessions.db")
+session_service_uri = f"sqlite+aiosqlite:///{session_db_path}"
+artifact_service_uri = Path(artifacts_dir).resolve().as_uri()
 
 # Use an App instance to configure standard features like context caching.
 # This ensures the Runner manages caching correctly via the App-to-Runner mapping.
@@ -298,8 +312,8 @@ repo_app = App(
 # A manual Runner requires a session_service explicitly.
 runner = Runner(
     app=repo_app, 
-    session_service=InMemorySessionService(),
-    artifact_service=InMemoryArtifactService()
+    session_service=SqliteSessionService(db_path=session_db_path),
+    artifact_service=FileArtifactService(root_dir=artifacts_dir)
 )
 
 app = to_a2a(
