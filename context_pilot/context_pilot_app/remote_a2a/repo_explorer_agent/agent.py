@@ -188,7 +188,7 @@ class TokenLimitHandler:
             callback_context.state[StateKeys.CURRENT_AUTONOMOUS_COST] = callback_context.state.get(StateKeys.CURRENT_AUTONOMOUS_COST, 0.0) + step_cost
             
             # Log usage (no cost in INFO log if prefered, but keeping it for debug is usually fine. User request was about Prompt Output)
-            logger.info(f"Step Stats: {input_tokens} In, {cached_tokens} Cache, {output_tokens} Out.")
+            logger.info(f"Step Stats: {billed_input_tokens} In, {cached_tokens} Cache, {output_tokens} Out.")
         
         return None
 
@@ -279,18 +279,27 @@ root_agent = repo_explorer_agent
 # Usage: uvicorn context_pilot.context_pilot_app.remote_a2a.repo_explorer_agent.agent:app --port 8002 --reload
 from google.adk.a2a.utils.agent_to_a2a import to_a2a
 from google.adk.runners import Runner
-from google.adk.plugins.context_cache_plugin import ContextCachePlugin
+from google.adk.apps.app import App
+from google.adk.sessions.in_memory_session_service import InMemorySessionService
+from google.adk.artifacts.in_memory_artifact_service import InMemoryArtifactService
 
+# Use an App instance to configure standard features like context caching.
+# This ensures the Runner manages caching correctly via the App-to-Runner mapping.
+repo_app = App(
+    name="repo_explorer_app",
+    root_agent=repo_explorer_agent,
+    context_cache_config=ContextCacheConfig(
+        min_tokens=2048,
+        ttl_seconds=600,
+        cache_intervals=1,
+    )
+)
+
+# A manual Runner requires a session_service explicitly.
 runner = Runner(
-    plugins=[
-        ContextCachePlugin(
-            ContextCacheConfig(
-                min_tokens=2048,
-                ttl_seconds=600,
-                cache_intervals=1,
-            )
-        )
-    ]
+    app=repo_app, 
+    session_service=InMemorySessionService(),
+    artifact_service=InMemoryArtifactService()
 )
 
 app = to_a2a(
