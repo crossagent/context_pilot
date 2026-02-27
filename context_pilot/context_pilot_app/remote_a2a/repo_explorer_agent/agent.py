@@ -159,12 +159,16 @@ class TokenLimitHandler:
         # 3. Update Token Counts
         if llm_response.usage_metadata:
             u = llm_response.usage_metadata
-            input_tokens = u.prompt_token_count or 0
+            total_prompt_tokens = u.prompt_token_count or 0
             cached_tokens = u.cached_content_token_count or 0
             output_tokens = u.candidates_token_count or 0
             
+            # Gemini API prompt_token_count includes cached_tokens. 
+            # We must subtract it to get the currently billed non-cached tokens.
+            billed_input_tokens = max(0, total_prompt_tokens - cached_tokens)
+            
             # Update Totals
-            callback_context.state[StateKeys.TOTAL_INPUT_TOKENS] = callback_context.state.get(StateKeys.TOTAL_INPUT_TOKENS, 0) + input_tokens
+            callback_context.state[StateKeys.TOTAL_INPUT_TOKENS] = callback_context.state.get(StateKeys.TOTAL_INPUT_TOKENS, 0) + billed_input_tokens
             callback_context.state[StateKeys.TOTAL_CACHED_TOKENS] = callback_context.state.get(StateKeys.TOTAL_CACHED_TOKENS, 0) + cached_tokens
             callback_context.state[StateKeys.TOTAL_OUTPUT_TOKENS] = callback_context.state.get(StateKeys.TOTAL_OUTPUT_TOKENS, 0) + output_tokens
 
@@ -175,7 +179,7 @@ class TokenLimitHandler:
             price_out = callback_context.state.get("price_per_million_output_tokens", 1.50)
 
             step_cost = (
-                (input_tokens / 1_000_000 * price_in) +
+                (billed_input_tokens / 1_000_000 * price_in) +
                 (cached_tokens / 1_000_000 * price_cached) +
                 (output_tokens / 1_000_000 * price_out)
             )
@@ -274,9 +278,24 @@ root_agent = repo_explorer_agent
 # A2A app for remote access
 # Usage: uvicorn context_pilot.context_pilot_app.remote_a2a.repo_explorer_agent.agent:app --port 8002 --reload
 from google.adk.a2a.utils.agent_to_a2a import to_a2a
+from google.adk.runners import Runner
+from google.adk.plugins.context_cache_plugin import ContextCachePlugin
+
+runner = Runner(
+    plugins=[
+        ContextCachePlugin(
+            ContextCacheConfig(
+                min_tokens=2048,
+                ttl_seconds=600,
+                cache_intervals=1,
+            )
+        )
+    ]
+)
 
 app = to_a2a(
     repo_explorer_agent,
     host=os.getenv("A2A_HOST", "host.docker.internal"),
     port=8002,  # Default port, can be overridden via uvicorn CLI: --port <port>
+    runner=runner
 )
