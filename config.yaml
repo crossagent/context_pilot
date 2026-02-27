@@ -8,9 +8,8 @@ price_per_million_cached_tokens: 0.10
 price_per_million_output_tokens: 3.00
 
 # Repository Configuration
-# Defaulting to empty list to verify startup.
 repositories:
   - name: "context_pilot"
-    path: "../context_pilot"
+    path: "D:\\MyProject\\context_pilot"
     vcs: "git"
     description: "The Context Pilot framework source code."

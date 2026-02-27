@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     # Core ADK Framework
-    "google-adk>=1.20.0",
+    "google-adk[a2a]>=1.20.0",
     # Web Server (ADK needs these)
     "fastapi>=0.115.12",
     "uvicorn>=0.34.2",

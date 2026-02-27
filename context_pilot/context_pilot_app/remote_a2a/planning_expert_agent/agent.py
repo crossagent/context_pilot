@@ -103,5 +103,6 @@ from google.adk.a2a.utils.agent_to_a2a import to_a2a
 
 app = to_a2a(
     planning_expert_agent,
+    host=os.getenv("A2A_HOST", "localhost"),
     port=8001,  # Default port, can be overridden via uvicorn CLI: --port <port>
 )

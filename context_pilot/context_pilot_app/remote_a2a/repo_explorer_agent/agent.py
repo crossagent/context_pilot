@@ -277,5 +277,6 @@ from google.adk.a2a.utils.agent_to_a2a import to_a2a
 
 app = to_a2a(
     repo_explorer_agent,
+    host=os.getenv("A2A_HOST", "host.docker.internal"),
     port=8002,  # Default port, can be overridden via uvicorn CLI: --port <port>
 )

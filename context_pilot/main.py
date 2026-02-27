@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 
 # Import for RunConfig configuration
 from google.adk.agents.run_config import StreamingMode, RunConfig as ADKRunConfig
-from ag_ui.core import RunAgentInput
 
 # Configure Logging
 logging.basicConfig(level=logging.INFO)
@@ -34,7 +33,7 @@ def serve(port, host, skills_dir, config, env_file, data_dir, knowledge_base_dir
     # 1. Load Environment Variables
     if os.path.exists(env_file):
         logger.info(f"Loading environment from {env_file}")
-        load_dotenv(env_file)
+        load_dotenv(env_file, override=False)
     
     # 2. Set Environment Variables
     

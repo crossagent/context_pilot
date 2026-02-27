@@ -46,6 +46,7 @@ services:
       - PYTHONPATH=/app
       - PYTHONUNBUFFERED=1
       - RAG_STORAGE_DIR=/app/adk_data/rag_storage
+      - A2A_HOST=planning_expert
     # Override the default CMD to start the planning_expert A2A server instead
     command: >
       python -m uvicorn context_pilot.context_pilot_app.remote_a2a.planning_expert_agent.agent:app --host 0.0.0.0 --port 8001
