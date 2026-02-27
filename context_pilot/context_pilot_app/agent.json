@@ -1,0 +1,11 @@
+{
+  "name": "context_pilot_agent",
+  "description": "这是您的核心领航员 (Root Agent)。精通读取本地代码仓库，进行分析重构、战略规划以及 RAG 储备库的管理和调用。",
+  "defaultInputModes": [
+    "text/plain"
+  ],
+  "defaultOutputModes": [
+    "text/plain"
+  ],
+  "version": "1.0.0"
+}

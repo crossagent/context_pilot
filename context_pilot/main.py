@@ -103,7 +103,7 @@ def serve(port, host, skills_dir, config, env_file, data_dir, knowledge_base_dir
             session_service_uri=session_service_uri,
             artifact_service_uri=artifact_service_uri,
             web=True,
-            a2a=False
+            a2a=True
         )
         
         # 5. Start Server

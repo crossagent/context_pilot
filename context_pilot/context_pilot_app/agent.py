@@ -8,11 +8,18 @@ from google.adk.agents.llm_agent import LlmAgent
 from google.adk.agents.callback_context import CallbackContext
 from google.genai import types
 
-from .prompt import ROOT_AGENT_PROMPT
+from .prompt import PLANNING_EXPERT_PROMPT
 # repo_explorer_agent accessed as remote sub_agent via A2A (runs on local machine)
-# exp_recorded_agent removed - functionality moved to planning_expert_agent
-from .tools import refine_bug_state
-# update_strategic_plan moved to planning_expert_agent
+# Tools now loaded from the dedicated tools folder
+from .tools import (
+    refine_bug_state,
+    update_strategic_plan,
+    retrieve_rag_documentation_tool,
+    initialize_rag_tool,
+    extract_experience_tool,
+    save_experience_tool
+)
+from google.adk.tools import FunctionTool
 from datetime import datetime
 # from .skill_library.extensions import root_skill_registry, report_skill_registry, analyze_skill_registry
 from context_pilot.skill_library.extensions import root_skill_registry, report_skill_registry, analyze_skill_registry
@@ -20,8 +27,7 @@ from context_pilot.shared_libraries import constants
 from context_pilot.shared_libraries.state_keys import StateKeys
 from context_pilot.shared_libraries.config_utils import load_and_inject_config
 
-# RAG Imports
-from .llama_rag_tool import retrieve_rag_documentation_tool, initialize_rag_tool
+# Shared Configuration
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -54,7 +60,21 @@ async def before_agent_callback(callback_context: CallbackContext) -> Optional[t
         current_time = datetime.now(constants.USER_TIMEZONE)
         state[StateKeys.CUR_DATE_TIME] = current_time.strftime("%Y年%m月%d日 %H:%M:%S")
 
-    # Initialize default values for required prompt keys to prevent KeyError
+    # Initialize experience recording state keys
+    exp_keys_to_init = [
+        StateKeys.EXP_INTENT,
+        StateKeys.EXP_PROBLEM_CONTEXT,
+        StateKeys.EXP_ROOT_CAUSE,
+        StateKeys.EXP_SOLUTION_STEPS,
+        StateKeys.EXP_EVIDENCE,
+        StateKeys.EXP_TAGS,
+        StateKeys.EXP_CONTRIBUTOR
+    ]
+    
+    for key in exp_keys_to_init:
+        if key not in state:
+            state[key] = None
+
     # Initialize default values for required prompt keys to prevent KeyError
     defaults = {
         StateKeys.STRATEGIC_PLAN: "暂无计划"
@@ -86,29 +106,28 @@ async def before_agent_callback(callback_context: CallbackContext) -> Optional[t
         if state.get(key) is None:
             state[key] = value
 
-    # RAG initialization moved to planning_expert_agent
-    # Main agent now delegates RAG operations via A2A
+    # --- RAG Initialization ---
+    rag_storage_path = os.getenv("RAG_STORAGE_DIR")
+    if not rag_storage_path:
+        # Default: ProjectRoot/adk_data/rag_storage
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        rag_storage_path = os.path.join(base_dir, "adk_data", "rag_storage")
+    
+    try:
+        initialize_rag_tool(rag_storage_path)
+    except Exception as e:
+        logger.warning(f"RAG Initialization Warning: {e}")
+        # Not returning a system warning part here to avoid blocking UI immediately,
+        # but could optionally append one.
 
     return None
 
 
-# --- RAG Tools moved to planning_expert_agent ---
-# planning_expert_agent accessed as remote sub_agent via A2A
-
-from google.adk.tools import FunctionTool
 from google.adk.agents.remote_a2a_agent import RemoteA2aAgent, AGENT_CARD_WELL_KNOWN_PATH
 
 # --- 4. Instantiate Root Agent (Global) ---
 # Build tools list based on mode (Unified Mode)
 # ADK-Web mode: Include all backend tools
-
-# Remote Planning Expert Agent via A2A (runs in Docker)
-planning_expert_url = os.getenv("PLANNING_EXPERT_URL", "http://localhost:8001")
-planning_expert_agent = RemoteA2aAgent(
-    name="planning_expert_agent",
-    description="Planning Expert Agent responsible for strategic planning, knowledge retrieval (RAG), and experience recording.",
-    agent_card=f"{planning_expert_url}{AGENT_CARD_WELL_KNOWN_PATH}"
-)
 
 # Remote Repo Explorer Agent via A2A (runs on local machine, needs local file system access)
 repo_explorer_url = os.getenv("REPO_EXPLORER_URL", "http://localhost:8002")
@@ -121,14 +140,25 @@ repo_explorer_agent = RemoteA2aAgent(
 context_pilot_agent = LlmAgent(
     name="context_pilot_agent",
     model=constants.MODEL,
-    instruction=ROOT_AGENT_PROMPT,
+    instruction=PLANNING_EXPERT_PROMPT,
     sub_agents=[
         repo_explorer_agent,
-        planning_expert_agent,  # Remote A2A agent as sub_agent
     ],
     tools=[
-        #FunctionTool(refine_bug_state),
+        # Strategic Planning
+        FunctionTool(update_strategic_plan),
+        
+        # Knowledge Retrieval (RAG)
+        FunctionTool(retrieve_rag_documentation_tool),
+        
+        # Experience Recording
+        extract_experience_tool,
+        save_experience_tool,
+        
+        # Skill Registries
         root_skill_registry,
+        report_skill_registry,
+        analyze_skill_registry
     ],
     before_agent_callback=before_agent_callback
 )

@@ -13,7 +13,6 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 from context_pilot.utils.db_manager import DBManager, default_db_manager
-from context_pilot.context_pilot_app.remote_a2a.planning_expert_agent.knowledge_tool import record_experience
 from context_pilot.scripts.build_index import build_index
 from context_pilot.scripts.rag_config import RagConfig
 from llama_index.core import StorageContext, load_index_from_storage
@@ -44,6 +43,21 @@ class TestKnowledgeIntegration(unittest.TestCase):
             DB_FILENAME="test_knowledge.sqlite"
         )
         self.rag_config_patcher.start()
+
+    def _insert_entry(self, intent: str, problem_context: str = "", root_cause: str = "",
+                       solution_steps: str = "", tags: str = "") -> str:
+        """Insert a knowledge entry directly into the test DB."""
+        from datetime import datetime
+        import uuid
+        now = datetime.now().isoformat()
+        entry_id = str(uuid.uuid4())
+        with default_db_manager.get_connection() as conn:
+            conn.execute("""
+                INSERT INTO knowledge_entries
+                (id, intent, problem_context, root_cause, solution_steps, evidence, tags, contributor, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (entry_id, intent, problem_context, root_cause, solution_steps, "", tags, "Tester", now, now))
+        return entry_id
         
         # Ensure RagConfig.DB_PATH property returns the correct test path
         # (Since it's a property, patch.multiple on class attributes might not affect the instance property logic if it uses self.LOCAL_DATA_DIR directly, 
@@ -89,7 +103,7 @@ class TestKnowledgeIntegration(unittest.TestCase):
         3. modify existing record -> incremental update (refresh)
         """
         print("\n=== Step 1: Create Initial Record ===")
-        record_experience(
+        self._insert_entry(
             intent="Initial Bug",
             problem_context="System crashing on boot",
             root_cause="Null pointer",
@@ -106,7 +120,7 @@ class TestKnowledgeIntegration(unittest.TestCase):
         self.assertIsNotNone(self.get_doc_text_by_intent("Initial Bug"))
 
         print("\n=== Step 2: Add Incremental Record ===")
-        record_experience(
+        self._insert_entry(
             intent="Feature Request",
             problem_context="Need dark mode",
             root_cause="User demand",

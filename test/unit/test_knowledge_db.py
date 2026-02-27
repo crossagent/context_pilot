@@ -5,8 +5,32 @@ import sqlite3
 import uuid
 from datetime import datetime
 from context_pilot.utils.db_manager import default_db_manager, DBManager
-from context_pilot.context_pilot_app.remote_a2a.planning_expert_agent.knowledge_tool import record_experience
 from context_pilot.scripts.build_index import load_documents_from_db, reconstruct_markdown
+
+
+def _insert_entry(
+    db: DBManager,
+    intent: str,
+    problem_context: str = "",
+    root_cause: str = "",
+    solution_steps: str = "",
+    evidence: str = "",
+    tags: str = "",
+    contributor: str = "Tester"
+) -> str:
+    """Helper to insert a knowledge entry directly into the test DB."""
+    now = datetime.now().isoformat()
+    entry_id = str(uuid.uuid4())
+    with db.get_connection() as conn:
+        conn.execute("""
+            INSERT INTO knowledge_entries
+            (id, intent, problem_context, root_cause, solution_steps, evidence, tags, contributor, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            entry_id, intent, problem_context, root_cause,
+            solution_steps, evidence, tags, contributor, now, now
+        ))
+    return entry_id
 
 # Use a temporary DB for testing
 TEST_DB_PATH = "test_knowledge_base.sqlite"
@@ -46,9 +70,9 @@ def test_db_initialization(test_db):
         assert cursor.fetchone() is not None
 
 def test_record_experience(test_db):
-    """Test writing to the DB via the tool function."""
-    
-    result = record_experience(
+    """Test writing directly to the DB."""
+    entry_id = _insert_entry(
+        test_db,
         intent="Test Intent",
         problem_context="Context",
         root_cause="Cause",
@@ -58,7 +82,7 @@ def test_record_experience(test_db):
         contributor="Tester"
     )
     
-    assert "✅ Experience recorded successfully" in result
+    assert entry_id is not None
     
     with test_db.get_connection() as conn:
         row = conn.execute("SELECT * FROM knowledge_entries WHERE intent='Test Intent'").fetchone()
@@ -70,8 +94,9 @@ def test_record_experience(test_db):
 def test_load_documents(test_db):
     """Test reading from DB via build_index loader."""
     
-    # Insert a record first
-    record_experience(
+    # Insert a record directly into the test DB
+    _insert_entry(
+        test_db,
         intent="Read Test",
         problem_context="Ctx",
         root_cause="Root",

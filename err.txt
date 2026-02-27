@@ -1,0 +1,108 @@
+>>> [conftest] Set GOOGLE_GENAI_MODEL=mock/pytest (Default)
+============================= test session starts =============================
+platform win32 -- Python 3.13.2, pytest-9.0.2, pluggy-1.6.0 -- D:\MyProject\context_pilot\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\MyProject\context_pilot
+configfile: pyproject.toml
+plugins: anyio-4.12.0, asyncio-1.3.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collecting ... collected 5 items
+
+test/unit/test_knowledge_db.py::test_db_initialization PASSED            [ 20%]
+test/unit/test_knowledge_db.py::test_record_experience PASSED            [ 40%]
+test/unit/test_knowledge_db.py::test_load_documents PASSED               [ 60%]
+test/unit/test_knowledge_integration.py::TestKnowledgeIntegration::test_full_integration_lifecycle PASSED [ 80%]
+test/unit/test_rag_tool_live.py::test_retrieve_rag_documentation_live PASSED [100%]
+
+============================== warnings summary ===============================
+.venv\Lib\site-packages\httplib2\auth.py:19
+  D:\MyProject\context_pilot\.venv\Lib\site-packages\httplib2\auth.py:19: DeprecationWarning: 'setName' deprecated - use 'set_name'
+    token = pp.Word(tchar).setName("token")
+
+.venv\Lib\site-packages\httplib2\auth.py:20
+  D:\MyProject\context_pilot\.venv\Lib\site-packages\httplib2\auth.py:20: DeprecationWarning: 'leaveWhitespace' deprecated - use 'leave_whitespace'
+    token68 = pp.Combine(pp.Word("-._~+/" + pp.nums + pp.alphas) + pp.Optional(pp.Word("=").leaveWhitespace())).setName(
+
+.venv\Lib\site-packages\httplib2\auth.py:20
+  D:\MyProject\context_pilot\.venv\Lib\site-packages\httplib2\auth.py:20: DeprecationWarning: 'setName' deprecated - use 'set_name'
+    token68 = pp.Combine(pp.Word("-._~+/" + pp.nums + pp.alphas) + pp.Optional(pp.Word("=").leaveWhitespace())).setName(
+
+.venv\Lib\site-packages\httplib2\auth.py:24
+  D:\MyProject\context_pilot\.venv\Lib\site-packages\httplib2\auth.py:24: DeprecationWarning: 'setName' deprecated - use 'set_name'
+    quoted_string = pp.dblQuotedString.copy().setName("quoted-string").setParseAction(unquote)
+
+.venv\Lib\site-packages\httplib2\auth.py:24
+  D:\MyProject\context_pilot\.venv\Lib\site-packages\httplib2\auth.py:24: DeprecationWarning: 'setParseAction' deprecated - use 'set_parse_action'
+    quoted_string = pp.dblQuotedString.copy().setName("quoted-string").setParseAction(unquote)
+
+.venv\Lib\site-packages\httplib2\auth.py:25
+  D:\MyProject\context_pilot\.venv\Lib\site-packages\httplib2\auth.py:25: DeprecationWarning: 'setName' deprecated - use 'set_name'
+    auth_param_name = token.copy().setName("auth-param-name").addParseAction(downcaseTokens)
+
+.venv\Lib\site-packages\httplib2\auth.py:25
+  D:\MyProject\context_pilot\.venv\Lib\site-packages\httplib2\auth.py:25: DeprecationWarning: 'addParseAction' deprecated - use 'add_parse_action'
+    auth_param_name = token.copy().setName("auth-param-name").addParseAction(downcaseTokens)
+
+.venv\Lib\site-packages\httplib2\auth.py:27
+  D:\MyProject\context_pilot\.venv\Lib\site-packages\httplib2\auth.py:27: DeprecationWarning: 'delimitedList' deprecated - use 'DelimitedList'
+    params = pp.Dict(pp.delimitedList(pp.Group(auth_param)))
+
+.venv\Lib\site-packages\httplib2\auth.py:33
+  D:\MyProject\context_pilot\.venv\Lib\site-packages\httplib2\auth.py:33: DeprecationWarning: 'delimitedList' deprecated - use 'DelimitedList'
+    www_authenticate = pp.delimitedList(pp.Group(challenge))
+
+.venv\Lib\site-packages\llama_index\llms\gemini\base.py:21
+  D:\MyProject\context_pilot\.venv\Lib\site-packages\llama_index\llms\gemini\base.py:21: FutureWarning: 
+  
+  All support for the `google.generativeai` package has ended. It will no longer be receiving 
+  updates or bug fixes. Please switch to the `google.genai` package as soon as possible.
+  See README for more details:
+  
+  https://github.com/google-gemini/deprecated-generative-ai-python/blob/main/README.md
+  
+    import google.generativeai as genai
+
+context_pilot\context_pilot_app\agent.py:134
+  D:\MyProject\context_pilot\context_pilot\context_pilot_app\agent.py:134: UserWarning: [EXPERIMENTAL] RemoteA2aAgent: ADK Implementation for A2A support (A2aAgentExecutor, RemoteA2aAgent and corresponding supporting components etc.) is in experimental mode and is subjected to breaking changes. A2A protocol and SDK arethemselves not experimental. Once it's stable enough the experimental mode will be removed. Your feedback is welcome.
+    repo_explorer_agent = RemoteA2aAgent(
+
+context_pilot\context_pilot_app\app.py:28
+  D:\MyProject\context_pilot\context_pilot\context_pilot_app\app.py:28: UserWarning: [EXPERIMENTAL] ContextCacheConfig: This feature is experimental and may change or be removed in future versions without notice. It may introduce breaking changes at any time.
+    context_cache_config=ContextCacheConfig(
+
+context_pilot\context_pilot_app\app.py:33
+  D:\MyProject\context_pilot\context_pilot\context_pilot_app\app.py:33: UserWarning: [EXPERIMENTAL] EventsCompactionConfig: This feature is experimental and may change or be removed in future versions without notice. It may introduce breaking changes at any time.
+    events_compaction_config=EventsCompactionConfig(
+
+context_pilot\context_pilot_app\app.py:37
+  D:\MyProject\context_pilot\context_pilot\context_pilot_app\app.py:37: UserWarning: [EXPERIMENTAL] ResumabilityConfig: This feature is experimental and may change or be removed in future versions without notice. It may introduce breaking changes at any time.
+    resumability_config=ResumabilityConfig(
+
+test\unit\test_rag_tool_live.py:20
+  D:\MyProject\context_pilot\test\unit\test_rag_tool_live.py:20: PytestUnknownMarkWarning: Unknown pytest.mark.live - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.live
+
+test/unit/test_knowledge_integration.py::TestKnowledgeIntegration::test_full_integration_lifecycle
+test/unit/test_knowledge_integration.py::TestKnowledgeIntegration::test_full_integration_lifecycle
+test/unit/test_knowledge_integration.py::TestKnowledgeIntegration::test_full_integration_lifecycle
+  D:\MyProject\context_pilot\context_pilot\scripts\build_index.py:137: DeprecationWarning: Call to deprecated class Gemini. (Should use `llama-index-llms-google-genai` instead, using Google's latest unified SDK. See: https://docs.llamaindex.ai/en/stable/examples/llm/google_genai/This package will no longer be supported after version 0.6.2) -- Deprecated since version 0.6.2.
+    Settings.llm = Gemini(model="models/gemini-3-flash-preview", api_key=api_key)
+
+test/unit/test_knowledge_integration.py::TestKnowledgeIntegration::test_full_integration_lifecycle
+test/unit/test_knowledge_integration.py::TestKnowledgeIntegration::test_full_integration_lifecycle
+test/unit/test_knowledge_integration.py::TestKnowledgeIntegration::test_full_integration_lifecycle
+  D:\MyProject\context_pilot\context_pilot\scripts\build_index.py:138: DeprecationWarning: Call to deprecated class GeminiEmbedding. (Should use `llama-index-embeddings-google-genai` instead, using Google's latest unified SDK. See: https://docs.llamaindex.ai/en/stable/examples/embeddings/google_genai/Support for this package will be discontinued as of v0.4.2) -- Deprecated since version 0.4.2.
+    Settings.embed_model = GeminiEmbedding(
+
+test/unit/test_rag_tool_live.py::test_retrieve_rag_documentation_live
+  D:\MyProject\context_pilot\context_pilot\context_pilot_app\tools\llama_rag_tool.py:134: DeprecationWarning: Call to deprecated class Gemini. (Should use `llama-index-llms-google-genai` instead, using Google's latest unified SDK. See: https://docs.llamaindex.ai/en/stable/examples/llm/google_genai/This package will no longer be supported after version 0.6.2) -- Deprecated since version 0.6.2.
+    Settings.llm = Gemini(
+
+test/unit/test_rag_tool_live.py::test_retrieve_rag_documentation_live
+  D:\MyProject\context_pilot\context_pilot\context_pilot_app\tools\llama_rag_tool.py:140: DeprecationWarning: Call to deprecated class GeminiEmbedding. (Should use `llama-index-embeddings-google-genai` instead, using Google's latest unified SDK. See: https://docs.llamaindex.ai/en/stable/examples/embeddings/google_genai/Support for this package will be discontinued as of v0.4.2) -- Deprecated since version 0.4.2.
+    Settings.embed_model = GeminiEmbedding(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 5 passed, 23 warnings in 15.38s =======================
+
+STDERR:
