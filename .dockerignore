@@ -24,3 +24,5 @@ artifacts/
 
 # Huge Directories
 adk_data/
+
+.env
