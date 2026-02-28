@@ -47,10 +47,10 @@ def extract_experience(
     tool_context.state[StateKeys.EXP_CONTRIBUTOR] = contributor
     
     return (
-        f"✅ Experience extracted and staged for review.\n"
+        f"✅ Experience extracted and staged automatically.\n"
         f"Intent: {intent}\n"
         f"Tags: {tags}\n\n"
-        f"Please review the details. If correct, proceed to save."
+        f"Please proceed to call save_experience_tool immediately to persist this experience."
     )
 
 def save_experience(tool_context: ToolContext, entry_id: str = "") -> str:
