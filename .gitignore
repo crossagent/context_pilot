@@ -17,6 +17,7 @@ eval/test_data/
 
 # Environment
 .venv/
+config.yaml
 
 git_hooks/
 
