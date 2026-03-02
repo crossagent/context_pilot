@@ -316,9 +316,42 @@ runner = Runner(
     artifact_service=FileArtifactService(root_dir=artifacts_dir)
 )
 
+# Build AgentCard at runtime so that the RPC url reflects A2A_HOST env var.
+# When the main agent runs in Docker, A2A_HOST=host.docker.internal allows
+# Docker containers to reach this Windows-hosted provider. Streaming is
+# declared here so Consumer knows to use SSE instead of polling.
+from a2a.types import AgentCapabilities, AgentCard, AgentSkill
+
+_a2a_host = os.getenv("A2A_HOST", "host.docker.internal")
+_a2a_port = 8002
+_agent_card = AgentCard(
+    name=repo_explorer_agent.name,
+    description=(
+        "Agent to explore the repository context and gather facts "
+        "(file reading, search, git/svn, bash commands)."
+    ),
+    url=f"http://{_a2a_host}:{_a2a_port}/",
+    version="1.0.0",
+    capabilities=AgentCapabilities(streaming=True),
+    default_input_modes=["text/plain"],
+    default_output_modes=["text/plain"],
+    skills=[
+        AgentSkill(
+            id="repo_explorer_agent",
+            name="repo_explorer",
+            description=(
+                "Explores repository files, runs grep/bash, reads git/svn "
+                "history to gather code context for bug analysis."
+            ),
+            tags=["llm", "code", "repository"],
+        )
+    ],
+)
+
 app = to_a2a(
     repo_explorer_agent,
-    host=os.getenv("A2A_HOST", "host.docker.internal"),
-    port=8002,  # Default port, can be overridden via uvicorn CLI: --port <port>
-    runner=runner
+    host=_a2a_host,
+    port=_a2a_port,
+    runner=runner,
+    agent_card=_agent_card,
 )
