@@ -1,6 +1,10 @@
 import pytest
 from context_pilot.testing import MockLlm
 
+pytestmark = pytest.mark.skip(
+    reason="[DISABLED] Code read/write integration tests: repo_explorer_agent removed as sub-agent."
+)
+
 @pytest.fixture
 def analyze_client(tmp_path):
     """

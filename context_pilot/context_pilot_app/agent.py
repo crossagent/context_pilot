@@ -123,43 +123,37 @@ async def before_agent_callback(callback_context: CallbackContext) -> Optional[t
     return None
 
 
-from google.adk.agents.remote_a2a_agent import RemoteA2aAgent, AGENT_CARD_WELL_KNOWN_PATH
-from a2a.client.client import ClientConfig as A2AClientConfig
-from a2a.client.client_factory import ClientFactory as A2AClientFactory
-from a2a.types import TransportProtocol as A2ATransport
+# [DISABLED] repo_explorer_agent temporarily removed as sub-agent.
+# The repo_explorer A2A server (port 8002) is now a standalone service;
+# context_pilot_agent no longer delegates to it directly.
+# To re-enable: uncomment the block below and add repo_explorer_agent to sub_agents.
+#
+# from google.adk.agents.remote_a2a_agent import RemoteA2aAgent, AGENT_CARD_WELL_KNOWN_PATH
+# from a2a.client.client import ClientConfig as A2AClientConfig
+# from a2a.client.client_factory import ClientFactory as A2AClientFactory
+# from a2a.types import TransportProtocol as A2ATransport
+#
+# repo_explorer_url = os.getenv("REPO_EXPLORER_URL", "http://localhost:8002")
+# _streaming_client_factory = A2AClientFactory(
+#     config=A2AClientConfig(
+#         streaming=True,
+#         polling=False,
+#         supported_transports=[A2ATransport.jsonrpc],
+#     )
+# )
+# repo_explorer_agent = RemoteA2aAgent(
+#     name="repo_explorer_agent",
+#     description="Agent to explore the repository context and gather facts.",
+#     agent_card=f"{repo_explorer_url}{AGENT_CARD_WELL_KNOWN_PATH}",
+#     a2a_client_factory=_streaming_client_factory,
+# )
 
 # --- 4. Instantiate Root Agent (Global) ---
-# Build tools list based on mode (Unified Mode)
-# ADK-Web mode: Include all backend tools
-
-# Remote Repo Explorer Agent via A2A (runs on local machine, needs local file system access)
-repo_explorer_url = os.getenv("REPO_EXPLORER_URL", "http://localhost:8002")
-
-# Use a streaming client factory so intermediate events (tool calls, responses)
-# are streamed back from the Provider in real-time via SSE, rather than waiting
-# for the final answer. The default RemoteA2aAgent uses streaming=False.
-_streaming_client_factory = A2AClientFactory(
-    config=A2AClientConfig(
-        streaming=True,
-        polling=False,
-        supported_transports=[A2ATransport.jsonrpc],
-    )
-)
-
-repo_explorer_agent = RemoteA2aAgent(
-    name="repo_explorer_agent",
-    description="Agent to explore the repository context and gather facts (file reading, search, git/svn, bash commands).",
-    agent_card=f"{repo_explorer_url}{AGENT_CARD_WELL_KNOWN_PATH}",
-    a2a_client_factory=_streaming_client_factory,
-)
-
 context_pilot_agent = LlmAgent(
     name="context_pilot_agent",
     model=constants.MODEL,
     instruction=PLANNING_EXPERT_PROMPT,
-    sub_agents=[
-        repo_explorer_agent,
-    ],
+    sub_agents=[],  # repo_explorer_agent removed — see [DISABLED] block above
     tools=[
         # Strategic Planning
         FunctionTool(update_strategic_plan),
