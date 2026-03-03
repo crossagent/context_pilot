@@ -11,7 +11,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     git \
     ripgrep \
+    tzdata \
     && rm -rf /var/lib/apt/lists/*
+
+ENV TZ=Asia/Shanghai
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Copy the dependency definitions
 COPY requirements.txt .
@@ -35,6 +39,6 @@ EXPOSE 8000 8001
 ENV PROJECT_ROOT=/app
 ENV PYTHONUNBUFFERED=1
 
-# Run the main app server
-# --host 0.0.0.0 is required in Docker to accept connections from outside the container
-CMD ["python", "context_pilot/main.py", "serve", "--host", "0.0.0.0", "--port", "8000"]
+# Run entrypoint script
+RUN chmod +x entrypoint.sh
+CMD ["./entrypoint.sh"]

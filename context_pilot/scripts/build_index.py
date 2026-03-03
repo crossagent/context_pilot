@@ -90,7 +90,23 @@ def load_documents_from_db() -> list[Document]:
 def build_index(mode: str = "auto", force: bool = False):
     """
     Builds/Updates the vector index from SQLite DB.
+    Safeguarded by a file lock to prevent concurrent build corruption.
     """
+    import os
+    from filelock import FileLock, Timeout
+    
+    os.makedirs(RagConfig.STORAGE_DIR, exist_ok=True)
+    lock_path = os.path.join(RagConfig.STORAGE_DIR, "index_build.lock")
+    lock = FileLock(lock_path, timeout=30)
+    
+    try:
+        with lock:
+            _do_build_index(mode, force)
+    except Timeout:
+        logger.warning(f"Another index build is currently holding the lock ({lock_path}). Skipping this update.")
+
+def _do_build_index(mode: str = "auto", force: bool = False):
+    """Inner core logic for building the index."""
     RagConfig.validate()
     
     # DB path check is handled by db_manager or implicit in load

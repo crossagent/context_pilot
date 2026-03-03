@@ -22,6 +22,7 @@ services:
       - PYTHONPATH=/app
       - ADK_DATA_DIR=/app/adk_data
       - PYTHONUNBUFFERED=1
+      - TZ=Asia/Shanghai
       # Remote A2A Agent URLs
       # planning_expert runs in Docker (same Docker network, use service name as hostname)
       - PLANNING_EXPERT_URL=http://planning_expert:8001

@@ -106,6 +106,14 @@ def serve(port, host, skills_dir, config, env_file, data_dir, knowledge_base_dir
             a2a=True
         )
         
+        # Include our KB Admin router
+        try:
+            from context_pilot.api_routes import router as kb_admin_router
+            app.include_router(kb_admin_router)
+            logger.info("Successfully mounted Knowledge Base Admin Dashboard at /dashboard")
+        except Exception as e:
+            logger.error(f"Failed to mount KB Admin Dashboard: {e}")
+        
         # 5. Start Server
         logger.info(f"Starting Server on {host}:{port}")
         # Note: When using click, sys.exit might be handled differently, but run() blocks.
