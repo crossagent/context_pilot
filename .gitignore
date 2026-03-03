@@ -11,6 +11,7 @@ __pycache__/
 
 # Database & Artifacts
 adk_data/
+data/knowledge_base.sqlite
 
 # Test Data
 eval/test_data/
