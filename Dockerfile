@@ -11,7 +11,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     git \
     ripgrep \
-    tzdata \
     && rm -rf /var/lib/apt/lists/*
 
 ENV TZ=Asia/Shanghai
