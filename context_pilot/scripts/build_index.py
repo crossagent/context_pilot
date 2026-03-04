@@ -96,7 +96,8 @@ def build_index(mode: str = "auto", force: bool = False):
     from filelock import FileLock, Timeout
     
     os.makedirs(RagConfig.STORAGE_DIR, exist_ok=True)
-    lock_path = os.path.join(RagConfig.STORAGE_DIR, "index_build.lock")
+    # Use parent directory for lock file so it's not deleted during full rebuild
+    lock_path = os.path.join(os.path.dirname(RagConfig.STORAGE_DIR), "index_build.lock")
     lock = FileLock(lock_path, timeout=30)
     
     try:
