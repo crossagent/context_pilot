@@ -29,4 +29,21 @@ services:
       # repo_explorer runs on the Windows host machine (needs local file system access)
       # host.docker.internal is supported natively by Docker Desktop on Windows
       - REPO_EXPLORER_URL=http://host.docker.internal:8002
+      # knowledge_expert runs in Docker (same network)
+      - KNOWLEDGE_EXPERT_URL=http://knowledge_expert:8003
+    restart: unless-stopped
+
+  knowledge_expert:
+    build: .
+    ports:
+      - "54090:8003"
+    volumes:
+      - .:/app
+    environment:
+      - PROJECT_ROOT=/project_root
+      - PYTHONPATH=/app
+      - ADK_DATA_DIR=/app/adk_data
+      - PYTHONUNBUFFERED=1
+      - TZ=Asia/Shanghai
+    command: [ "uvicorn", "context_pilot.context_pilot_app.remote_a2a.knowledge_agent.agent:app", "--host", "0.0.0.0", "--port", "8003" ]
     restart: unless-stopped

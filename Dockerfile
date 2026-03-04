@@ -32,7 +32,8 @@ RUN pip install -e .
 # Expose ports
 # 8000: Main app (context_pilot serve)
 # 8001: Planning Expert A2A service
-EXPOSE 8000 8001
+# 8003: Knowledge Expert A2A service
+EXPOSE 8000 8001 8003
 
 # Set environment variables
 ENV PROJECT_ROOT=/app

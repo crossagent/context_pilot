@@ -149,26 +149,35 @@ async def before_agent_callback(callback_context: CallbackContext) -> Optional[t
 # )
 
 # --- 4. Instantiate Root Agent (Global) ---
+# [NEW] knowledge_agent accessed as remote sub_agent via A2A (runs on Docker container)
+from google.adk.agents.remote_a2a_agent import RemoteA2aAgent, AGENT_CARD_WELL_KNOWN_PATH
+from a2a.client.client import ClientConfig as A2AClientConfig
+from a2a.client.client_factory import ClientFactory as A2AClientFactory
+from a2a.types import TransportProtocol as A2ATransport
+
+knowledge_expert_url = os.getenv("KNOWLEDGE_EXPERT_URL", "http://localhost:54090")
+_streaming_client_factory = A2AClientFactory(
+    config=A2AClientConfig(
+        streaming=True,
+        polling=False,
+        supported_transports=[A2ATransport.jsonrpc],
+    )
+)
+knowledge_expert_agent = RemoteA2aAgent(
+    name="knowledge_agent",
+    description="Agent responsible for searching the knowledge base (RAG), tracking experiences, and managing knowledge.",
+    agent_card=f"{knowledge_expert_url}{AGENT_CARD_WELL_KNOWN_PATH}",
+    a2a_client_factory=_streaming_client_factory,
+)
+
 context_pilot_agent = LlmAgent(
     name="context_pilot_agent",
     model=constants.MODEL,
     instruction=PLANNING_EXPERT_PROMPT,
-    sub_agents=[],  # repo_explorer_agent removed — see [DISABLED] block above
+    sub_agents=[knowledge_expert_agent],  
     tools=[
         # Strategic Planning
-        FunctionTool(update_strategic_plan),
-        
-        # Knowledge Retrieval (RAG)
-        FunctionTool(retrieve_rag_documentation_tool),
-        
-        # Experience Recording
-        extract_experience_tool,
-        save_experience_tool,
-        
-        # Skill Registries
-        root_skill_registry,
-        report_skill_registry,
-        analyze_skill_registry
+        FunctionTool(update_strategic_plan)
     ],
     before_agent_callback=before_agent_callback
 )
