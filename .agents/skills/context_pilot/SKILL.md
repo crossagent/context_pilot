@@ -1,9 +1,8 @@
----
 name: context-pilot
 description: |
-  Context Pilot 是业务知识库与内部开发知识库的管理 Agent。
+  Context Pilot - Knowledge Expert 是业务知识库与内部开发知识库的管理专家。
   知识库收集的内容：实际业务流程、配置方法与配置文件位置、跨部门协作所需的背景知识。
-  目标：填补跨部门沟通中的信息断层，避免重复踩坑。
+  目标：通过独立的远程 Knowledge Agent 实现知识的自动沉淀与高效检索，填补跨部门沟通中的信息断层。
 
   【必须调用此 Skill 的场景】
   - 编写代码时涉及业务逻辑理解：先查询知识库，确认业务理解是否正确
@@ -19,11 +18,11 @@ description: |
   调用方式：运行 scripts/call_a2a.py 脚本与 Context Pilot Agent 交互。
 ---
 
-# Context Pilot Agent
+# Context Pilot - Knowledge Expert
 
-## 什么是 Context Pilot
+## 什么是 Knowledge Expert
 
-Context Pilot 是运行在本地的**业务知识库 & 内部开发知识库**管理 Agent。
+Knowledge Expert 是运行在 Docker 中的**业务知识库 & 内部开发知识库**管理专家。
 
 **知识库收录范围：**
 - 实际业务流程（下单流程、支付流程、审批链路等）
@@ -64,10 +63,10 @@ python .agents/skills/context_pilot/scripts/call_a2a.py \
   --query "继续分析..." \
   --session-id <session_id_from_previous_run>
 
-# 自定义服务器地址（默认 localhost:54089）
+# 自定义服务器地址（默认 localhost:54090, 对应内部端口 8003）
 python .agents/skills/context_pilot/scripts/call_a2a.py \
   --query "任务" \
-  --host localhost --port 54089
+  --host localhost --port 54090
 ```
 
 ## 解读输出
@@ -82,6 +81,6 @@ python .agents/skills/context_pilot/scripts/call_a2a.py \
 
 ## 配置说明
 
-服务器默认地址：`http://localhost:8000`（context_pilot_agent 主 Agent）
+服务器默认地址：`http://localhost:54090`（knowledge_agent 远程 A2A 服务）
 
 如需修改，参考 `assets/api_reference.md`。

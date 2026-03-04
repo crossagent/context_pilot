@@ -39,6 +39,8 @@ services:
       - "54090:8003"
     volumes:
       - .:/app
+    env_file:
+      - .env
     environment:
       - PROJECT_ROOT=/project_root
       - PYTHONPATH=/app
@@ -46,5 +48,5 @@ services:
       - PYTHONUNBUFFERED=1
       - TZ=Asia/Shanghai
       - A2A_ADVERTISE_URL=http://knowledge_expert:8003/
-    command: [ "uvicorn", "context_pilot.context_pilot_app.remote_a2a.knowledge_agent.agent:app", "--host", "0.0.0.0", "--port", "8003" ]
+    command: [ "adk", "api_server", "--a2a", "--host", "0.0.0.0", "--port", "8003", "context_pilot/context_pilot_app/remote_a2a" ]
     restart: unless-stopped

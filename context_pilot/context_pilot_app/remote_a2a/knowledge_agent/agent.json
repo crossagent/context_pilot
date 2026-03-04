@@ -1,0 +1,28 @@
+{
+    "name": "knowledge_agent",
+    "description": "Agent responsible for searching the knowledge base (RAG), tracking experiences, and managing knowledge.",
+    "defaultInputModes": [
+        "text/plain"
+    ],
+    "defaultOutputModes": [
+        "text/plain"
+    ],
+    "version": "1.0.0",
+    "capabilities": {
+        "streaming": true
+    },
+    "url": "http://knowledge_expert:8003/a2a/knowledge_agent",
+    "skills": [
+        {
+            "id": "knowledge_agent",
+            "name": "knowledge_agent",
+            "description": "Searches RAG, explores skill registries, and records solutions to the knowledge base automatically.",
+            "tags": [
+                "llm",
+                "knowledge",
+                "rag",
+                "experience-recording"
+            ]
+        }
+    ]
+}

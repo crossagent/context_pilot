@@ -163,10 +163,12 @@ _streaming_client_factory = A2AClientFactory(
         supported_transports=[A2ATransport.jsonrpc],
     )
 )
+# agent_card URL must match route mounted by `adk api_server --a2a`:
+#   /a2a/{agent_name}/.well-known/agent-card.json
 knowledge_expert_agent = RemoteA2aAgent(
     name="knowledge_agent",
     description="Agent responsible for searching the knowledge base (RAG), tracking experiences, and managing knowledge.",
-    agent_card=f"{knowledge_expert_url}{AGENT_CARD_WELL_KNOWN_PATH}",
+    agent_card=f"{knowledge_expert_url}/a2a/knowledge_agent{AGENT_CARD_WELL_KNOWN_PATH}",
     a2a_client_factory=_streaming_client_factory,
 )
 

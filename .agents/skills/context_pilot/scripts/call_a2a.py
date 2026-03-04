@@ -21,8 +21,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Context Pilot A2A Streaming Client")
     parser.add_argument("--query", required=True, help="发送给 Agent 的任务描述")
     parser.add_argument("--host", default="localhost", help="A2A 服务器地址 (默认: localhost)")
-    parser.add_argument("--port", type=int, default=54089, help="A2A 服务器端口 (默认: 54089)")
-    parser.add_argument("--app-name", default="context_pilot_app", help="ADK App 名称")
+    parser.add_argument("--port", type=int, default=54090, help="A2A 服务器端口 (默认: 54090)")
+    parser.add_argument("--app-name", default="knowledge_app", help="ADK App 名称")
     parser.add_argument("--user-id", default="antigravity_user", help="用户 ID")
     parser.add_argument("--session-id", default=None, help="复用已有 session ID (可选)")
     return parser.parse_args()
@@ -228,8 +228,8 @@ async def main():
 
     except httpx.ConnectError as e:
         print(f"\n❌ 连接失败: {e}", flush=True)
-        print(f"   请确认 context_pilot_agent 已在 {base_url} 启动", flush=True)
-        print(f"   启动命令: uv run python -m context_pilot.main serve --port 8000 (Docker 映射到 {args.port})", flush=True)
+        print(f"   请确认 knowledge_agent 已在 {base_url} 启动", flush=True)
+        print(f"   启动命令: docker-compose up knowledge_expert", flush=True)
         sys.exit(1)
     except httpx.HTTPStatusError as e:
         print(f"\n❌ HTTP 错误: {e.response.status_code} {e.response.text}", flush=True)
