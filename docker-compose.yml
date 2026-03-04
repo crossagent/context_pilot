@@ -45,5 +45,6 @@ services:
       - ADK_DATA_DIR=/app/adk_data
       - PYTHONUNBUFFERED=1
       - TZ=Asia/Shanghai
+      - A2A_ADVERTISE_URL=http://knowledge_expert:8003/
     command: [ "uvicorn", "context_pilot.context_pilot_app.remote_a2a.knowledge_agent.agent:app", "--host", "0.0.0.0", "--port", "8003" ]
     restart: unless-stopped

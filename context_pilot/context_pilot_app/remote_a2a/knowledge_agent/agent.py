@@ -20,11 +20,13 @@ from context_pilot.skill_library.extensions import root_skill_registry, report_s
 logger = logging.getLogger(__name__)
 
 # --- RAG Initialization ---
-rag_storage_path = os.getenv("RAG_STORAGE_DIR")
-if not rag_storage_path:
-    # Default: ProjectRoot/adk_data/rag_storage
+data_dir = os.getenv("ADK_DATA_DIR", "adk_data")
+rag_storage_path = os.getenv("RAG_STORAGE_DIR", os.path.join(data_dir, "rag_storage"))
+
+# Ensure absolute path if not already
+if not os.path.isabs(rag_storage_path):
     base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-    rag_storage_path = os.path.join(base_dir, "adk_data", "rag_storage")
+    rag_storage_path = os.path.join(base_dir, rag_storage_path)
 
 try:
     initialize_rag_tool(rag_storage_path)
@@ -101,13 +103,14 @@ from a2a.types import AgentCapabilities, AgentCard, AgentSkill
 # Configurable A2A host (docker default is typically 0.0.0.0 for bind, internal network name, or host.docker.internal)
 _a2a_host = os.getenv("A2A_HOST", "0.0.0.0")
 _a2a_port = int(os.getenv("A2A_PORT", 8003))
+_a2a_advertise_url = os.getenv("A2A_ADVERTISE_URL", f"http://{_a2a_host}:{_a2a_port}/")
 _agent_card = AgentCard(
     name=knowledge_agent.name,
     description=(
         "Agent responsible for searching the internal knowledge base (RAG), "
         "tracking experiences, and managing knowledge."
     ),
-    url=f"http://{_a2a_host}:{_a2a_port}/",
+    url=_a2a_advertise_url,
     version="1.0.0",
     capabilities=AgentCapabilities(streaming=True),
     default_input_modes=["text/plain"],
