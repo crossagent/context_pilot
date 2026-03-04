@@ -15,21 +15,16 @@ services:
       # - "C:/path/to/your/project:/project_root"
 
     environment:
-      # Inject Docker-specific routing URLs.
-      # Because .env is read by Python (via load_dotenv), we avoid defining these URLs in .env 
-      # so that these hardcoded environment overrides take precedence inside the container.
       - PROJECT_ROOT=/project_root
       - PYTHONPATH=/app
       - ADK_DATA_DIR=/app/adk_data
       - PYTHONUNBUFFERED=1
       - TZ=Asia/Shanghai
+      - ADK_SESSION_SERVICE_URI=sqlite:///app/adk_data/sessions.db
+      - ADK_ARTIFACT_SERVICE_URI=file:///app/adk_data/artifacts
       # Remote A2A Agent URLs
-      # planning_expert runs in Docker (same Docker network, use service name as hostname)
       - PLANNING_EXPERT_URL=http://planning_expert:8001
-      # repo_explorer runs on the Windows host machine (needs local file system access)
-      # host.docker.internal is supported natively by Docker Desktop on Windows
       - REPO_EXPLORER_URL=http://host.docker.internal:8002
-      # knowledge_expert runs in Docker (same network)
       - KNOWLEDGE_EXPERT_URL=http://knowledge_expert:8003
     restart: unless-stopped
 
@@ -48,7 +43,7 @@ services:
       - PYTHONUNBUFFERED=1
       - TZ=Asia/Shanghai
       - A2A_ADVERTISE_URL=http://knowledge_expert:8003/
-      # Add session and artifact service URIs to ensure they      - ADK_SESSION_SERVICE_URI=sqlite+aiosqlite:///app/adk_data/knowledge_agent/sessions.db
+      - ADK_SESSION_SERVICE_URI=sqlite:///app/adk_data/knowledge_agent/sessions.db
       - ADK_ARTIFACT_SERVICE_URI=file:///app/adk_data/knowledge_agent/artifacts
-    command: [ "adk", "api_server", "--a2a", "--host", "0.0.0.0", "--port", "8003", "--session-service-uri", "sqlite+aiosqlite:///app/adk_data/knowledge_agent/sessions.db", "--artifact-service-uri", "file:///app/adk_data/knowledge_agent/artifacts", "context_pilot/context_pilot_app/remote_a2a" ]
+    command: [ "adk", "api_server", "--a2a", "--host", "0.0.0.0", "--port", "8003", "--session-service-uri", "sqlite:///app/adk_data/knowledge_agent/sessions.db", "--artifact-service-uri", "file:///app/adk_data/knowledge_agent/artifacts", "context_pilot/context_pilot_app/remote_a2a" ]
     restart: unless-stopped
