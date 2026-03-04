@@ -19,15 +19,15 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 # Copy the dependency definitions
 COPY requirements.txt .
 
-# Install dependencies
-RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt
+# Install dependencies using Tsinghua mirror
+RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --upgrade pip
+RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application
 COPY . .
 
 # Install the current project in editable mode to ensure sub-packages are found
-RUN pip install -e .
+RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -e .
 
 # Expose ports
 # 8000: Main app (context_pilot serve)
