@@ -46,7 +46,7 @@ services:
       - PYTHONUNBUFFERED=1
       - TZ=Asia/Shanghai
       - A2A_ADVERTISE_URL=http://knowledge_expert:8003/
-      - ADK_SESSION_SERVICE_URI=sqlite:///app/adk_data/knowledge_agent/sessions.db
-      - ADK_ARTIFACT_SERVICE_URI=file:///app/adk_data/knowledge_agent/artifacts
-    command: [ "adk", "api_server", "--a2a", "--host", "0.0.0.0", "--port", "8003", "--session_service_uri", "sqlite:///app/adk_data/knowledge_agent/sessions.db", "--artifact_service_uri", "file:///app/adk_data/knowledge_agent/artifacts", "context_pilot/context_pilot_app/remote_a2a" ]
+      - ADK_SESSION_SERVICE_URI=sqlite:////app/adk_data/sessions.db
+      - ADK_ARTIFACT_SERVICE_URI=file:///app/adk_data/artifacts
+    command: [ "adk", "api_server", "--a2a", "--host", "0.0.0.0", "--port", "8003", "--session_service_uri", "sqlite:////app/adk_data/sessions.db", "--artifact_service_uri", "file:///app/adk_data/artifacts", "context_pilot/context_pilot_app/remote_a2a" ]
     restart: unless-stopped
