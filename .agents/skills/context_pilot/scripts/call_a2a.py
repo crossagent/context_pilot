@@ -20,7 +20,7 @@ import httpx
 def parse_args():
     parser = argparse.ArgumentParser(description="Context Pilot A2A Streaming Client")
     parser.add_argument("--query", required=True, help="发送给 Agent 的任务描述（例如：查询某流程、记录新知识、更新错误经验）")
-    parser.add_argument("--app-name", default="knowledge_app", help="ADK App 名称")
+    parser.add_argument("--app-name", default="knowledge_agent", help="ADK App 名称")
     parser.add_argument("--user-id", default="antigravity_user", help="用户 ID")
     return parser.parse_args()
 
