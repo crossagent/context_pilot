@@ -11,7 +11,7 @@
     "capabilities": {
         "streaming": true
     },
-    "url": "/a2a/knowledge_agent",
+    "url": "http://knowledge_expert:8003/a2a/knowledge_agent",
     "skills": [
         {
             "id": "knowledge_agent",

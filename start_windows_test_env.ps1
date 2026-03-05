@@ -4,6 +4,28 @@
 
 $ProjectRoot = $PSScriptRoot
 
+# === 自动配置 HOSTS 映射 (解决 local DNS 统一问题) ===
+$HostsPath = "$env:windir\System32\drivers\etc\hosts"
+$RequiredEntries = @(
+    "127.0.0.1  knowledge_expert",
+    "127.0.0.1  planning_expert"
+)
+
+$IsAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+
+foreach ($Entry in $RequiredEntries) {
+    $Hostname = ($Entry -split "\s+")[-1]
+    if (-not (Select-String -Path $HostsPath -Pattern $Hostname -Quiet)) {
+        if ($IsAdmin) {
+            Write-Host "Adding HOSTS entry: $Entry"
+            Add-Content -Path $HostsPath -Value "`n$Entry" -ErrorAction SilentlyContinue
+        }
+        else {
+            Write-Warning "Missing HOSTS entry: '$Entry'. Please run this script AS ADMINISTRATOR once to configure it permanently."
+        }
+    }
+}
+
 $DataDir = Join-Path $ProjectRoot "adk_data"
 $KnowledgeDataDir = Join-Path $ProjectRoot "adk_data\knowledge_agent"
 
@@ -20,9 +42,9 @@ Write-Host "=============================================="
 $env:TZ = "Asia/Shanghai"
 
 # 解决 Windows 上 URL 无法解析知识库容器主机名的问题
-# 强制使用 localhost，以保证跨平台 agent_card 能够被正常请求
-$env:KNOWLEDGE_EXPERT_URL = "http://127.0.0.1:8003"
-$env:PLANNING_EXPERT_URL = "http://127.0.0.1:8001"
+# 通过 HOSTS 映射后，这里可以统一使用域名和对应的端口
+$env:KNOWLEDGE_EXPERT_URL = "http://knowledge_expert:8003"
+$env:PLANNING_EXPERT_URL = "http://planning_expert:8000"
 
 # === 启动主 Agent (Port 8000) ===
 Write-Host ">>> Starting Context Pilot Main Agent (8000)..."
