@@ -40,5 +40,5 @@ ENV PROJECT_ROOT=/app
 ENV PYTHONUNBUFFERED=1
 
 # Run entrypoint script
-RUN chmod +x entrypoint.sh
+RUN chmod +x entrypoint.sh entrypoint_knowledge.sh
 CMD ["./entrypoint.sh"]

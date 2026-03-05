@@ -8,8 +8,8 @@ services:
     volumes:
       # Mount project code into container
       - .:/app
-      # Isolate data directory from Windows host
-      - /app/adk_data
+      # Shared data volume
+      - adk_data:/app/adk_data
       # [CRITICAL] Mount the actual source code repository from the host machine.
       # The repo_explorer_agent runs on the host and accesses files directly,
       # so this volume is NOT needed for file exploration.
@@ -22,7 +22,7 @@ services:
       - ADK_DATA_DIR=/app/adk_data
       - PYTHONUNBUFFERED=1
       - TZ=Asia/Shanghai
-      - ADK_SESSION_SERVICE_URI=sqlite:///app/adk_data/sessions.db
+      - ADK_SESSION_SERVICE_URI=sqlite:////app/adk_data/sessions.db
       - ADK_ARTIFACT_SERVICE_URI=file:///app/adk_data/artifacts
       # Remote A2A Agent URLs
       - PLANNING_EXPERT_URL=http://planning_expert:8001
@@ -36,17 +36,20 @@ services:
       - "54090:8003"
     volumes:
       - .:/app
-      - /app/adk_data
+      - adk_data:/app/adk_data
     env_file:
       - .env
     environment:
       - PROJECT_ROOT=/project_root
       - PYTHONPATH=/app
-      - ADK_DATA_DIR=/app/adk_data/knowledge_agent
+      - ADK_DATA_DIR=/app/adk_data
       - PYTHONUNBUFFERED=1
       - TZ=Asia/Shanghai
       - A2A_ADVERTISE_URL=http://knowledge_expert:8003/
       - ADK_SESSION_SERVICE_URI=sqlite:////app/adk_data/sessions.db
       - ADK_ARTIFACT_SERVICE_URI=file:///app/adk_data/artifacts
-    command: [ "adk", "api_server", "--a2a", "--host", "0.0.0.0", "--port", "8003", "--session_service_uri", "sqlite:////app/adk_data/sessions.db", "--artifact_service_uri", "file:///app/adk_data/artifacts", "context_pilot/context_pilot_app/remote_a2a" ]
+    entrypoint: [ "sh", "./entrypoint_knowledge.sh" ]
     restart: unless-stopped
+
+volumes:
+  adk_data:
