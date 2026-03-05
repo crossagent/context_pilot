@@ -1,7 +1,9 @@
 import asyncio
+import os
 import httpx
 
-ADK_API_BASE = "http://localhost:54090"
+TARGET_ENV = os.getenv("TARGET_ENV", "windows")
+ADK_API_BASE = "http://localhost:54090" if TARGET_ENV == "docker" else "http://localhost:8003"
 APP_NAME = "knowledge_agent"
 USER_ID = "test_streaming_user"
 QUERY = "你好，请简单做个自我介绍。"

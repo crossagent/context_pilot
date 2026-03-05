@@ -1,7 +1,9 @@
 import asyncio
+import os
 import httpx
 
-ADK_API_BASE = "http://localhost:54089"
+TARGET_ENV = os.getenv("TARGET_ENV", "windows")
+ADK_API_BASE = "http://localhost:54089" if TARGET_ENV == "docker" else "http://localhost:8000"
 APP_NAME = "context_pilot_app"
 USER_ID = "test_streaming_user"
 QUERY = "我在寻找ADK相关开发的资料，你能帮我在知识库里搜一下有什么相关信息吗？"

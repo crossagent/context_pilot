@@ -8,6 +8,8 @@ services:
     volumes:
       # Mount project code into container
       - .:/app
+      # Isolate data directory from Windows host
+      - /app/adk_data
       # [CRITICAL] Mount the actual source code repository from the host machine.
       # The repo_explorer_agent runs on the host and accesses files directly,
       # so this volume is NOT needed for file exploration.
@@ -34,6 +36,7 @@ services:
       - "54090:8003"
     volumes:
       - .:/app
+      - /app/adk_data
     env_file:
       - .env
     environment:
