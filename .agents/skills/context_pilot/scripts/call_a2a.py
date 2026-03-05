@@ -5,7 +5,7 @@ Context Pilot A2A Streaming Client
 与 context_pilot_agent 的 A2A API 进行流式交互。
 
 用法:
-    python call_a2a.py --query "你的任务" [--session-id xxx] [--host localhost] [--port 8000]
+    python call_a2a.py --query "你的任务"
 """
 
 import argparse
@@ -19,12 +19,9 @@ import httpx
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Context Pilot A2A Streaming Client")
-    parser.add_argument("--query", required=True, help="发送给 Agent 的任务描述")
-    parser.add_argument("--host", default="localhost", help="A2A 服务器地址 (默认: localhost)")
-    parser.add_argument("--port", type=int, default=54090, help="A2A 服务器端口 (默认: 54090)")
+    parser.add_argument("--query", required=True, help="发送给 Agent 的任务描述（例如：查询某流程、记录新知识、更新错误经验）")
     parser.add_argument("--app-name", default="knowledge_app", help="ADK App 名称")
     parser.add_argument("--user-id", default="antigravity_user", help="用户 ID")
-    parser.add_argument("--session-id", default=None, help="复用已有 session ID (可选)")
     return parser.parse_args()
 
 
@@ -205,7 +202,7 @@ async def run_streaming(base_url: str, app_name: str, user_id: str, session_id: 
 
 async def main():
     args = parse_args()
-    base_url = f"http://{args.host}:{args.port}"
+    base_url = "http://localhost:54090"
 
     print("=" * 60, flush=True)
     print(f"Context Pilot A2A Client", flush=True)
@@ -214,14 +211,8 @@ async def main():
     print("=" * 60, flush=True)
 
     try:
-        # 创建或复用 session
-        if args.session_id:
-            session_id = args.session_id
-            print(f"♻️  Reusing session: {session_id}", flush=True)
-        else:
-            session_id = await create_session(base_url, args.app_name, args.user_id)
-
-        print(f"\n💡 Session ID (用于 --session-id 复用): {session_id}\n", flush=True)
+        # 创建新 session
+        session_id = await create_session(base_url, args.app_name, args.user_id)
 
         # 流式执行任务
         result = await run_streaming(base_url, args.app_name, args.user_id, session_id, args.query)
