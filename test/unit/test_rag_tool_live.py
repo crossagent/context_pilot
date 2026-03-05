@@ -25,7 +25,7 @@ async def test_retrieve_rag_documentation_live():
     """
     # Initialize Tool (Runtime Requirement)
     initialize_rag_tool(RagConfig.STORAGE_DIR)
-    query = "验证测试记录"
+    query = "架构设计"
     
     logger.info(f"Testing LlamaIndex retrieval with query: {query}")
     
@@ -47,11 +47,7 @@ async def test_retrieve_rag_documentation_live():
         assert result is not None, "Result should not be None"
         result_str = str(result)
         
-        # We expect the content we added to be present
-        # "验证测试记录" -> "这是一条用于验证 Vertex AI RAG 文件更新机制的测试记录..."
-        # Note: Gemini might translate this to English.
-        # "This is a test record used to verify the Vertex AI RAG..."
-        expected_keywords = ["哈希变更", "验证", "Vertex AI", "hash changes", "test record"]
+        expected_keywords = ["架构设计", "DynamicToolset", "插件化"]
         assert any(k in result_str for k in expected_keywords), f"Expected content not found. Got: {result_str[:200]}"
         
         logger.info("✅ LlamaIndex RAG Tool test passed!")
